@@ -41,7 +41,7 @@ workspace("HorseCompiler")
             "src/HorseCompiler/**.cpp"
         }
 
-        includedirs "src/"
+        includedirs "src/HorseCompiler/"
 
         kind "StaticLib"
 
@@ -55,6 +55,8 @@ workspace("HorseCompiler")
         dependson "HorseCompiler"
         links "HorseCompiler"
         
+    includedirs "src/Test/"
+
         files {
             "src/Test/**.h",
             "src/Test/**.c",
