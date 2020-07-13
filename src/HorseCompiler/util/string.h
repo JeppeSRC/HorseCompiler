@@ -90,4 +90,8 @@ public:
 	String& operator+=(const String& other);
 	String& operator+=(const char* const other);
 	
+public:
+	static void ToUpperCase(String& string);
+	static void ToLowerCase(String& string);
+
 };
