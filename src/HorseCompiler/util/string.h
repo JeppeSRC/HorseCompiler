@@ -28,5 +28,66 @@ SOFTWARE
 
 class String {
 private:
+	uint64 length;
+	char* str;
 
+public:
+	String(const char* const string);
+	String(const String& other);
+	explicit String(const String* other);
+	String(String&& other);
+	~String();
+
+	String& operator=(const String& other);
+	String& operator=(String&& other);
+
+	bool Equals(const String& other) const;
+	bool Equals(const char* const other) const;
+
+	bool StartsWith(const String& other) const;
+	bool StartsWith(const char* const other) const;
+
+	bool EndsWith(const String& other) const;
+	bool EndsWith(const char* const other) const;
+
+	uint64 Find(const String& other, uint64 offset) const;
+	uint64 Find(const char* const other, uint64 offset) const;
+	uint64 Find(const char other, uint64 offset) const;
+	
+	uint64 FindR(const String& other, uint64 offset) const;
+	uint64 FindR(const char* const other, uint64 offset) const;
+	uint64 FindR(const char other, uint64 offset) const;
+
+	uint64 Count(const String& other) const;
+	uint64 Count(const char* const other) const;
+	uint64 Count(const char other) const;
+
+	String& Append(const String& other);
+	String& Append(const char* const other);
+
+	String& Remove(const String& other);
+	String& Remove(const char* const other);
+	String& Remove(uint64 start, uint64 end);
+
+	String SubString(uint64 start, uint64 end) const;
+	String SubString(const String& start, const String& end) const;
+	String SubString(const char* const start, const char* const end) const;
+
+	String& Insert(uint64 start, uint64 end, const String& other);
+	String& Insert(uint64 start, uint64 end, const char* const other);
+	String& Insert(const String& start, const String& end, const String& other);
+	String& Insert(const String& start, const String& end, const char* const other);
+
+	char& operator[](uint64 index);
+	char  operator[](uint64 index) const;
+
+	bool operator==(const String& other) const;
+	bool operator==(const char* const other) const;
+
+	String operator+(const String& other) const;
+	String operator+(const char* const other) const;
+
+	String& operator+=(const String& other);
+	String& operator+=(const char* const other);
+	
 };
