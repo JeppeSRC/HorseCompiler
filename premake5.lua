@@ -1,6 +1,7 @@
 workspace("HorseCompiler")
     location "solution/"
     cppdialect "c++17"
+    startproject "Test"
 
     configurations {
         "Release",
@@ -55,7 +56,8 @@ workspace("HorseCompiler")
         dependson "HorseCompiler"
         links "HorseCompiler"
         
-    includedirs "src/Test/"
+        includedirs "src/HorseCompiler/"
+        includedirs "src/Test/"
 
         files {
             "src/Test/**.h",
