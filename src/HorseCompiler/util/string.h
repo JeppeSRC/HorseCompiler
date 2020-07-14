@@ -27,16 +27,23 @@ SOFTWARE
 #include <core/def.h>
 
 class String {
-private:
-	uint64 length;
+protected:
+	int64 length;
 	char* str;
 
 public:
+	static const int64 npos = -1;
+
+
+protected:
+	String(char* const str, int64 length);
+public:
+	String();
 	String(const char* const string);
 	String(const String& other);
 	explicit String(const String* other);
 	String(String&& other);
-	~String();
+	virtual ~String();
 
 	String& operator=(const String& other);
 	String& operator=(String&& other);
@@ -50,36 +57,39 @@ public:
 	bool EndsWith(const String& other) const;
 	bool EndsWith(const char* const other) const;
 
-	uint64 Find(const String& other, uint64 offset) const;
-	uint64 Find(const char* const other, uint64 offset) const;
-	uint64 Find(const char other, uint64 offset) const;
+	int64 Find(const String& other, int64 offset) const;
+	int64 Find(const char* const other, int64 offset) const;
+	int64 Find(const char other, int64 offset) const;
 	
-	uint64 FindR(const String& other, uint64 offset) const;
-	uint64 FindR(const char* const other, uint64 offset) const;
-	uint64 FindR(const char other, uint64 offset) const;
+	int64 FindR(const String& other, int64 offset) const;
+	int64 FindR(const char* const other, int64 offset) const;
+	int64 FindR(const char other, int64 offset) const;
 
-	uint64 Count(const String& other) const;
-	uint64 Count(const char* const other) const;
-	uint64 Count(const char other) const;
+	int64 Count(const String& other) const;
+	int64 Count(const char* const other) const;
+	int64 Count(const char other) const;
 
 	String& Append(const String& other);
 	String& Append(const char* const other);
 
 	String& Remove(const String& other);
 	String& Remove(const char* const other);
-	String& Remove(uint64 start, uint64 end);
+	String& Remove(int64 start, int64 end);
 
-	String SubString(uint64 start, uint64 end) const;
+	String SubString(int64 start, int64 end) const;
 	String SubString(const String& start, const String& end) const;
 	String SubString(const char* const start, const char* const end) const;
 
-	String& Insert(uint64 start, uint64 end, const String& other);
-	String& Insert(uint64 start, uint64 end, const char* const other);
+	String& Insert(int64 start, int64 end, const String& other);
+	String& Insert(int64 start, int64 end, const char* const other);
 	String& Insert(const String& start, const String& end, const String& other);
 	String& Insert(const String& start, const String& end, const char* const other);
 
-	char& operator[](uint64 index);
-	char  operator[](uint64 index) const;
+	void ToUpperCase(String& string);
+	void ToLowerCase(String& string);
+
+	char& operator[](int64 index);
+	char  operator[](int64 index) const;
 
 	bool operator==(const String& other) const;
 	bool operator==(const char* const other) const;
@@ -90,8 +100,11 @@ public:
 	String& operator+=(const String& other);
 	String& operator+=(const char* const other);
 	
-public:
-	static void ToUpperCase(String& string);
-	static void ToLowerCase(String& string);
+};
 
+class TmpString : public String {
+public:
+	TmpString(const char* const str);
+	~TmpString();
+	
 };
