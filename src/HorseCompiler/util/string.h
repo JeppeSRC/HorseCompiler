@@ -27,13 +27,11 @@ SOFTWARE
 #include <core/def.h>
 
 class String {
-protected:
+public:
 	int64 length;
 	char* str;
 
-public:
 	static const int64 npos = -1;
-
 
 protected:
 	String(char* const str, int64 length);
