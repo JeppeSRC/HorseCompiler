@@ -33,11 +33,10 @@ public:
 
 	static const int64 npos = -1;
 
-protected:
-	String(char* const str, int64 length);
 public:
 	String();
 	String(const char* const string);
+	String(char* const string, int64 length);
 	String(const String& other);
 	explicit String(const String* other);
 	String(String&& other);

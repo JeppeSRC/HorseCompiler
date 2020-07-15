@@ -25,7 +25,7 @@ SOFTWARE
 #include "string.h"
 #include <string>
 
-String::String(char* const str, int64 length) : str(str), length(length) {}
+String::String(char* const string, int64 length) : str(string), length(length) {}
 
 String::String() : length(-1), str(nullptr) { }
 
