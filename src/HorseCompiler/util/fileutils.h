@@ -24,7 +24,12 @@ SOFTWARE
 
 #pragma once
 
+#include <core/def.h>
+#include "string.h"
+
 class FileUtils {
 public:
+	static String LoadTextFile(const String& filename);
+	static byte* LoadFile(const String& filename, uint64* size);
 
 };

@@ -21,3 +21,31 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 */
+
+#include "fileutils.h"
+#include <stdio.h>
+#include <string>
+
+String FileUtils::LoadTextFile(const String& filename) {
+	uint64 size = 0;
+	byte* tmp = LoadFile(filename, &size);
+
+	return std::move(String((char* const)tmp, size));
+}
+
+byte* FileUtils::LoadFile(const String& filename, uint64* size) {
+	FILE* file = fopen(filename.str, "rb");
+
+	if (!file) return nullptr;
+
+	fseek(file, 0, SEEK_END);
+	*size = (uint64)ftell(file);
+	fseek(file, 0, SEEK_SET);
+
+	byte* data = new byte[*size];
+
+	fread(data, *size, 1, file);
+	fclose(file);
+
+	return data;
+}
