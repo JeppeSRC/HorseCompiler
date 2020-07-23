@@ -73,6 +73,15 @@ String& String::operator=(String&& other) {
 	return *this;
 }
 
+String& String::operator=(const char other) {
+	delete[] str;
+	str = new char[2];
+	str[1] = 0;
+	str[0] = other;
+
+	return *this;
+}
+
 bool String::Equals(const String& other) const {
 	return Equals(other.str);
 }

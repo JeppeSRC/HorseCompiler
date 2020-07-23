@@ -44,6 +44,7 @@ public:
 
 	String& operator=(const String& other);
 	String& operator=(String&& other);
+	String& operator=(const char other);
 
 	bool Equals(const String& other) const;
 	bool Equals(const char* const other) const;
@@ -96,7 +97,6 @@ public:
 
 	String& operator+=(const String& other);
 	String& operator+=(const char* const other);
-	
 };
 
 class TmpString : public String {
