@@ -337,6 +337,27 @@ String& String::operator+=(const char* const other) {
 	return Append(other);
 }
 
+uint64 GetValue(const char c) {
+	return c - (48 * (c >= '0' && c <= '9')) - (55 * (c >= 'A' && c <= 'F')) - (87 * (c >= 'a' && c <= 'f'));
+}
+
+uint64 String::ToUint64(const String& string, int8 base, int64 start, int64 end) {
+	if (end == -1) end = string.length-1;
+
+	uint64 value = 0;
+
+	for (int64 i = start; i <= end; i++) {
+		value += GetValue(string[end + start - i]) * (uint64)pow((double)base, (double)(i-start));
+	}
+
+	return value;
+}
+
+uint64 String::ToUint64(const char* const string, int8 base, int64 start, int64 end) {
+	return ToUint64(TmpString(string), base, start, end);
+}
+
+
 TmpString::TmpString(const char* const str) : String(const_cast<char* const>(str), strlen(str)) { }
 
 TmpString::~TmpString() { str = nullptr; }

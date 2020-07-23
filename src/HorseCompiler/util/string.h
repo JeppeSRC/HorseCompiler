@@ -99,6 +99,10 @@ public:
 
 	String& operator+=(const String& other);
 	String& operator+=(const char* const other);
+
+public:
+	static uint64 ToUint64(const String& string, int8 base, int64 start = 0, int64 end = -1);
+	static uint64 ToUint64(const char* const string, int8 base, int64 start = 0, int64 end = -1);
 };
 
 class TmpString : public String {
