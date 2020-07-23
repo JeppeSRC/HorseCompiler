@@ -80,8 +80,10 @@ public:
 
 	String& Insert(int64 start, int64 end, const String& other);
 	String& Insert(int64 start, int64 end, const char* const other);
+	String& Insert(int64 start, int64 end, const char other);
 	String& Insert(const String& start, const String& end, const String& other);
 	String& Insert(const String& start, const String& end, const char* const other);
+	String& Insert(const String& start, const String& end, const char other);
 
 	void ToUpperCase(String& string);
 	void ToLowerCase(String& string);
