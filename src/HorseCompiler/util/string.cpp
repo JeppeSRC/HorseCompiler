@@ -78,6 +78,7 @@ String& String::operator=(const char other) {
 	str = new char[2];
 	str[1] = 0;
 	str[0] = other;
+	length = 1;
 
 	return *this;
 }
