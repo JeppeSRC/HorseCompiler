@@ -24,12 +24,16 @@ SOFTWARE
 
 #include "string.h"
 #include <string>
+#include <core/error/error.h>
 
-String::String(char* const string, int64 length) : str(string), length(length) {}
+String::String(char* const string, int64 length) : str(string), length(length) {
+	HC_ASSERT(string != nullptr && length > 0);
+}
 
 String::String() : length(-1), str(nullptr) { }
 
 String::String(const char* const string) : length(strlen(string)) {
+	HC_ASSERT(string != nullptr);
 	str = new char[length + 1];
 	memcpy(str, string, length+1);
 }
@@ -40,6 +44,7 @@ String::String(const String& other) : length(other.length) {
 }
 
 String::String(const String* other) : length(other->length) {
+	HC_ASSERT(other != nullptr);
 	str = new char[length + 1];
 	memcpy(str, other->str, length + 1);
 }
@@ -112,6 +117,7 @@ bool String::EndsWith(const char* const other) const {
 }
 
 int64 String::Find(const String& other, int64 offset) const {
+	HC_ASSERT(offset < length&& offset >= 0);
 	int64 len = length - other.length;
 
 	for (int64 i = offset; i < len; i++) {
@@ -127,10 +133,13 @@ int64 String::Find(const String& other, int64 offset) const {
 }
 
 int64 String::Find(const char* const other, int64 offset) const {
+	HC_ASSERT(other != nullptr);
+	HC_ASSERT(offset < length && offset >= 0);
 	return Find(TmpString(other), offset);
 }
 
 int64 String::Find(const char other, int64 offset) const {
+	HC_ASSERT(offset < length && offset >= 0);
 	for (int64 i = offset; i < length; i++) {
 		if (str[i] == other) return i;
 	}
@@ -158,6 +167,7 @@ int64 String::FindR(const char* const other, int64 offset) const {
 }
 
 int64 String::FindR(const char other, int64 offset) const {
+	HC_ASSERT(offset < length&& offset >= 0);
 	for (int64 i = length - offset - 1; i >= 0; i--) {
 		if (str[i] == other) return i;
 	}
@@ -176,6 +186,7 @@ int64 String::Count(const String& other) const {
 }
 
 int64 String::Count(const char* const other) const {
+	HC_ASSERT(other != nullptr);
 	return Count(TmpString(other));
 }
 
@@ -206,6 +217,7 @@ String& String::Append(const String& other) {
 }
 
 String& String::Append(const char* const other) {
+	HC_ASSERT(other != nullptr);
 	return Append(TmpString(other));
 }
 
@@ -216,10 +228,13 @@ String& String::Remove(const String& other) {
 }
 
 String& String::Remove(const char* const other) {
+	HC_ASSERT(other != nullptr);
 	return Remove(TmpString(other));
 }
 
 String& String::Remove(int64 start, int64 end) {
+	HC_ASSERT(start <= end);
+	HC_ASSERT(start >= 0 && end < length);
 	char* tmp = str;
 
 	int64 newLen = length - (++end - start);
@@ -235,6 +250,8 @@ String& String::Remove(int64 start, int64 end) {
 }
 
 String String::SubString(int64 start, int64 end) const {
+	HC_ASSERT(start <= end);
+	HC_ASSERT(start >= 0 && end < length);
 	int64 len = end - start + 1;
 
 	char* tmp = new char[len + 1];
@@ -254,10 +271,13 @@ String String::SubString(const String& start, const String& end) const {
 }
 
 String String::SubString(const char* const start, const char* const end) const {
+	HC_ASSERT(start != nullptr && end != nullptr);
 	return std::move(SubString(TmpString(start), TmpString(end)));
 }
 
 String& String::Insert(int64 start, int64 end, const String& other) {
+	HC_ASSERT(start <= end);
+	HC_ASSERT(start >= 0 && end < length);
 	int64 newLen = length + other.length - (++end - start);
 
 	char* tmp = str;
@@ -342,7 +362,12 @@ uint64 GetValue(const char c) {
 }
 
 uint64 String::ToUint64(const String& string, int8 base, int64 start, int64 end) {
+	HC_ASSERT(base != 0);
+	HC_ASSERT(start <= end);
+
 	if (end == -1) end = string.length-1;
+
+	HC_ASSERT(start >= 0 && end < string.length);
 
 	uint64 value = 0;
 
