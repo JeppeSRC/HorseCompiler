@@ -30,7 +30,7 @@ SOFTWARE
 #define HC_DEBUG_BREAK __debugbreak
 
 #ifdef HC_DEBUG
-#define HC_ASSERT(x, message) if (!(x)) { Log::Error("Assertion Failed: %s", message); HC_DEBUG_BREAK; }
+#define HC_ASSERT(x) if (!(x)) { Log::Error("Assertion Failed: %s", ##x); HC_DEBUG_BREAK; }
 #else
-#define HC_ASSERT(x, message)
+#define HC_ASSERT(x)
 #endif
