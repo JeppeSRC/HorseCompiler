@@ -30,16 +30,16 @@ SOFTWARE
 
 Lexer::AnalysisResult Lexer::Analyze(String file, const Syntax& syntax) {
 	Lexer::AnalysisResult res;
-	List<int64> indices;
-	List<int64> newLines;
+	List<uint64> indices;
+	List<uint64> newLines;
 
 	res.tokens.Reserve(4096);
 	indices.Reserve(4096);
 	newLines.Reserve(4096);
 
-	int64 index = 0;
+	uint64 index = 0;
 
-	for (int64 i = 0; i < syntax.delimiters.length; i++) {
+	for (uint64 i = 0; i < syntax.delimiters.length; i++) {
 		index = 0;
 
 		while ((index = file.Find(syntax.delimiters[i], index)) != String::npos) {
@@ -56,10 +56,10 @@ Lexer::AnalysisResult Lexer::Analyze(String file, const Syntax& syntax) {
 
 	std::sort(indices.begin(), indices.end());
 
-	int64 currLine = 0;
-	int64 lastIndex = 0;
+	uint64 currLine = 0;
+	uint64 lastIndex = 0;
 
-	for (int64 i = 0; i < file.length; i++) {
+	for (uint64 i = 0; i < file.length; i++) {
 		char c = file[i];
 		for (uint64 j = 0; j < indices.GetSize(); j++) {
 			if (i == indices[j]) {
