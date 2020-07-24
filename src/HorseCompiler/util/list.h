@@ -61,25 +61,25 @@ public:
 		return std::move(items.pop_back());
 	}
 
-	std::tuple<int64, T&> Find(const T& item, int64 offset = 0) {
+	std::tuple<uint64, T&> Find(const T& item, uint64 offset = 0) {
 		HC_ASSERT(offset >= 0 && offset < GetSize());
-		for (int64 i = offset; i < items.size(); i++) {
+		for (uint64 i = offset; i < items.size(); i++) {
 			T& curr = items[i];
 			if (curr == item) return { i, curr };
 		}
 
-		return { -1, T() };
+		return { (uint64)~0, T() };
 	}
 
 	template<typename K>
-	std::tuple<int64, T&> Find(const K& item, bool(*CmpFunc)(const T&, const K&), int64 offset = 0) {
+	std::tuple<uint64, T&> Find(const K& item, bool(*CmpFunc)(const T&, const K&), uint64 offset = 0) {
 		HC_ASSERT(offset >= 0 && offset < GetSize());
-		for (int64 i = offset; i < items.size(); i++) {
+		for (uint64 i = offset; i < items.size(); i++) {
 			T& curr = items[i];
 			if (CmpFunc(curr, item)) return { i, curr };
 		}
 
-		return { -1, T() };
+		return { (uint64)~0, T() };
 	}
 
 	uint64 GetSize() const { return items.size(); }
