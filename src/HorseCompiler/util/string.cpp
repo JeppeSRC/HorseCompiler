@@ -26,7 +26,7 @@ SOFTWARE
 #include <string>
 #include <core/error/error.h>
 
-String::String(char* const string, int64 length) : str(string), length(length) {
+String::String(char* const string, uint64 length) : str(string), length(length) {
 	HC_ASSERT(string != nullptr && length > 0);
 }
 
@@ -105,7 +105,7 @@ bool String::StartsWith(const char* const other) const {
 }
 
 bool String::EndsWith(const String& other) const {
-	int64 len = length - other.length;
+	uint64 len = length - other.length;
 
 	if (len < 0) return false;
 
@@ -116,12 +116,12 @@ bool String::EndsWith(const char* const other) const {
 	return EndsWith(TmpString(other));
 }
 
-int64 String::Find(const String& other, int64 offset) const {
+uint64 String::Find(const String& other, uint64 offset) const {
 	HC_ASSERT(offset <= length && offset >= 0);
-	int64 len = length - other.length;
+	uint64 len = length - other.length;
 
-	for (int64 i = offset; i < len; i++) {
-		int64 j = 0;
+	for (uint64 i = offset; i < len; i++) {
+		uint64 j = 0;
 		for (; j < other.length; j++) {
 			if (str[i + j] != other.str[j]) break;
 		}
@@ -132,25 +132,25 @@ int64 String::Find(const String& other, int64 offset) const {
 	return npos;
 }
 
-int64 String::Find(const char* const other, int64 offset) const {
+uint64 String::Find(const char* const other, uint64 offset) const {
 	return Find(TmpString(other), offset);
 }
 
-int64 String::Find(const char other, int64 offset) const {
+uint64 String::Find(const char other, uint64 offset) const {
 	HC_ASSERT(offset <= length && offset >= 0);
-	for (int64 i = offset; i < length; i++) {
+	for (uint64 i = offset; i < length; i++) {
 		if (str[i] == other) return i;
 	}
 
 	return npos;
 }
 
-int64 String::FindR(const String& other, int64 offset) const {
+uint64 String::FindR(const String& other, uint64 offset) const {
 	HC_ASSERT(offset <= length && offset >= 0);
-	int64 len = length - other.length;
+	uint64 len = length - other.length;
 
-	for (int64 i = length - offset - 1; i >= offset; i--) {
-		int64 j = 0;
+	for (uint64 i = length - offset - 1; i >= offset; i--) {
+		uint64 j = 0;
 		for (; j < other.length; j++) {
 			if (str[i + j] != other.str[j]) break;
 		}
@@ -161,38 +161,38 @@ int64 String::FindR(const String& other, int64 offset) const {
 	return npos;
 }
 
-int64 String::FindR(const char* const other, int64 offset) const {
+uint64 String::FindR(const char* const other, uint64 offset) const {
 	return FindR(TmpString(other), offset);
 }
 
-int64 String::FindR(const char other, int64 offset) const {
+uint64 String::FindR(const char other, uint64 offset) const {
 	HC_ASSERT(offset <= length && offset >= 0);
-	for (int64 i = length - offset - 1; i >= 0; i--) {
+	for (int64 i = length - offset - 1; (int64)i >= 0; i--) {
 		if (str[i] == other) return i;
 	}
 
 	return npos;
 }
 
-int64 String::Count(const String& other) const {
-	int64 c = 0;
+uint64 String::Count(const String& other) const {
+	uint64 c = 0;
 
-	int64 index = 0;
+	uint64 index = 0;
 
 	while ((index = Find(other, index+1)) != npos) { c++; }
 
 	return c;
 }
 
-int64 String::Count(const char* const other) const {
+uint64 String::Count(const char* const other) const {
 	HC_ASSERT(other != nullptr);
 	return Count(TmpString(other));
 }
 
-int64 String::Count(const char other) const {
-	int64 c = 0;
+uint64 String::Count(const char other) const {
+	uint64 c = 0;
 
-	int64 index = 0;
+	uint64 index = 0;
 
 	while ((index = Find(other, index + 1)) != npos) { c++; }
 
@@ -200,7 +200,7 @@ int64 String::Count(const char other) const {
 }
 
 String& String::Append(const String& other) {
-	int64 newLen = length + other.length;
+	uint64 newLen = length + other.length;
 	char* tmp = str;
 
 	str = new char[newLen + 1];
@@ -221,7 +221,7 @@ String& String::Append(const char* const other) {
 }
 
 String& String::Remove(const String& other) {
-	int64 start = Find(other, 0);
+	uint64 start = Find(other, 0);
 
 	return Remove(start, start+other.length-1);
 }
@@ -231,12 +231,12 @@ String& String::Remove(const char* const other) {
 	return Remove(TmpString(other));
 }
 
-String& String::Remove(int64 start, int64 end) {
+String& String::Remove(uint64 start, uint64 end) {
 	HC_ASSERT(start <= end);
 	HC_ASSERT(start >= 0 && end < length);
 	char* tmp = str;
 
-	int64 newLen = length - (++end - start);
+	uint64 newLen = length - (++end - start);
 
 	str = new char[newLen + 1];
 
@@ -248,10 +248,10 @@ String& String::Remove(int64 start, int64 end) {
 	return *this;
 }
 
-String String::SubString(int64 start, int64 end) const {
+String String::SubString(uint64 start, uint64 end) const {
 	HC_ASSERT(start <= end);
 	HC_ASSERT(start >= 0 && end < length);
-	int64 len = end - start + 1;
+	uint64 len = end - start + 1;
 
 	char* tmp = new char[len + 1];
 
@@ -263,8 +263,8 @@ String String::SubString(int64 start, int64 end) const {
 }
 
 String String::SubString(const String& start, const String& end) const {
-	int64 s = Find(start, 0);
-	int64 e = Find(end, s+start.length);
+	uint64 s = Find(start, 0);
+	uint64 e = Find(end, s+start.length);
 
 	return std::move(SubString(s, e+end.length));
 }
@@ -274,10 +274,10 @@ String String::SubString(const char* const start, const char* const end) const {
 	return std::move(SubString(TmpString(start), TmpString(end)));
 }
 
-String& String::Insert(int64 start, int64 end, const String& other) {
+String& String::Insert(uint64 start, uint64 end, const String& other) {
 	HC_ASSERT(start <= end);
 	HC_ASSERT(start >= 0 && end < length);
-	int64 newLen = length + other.length - (++end - start);
+	uint64 newLen = length + other.length - (++end - start);
 
 	char* tmp = str;
 	str = new char[newLen + 1];
@@ -293,18 +293,18 @@ String& String::Insert(int64 start, int64 end, const String& other) {
 	return *this;
 }
 
-String& String::Insert(int64 start, int64 end, const char* const other) {
+String& String::Insert(uint64 start, uint64 end, const char* const other) {
 	return Insert(start, end, TmpString(other));
 }
 
-String& String::Insert(int64 start, int64 end, const char other) {
+String& String::Insert(uint64 start, uint64 end, const char other) {
 	uint16 tmp = (uint16)other;
 	return Insert(start, end, (const char* const)&tmp);
 }
 
 String& String::Insert(const String& start, const String& end, const String& other) {
-	int64 s = Find(start, 0);
-	int64 e = Find(end, s+start.length);
+	uint64 s = Find(start, 0);
+	uint64 e = Find(end, s+start.length);
 
 	return Insert(s, e + end.length, other);
 }
@@ -322,11 +322,11 @@ void String::ToUpperCase(String& string) {}
 
 void String::ToLowerCase(String& string) {}
 
-char& String::operator[](int64 index) {
+char& String::operator[](uint64 index) {
 	return str[index];
 }
 
-char String::operator[](int64 index) const {
+char String::operator[](uint64 index) const {
 	return str[index];
 }
 
@@ -360,7 +360,7 @@ uint64 GetValue(const char c) {
 	return c - (48 * (c >= '0' && c <= '9')) - (55 * (c >= 'A' && c <= 'F')) - (87 * (c >= 'a' && c <= 'f'));
 }
 
-uint64 String::ToUint64(const String& string, int8 base, int64 start, int64 end) {
+uint64 String::ToUint64(const String& string, uint8 base, uint64 start, uint64 end) {
 	HC_ASSERT(base != 0);
 	HC_ASSERT(start <= end);
 
@@ -370,14 +370,14 @@ uint64 String::ToUint64(const String& string, int8 base, int64 start, int64 end)
 
 	uint64 value = 0;
 
-	for (int64 i = start; i <= end; i++) {
+	for (uint64 i = start; i <= end; i++) {
 		value += GetValue(string[end + start - i]) * (uint64)pow((double)base, (double)(i-start));
 	}
 
 	return value;
 }
 
-uint64 String::ToUint64(const char* const string, int8 base, int64 start, int64 end) {
+uint64 String::ToUint64(const char* const string, uint8 base, uint64 start, uint64 end) {
 	return ToUint64(TmpString(string), base, start, end);
 }
 
