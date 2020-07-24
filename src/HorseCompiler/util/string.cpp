@@ -274,7 +274,7 @@ String String::SubString(const char* const start, const char* const end) const {
 	return std::move(SubString(TmpString(start), TmpString(end)));
 }
 
-String& String::Insert(uint64 start, uint64 end, const String& other) {
+String& String::Replace(uint64 start, uint64 end, const String& other) {
 	HC_ASSERT(start <= end);
 	HC_ASSERT(start >= 0 && end < length);
 	uint64 newLen = length + other.length - (++end - start);
@@ -293,29 +293,29 @@ String& String::Insert(uint64 start, uint64 end, const String& other) {
 	return *this;
 }
 
-String& String::Insert(uint64 start, uint64 end, const char* const other) {
-	return Insert(start, end, TmpString(other));
+String& String::Replace(uint64 start, uint64 end, const char* const other) {
+	return Replace(start, end, TmpString(other));
 }
 
-String& String::Insert(uint64 start, uint64 end, const char other) {
+String& String::Replace(uint64 start, uint64 end, const char other) {
 	uint16 tmp = (uint16)other;
-	return Insert(start, end, (const char* const)&tmp);
+	return Replace(start, end, (const char* const)&tmp);
 }
 
-String& String::Insert(const String& start, const String& end, const String& other) {
+String& String::Replace(const String& start, const String& end, const String& other) {
 	uint64 s = Find(start, 0);
 	uint64 e = Find(end, s+start.length);
 
-	return Insert(s, e + end.length, other);
+	return Replace(s, e + end.length, other);
 }
 
-String& String::Insert(const String& start, const String& end, const char* const other) {
-	return Insert(start, end, TmpString(other));
+String& String::Replace(const String& start, const String& end, const char* const other) {
+	return Replace(start, end, TmpString(other));
 }
 
-String& String::Insert(const String& start, const String& end, const char other) {
+String& String::Replace(const String& start, const String& end, const char other) {
 	uint16 tmp = (uint16)other;
-	return Insert(start, end, (const char* const)&tmp);
+	return Replace(start, end, (const char* const)&tmp);
 }
 
 void String::ToUpperCase(String& string) {}

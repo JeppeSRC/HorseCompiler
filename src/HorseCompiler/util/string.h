@@ -78,12 +78,12 @@ public:
 	String SubString(const String& start, const String& end) const;
 	String SubString(const char* const start, const char* const end) const;
 
-	String& Insert(uint64 start, uint64 end, const String& other);
-	String& Insert(uint64 start, uint64 end, const char* const other);
-	String& Insert(uint64 start, uint64 end, const char other);
-	String& Insert(const String& start, const String& end, const String& other);
-	String& Insert(const String& start, const String& end, const char* const other);
-	String& Insert(const String& start, const String& end, const char other);
+	String& Replace(uint64 start, uint64 end, const String& other);
+	String& Replace(uint64 start, uint64 end, const char* const other);
+	String& Replace(uint64 start, uint64 end, const char other);
+	String& Replace(const String& start, const String& end, const String& other);
+	String& Replace(const String& start, const String& end, const char* const other);
+	String& Replace(const String& start, const String& end, const char other);
 
 	void ToUpperCase(String& string);
 	void ToLowerCase(String& string);
