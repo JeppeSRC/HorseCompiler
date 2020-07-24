@@ -96,7 +96,7 @@ public:
 		auto it = begin();
 
 		if (end - start > 0)
-			items.erase(it + start, it + end);
+			items.erase(it + start, it + end + 1);
 		else
 			items.erase(it + start);
 	}
