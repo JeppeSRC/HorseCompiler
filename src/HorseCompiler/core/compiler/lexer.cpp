@@ -30,12 +30,12 @@ SOFTWARE
 
 Lexer::AnalysisResult Lexer::Analyze(String file, const Syntax& syntax) {
 	Lexer::AnalysisResult res;
-	std::vector<int64> indices;
-	std::vector<int64> newLines;
+	List<int64> indices;
+	List<int64> newLines;
 
-	res.tokens.reserve(4096);
-	indices.reserve(4096);
-	newLines.reserve(4096);
+	res.tokens.Reserve(4096);
+	indices.Reserve(4096);
+	newLines.Reserve(4096);
 
 	int64 index = 0;
 
@@ -43,15 +43,15 @@ Lexer::AnalysisResult Lexer::Analyze(String file, const Syntax& syntax) {
 		index = 0;
 
 		while ((index = file.Find(syntax.delimiters[i], index)) != String::npos) {
-			indices.push_back(index++);
+			indices.PushBack(index++);
 		}
 	}
 
 	index = 0;
 
 	while ((index = file.Find('\n', index)) != String::npos) {
-		indices.push_back(index);
-		newLines.push_back(index++);
+		indices.PushBack(index);
+		newLines.PushBack(index++);
 	}
 
 	std::sort(indices.begin(), indices.end());
@@ -61,27 +61,28 @@ Lexer::AnalysisResult Lexer::Analyze(String file, const Syntax& syntax) {
 
 	for (int64 i = 0; i < file.length; i++) {
 		char c = file[i];
-		for (uint64 j = 0; j < indices.size(); j++) {
+		for (uint64 j = 0; j < indices.GetSize(); j++) {
 			if (i == indices[j]) {
 				Token t;
 				
 				if (lastIndex <= i - 1) {
 					t.string = file.SubString(lastIndex, i - 1);
 					t.line = currLine + 1;
-					t.column = lastIndex - (newLines[currLine] * (currLine > 0)) + 1;
+					t.column = lastIndex - ((newLines[currLine - 1 * (currLine > 0)] + 1) * (currLine > 0)) + 1;
 
-					res.tokens.push_back(t);
+					res.tokens.PushBack(t);
 				}
 
 				lastIndex = i+1;
 
 				if ((newLines[currLine] - i) == 0) {
 					currLine++;
+					break;
 				} else {
-					t.column = i - (newLines[currLine] * (currLine > 0)) + 1;
+					t.column = i - ((newLines[currLine - 1 * (currLine > 0)] + 1) * (currLine > 0)) + 1;
 					t.string = c;
 
-					res.tokens.push_back(t);
+					res.tokens.PushBack(t);
 					break;
 				}
 			}

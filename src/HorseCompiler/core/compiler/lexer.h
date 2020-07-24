@@ -26,7 +26,7 @@ SOFTWARE
 
 #include <core/def.h>
 #include <util/string.h>
-#include <vector>
+#include <util/list.h>
 
 
 struct Token;
@@ -34,7 +34,7 @@ class Syntax;
 class Lexer {
 public:
 	struct AnalysisResult {
-		std::vector<Token> tokens;
+		List<Token> tokens;
 	};
 
 	static AnalysisResult Analyze(String file, const Syntax& syntax);
