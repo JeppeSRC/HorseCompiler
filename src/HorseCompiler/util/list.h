@@ -89,6 +89,18 @@ public:
 		return { (uint64)~0, T() };
 	}
 
+	void Remove(uint64 start, uint64 end) {
+		HC_ASSERT(start <= end);
+		HC_ASSERT(start >= 0 && end < GetSize());
+
+		auto it = begin();
+
+		if (end - start > 0)
+			items.erase(it + start, it + end);
+		else
+			items.erase(it + start);
+	}
+
 	uint64 GetSize() const { return items.size(); }
 
 	auto begin() { return items.begin(); }
