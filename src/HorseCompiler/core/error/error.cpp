@@ -22,23 +22,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 */
 
-#pragma once
+#include "error.h"
+#include <util/string.h>
 
-#include <core/def.h>
-#include <core/log/log.h>
-#include "errorcodes.h"
+void CompilerInfo(const String& filename, int64 line, int64 column, uint32 code) {
 
-#define HC_DEBUG_BREAK __debugbreak()
+}
 
-#ifdef HC_DEBUG
-#define HC_ASSERT(x) if (!(x)) { Log::Error("Assertion Failed: %s", #x); HC_DEBUG_BREAK; }
-#else
-#define HC_ASSERT(x)
-#endif
-/*
-constexpr char* GetCodeString(int64 code) {
-	switch (code) {
-		case HC_ERROR_SYNTAX_MISSING_STRING_CLOSE:
+void CompilerDebug(const String& filename, int64 line, int64 column, uint32 code) {
 
-	}
-}*/
+}
+
+void CompilerWarning(const String& filename, int64 line, int64 column, uint32 code) {
+
+}
+
+void CompilerError(const String& filename, int64 line, int64 column, uint32 code) {
+
+}

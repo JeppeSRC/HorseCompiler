@@ -24,21 +24,15 @@ SOFTWARE
 
 #pragma once
 
-#include <core/def.h>
-#include <core/log/log.h>
-#include "errorcodes.h"
+#include "lexer.h"
+#include "syntax.h"
 
-#define HC_DEBUG_BREAK __debugbreak()
+class Compiler {
+private:
 
-#ifdef HC_DEBUG
-#define HC_ASSERT(x) if (!(x)) { Log::Error("Assertion Failed: %s", #x); HC_DEBUG_BREAK; }
-#else
-#define HC_ASSERT(x)
-#endif
-/*
-constexpr char* GetCodeString(int64 code) {
-	switch (code) {
-		case HC_ERROR_SYNTAX_MISSING_STRING_CLOSE:
+public:
+	static void SetSyntax(Syntax syntax);
+	static Syntax& GetSyntax();
 
-	}
-}*/
+	static void Log(const Token& item, uint64 code, ...);
+};

@@ -30,8 +30,13 @@ SOFTWARE
 
 struct Token {
 	String string;
+	String filename;
 	int64 line;
 	int64 column;
+
+	bool isString = false;
+
+	bool operator==(const Token& other) const;
 };
 
 /*
@@ -65,4 +70,5 @@ public:
 
 private:
 	static void AnalyzeStrings(const Syntax& syntax, Lexer::AnalysisResult& lexerResult);
+	static void AnalyzeEscapeSequence(const Syntax& syntax, Token& token);
 };

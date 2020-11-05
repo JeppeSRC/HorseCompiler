@@ -25,20 +25,8 @@ SOFTWARE
 #pragma once
 
 #include <core/def.h>
-#include <core/log/log.h>
-#include "errorcodes.h"
 
-#define HC_DEBUG_BREAK __debugbreak()
-
-#ifdef HC_DEBUG
-#define HC_ASSERT(x) if (!(x)) { Log::Error("Assertion Failed: %s", #x); HC_DEBUG_BREAK; }
-#else
-#define HC_ASSERT(x)
-#endif
-/*
-constexpr char* GetCodeString(int64 code) {
-	switch (code) {
-		case HC_ERROR_SYNTAX_MISSING_STRING_CLOSE:
-
-	}
-}*/
+#define HC_ERROR_SYNTAX_MISSING_STRING_CLOSE 0x01
+#define HC_ERROR_SYNTAX_INVALID_ESCAPE_CHARACTER 0x02
+#define HC_ERROR_SYNTAX_INT_LITERAL_NO_DIGIT 0x03
+#define HC_ERROR_SYNTAX_INT_LITERAL_TO_BIG 0x04

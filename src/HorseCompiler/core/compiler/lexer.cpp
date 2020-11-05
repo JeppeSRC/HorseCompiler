@@ -70,7 +70,9 @@ Lexer::AnalysisResult Lexer::Analyze(String file, const Syntax& syntax) {
 					t.line = currLine + 1;
 					t.column = lastIndex - ((newLines[currLine - 1 * (currLine > 0)] + 1) * (currLine > 0)) + 1;
 
-					res.tokens.PushBack(t);
+					if (!(t.string == " ")) 
+						res.tokens.PushBack(t);
+
 				}
 
 				lastIndex = i+1;
@@ -82,7 +84,8 @@ Lexer::AnalysisResult Lexer::Analyze(String file, const Syntax& syntax) {
 					t.column = i - ((newLines[currLine - 1 * (currLine > 0)] + 1) * (currLine > 0)) + 1;
 					t.string = c;
 
-					res.tokens.PushBack(t);
+					if (!(t.string == " "))
+						res.tokens.PushBack(t);
 					break;
 				}
 			}

@@ -23,11 +23,118 @@ SOFTWARE
 */
 
 #include "syntax.h"
+#include "compiler.h"
+
+bool Token::operator==(const Token& other) const {
+	return string == other.string && line == other.line && column == other.column;
+}
+
+bool TokenStringCmp(const Token& item, const char& other) {
+	return item.string[0] == other && item.string.length == 1;
+}
 
 void Syntax::Analyze(const Syntax& syntax, Lexer::AnalysisResult& lexerResult) {
-
+	AnalyzeStrings(syntax, lexerResult);
 }
 
 void Syntax::AnalyzeStrings(const Syntax& syntax, Lexer::AnalysisResult& lexerResult) {
-	
+
+	while (true) {
+		auto [indexStart, itemStart] = lexerResult.tokens.Find(syntax.stringStart, TokenStringCmp);
+
+		if (indexStart == -1) break;
+
+		int64 i = indexStart + 1;
+		int64 numTokens = lexerResult.tokens.GetSize();
+
+		itemStart.string = "";
+		itemStart.isString = true;
+
+		for (; i < numTokens; i++) {
+			Token tmp = lexerResult.tokens[i];
+
+			if (tmp.string == "\"")
+				break;
+				
+			AnalyzeEscapeSequence(syntax, tmp);
+
+			itemStart.string += tmp.string + " ";
+		}
+
+		if (i >= numTokens) {
+			Compiler::Log(itemStart, HC_ERROR_SYNTAX_MISSING_STRING_CLOSE);
+		}
+
+		itemStart.string.RemoveAt(itemStart.string.length - 1);
+		lexerResult.tokens.Remove(indexStart + 1, i);
+	}
 }
+
+uint64 GetNumDigits(String& string, uint8 base, uint64 index) {
+	uint64 count = 0;
+
+	char c = string[index];
+
+	while (index < string.length) {
+		switch (base) {
+			case 2:
+				count += c >= '0' && c <= '1';
+				break;
+			case 8:
+				count += c >= '0' && c <= '7';
+				break;
+			case 10:
+				count += c >= '0' && c <= '9';
+				break;
+			case 16:
+				count += c >= ('0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+				break;
+			default:
+				break;
+		}
+
+		index++;
+	}
+
+
+	return count;
+}
+
+void Syntax::AnalyzeEscapeSequence(const Syntax& syntax, Token& token) {
+	String& string = token.string;
+	uint64 index = 0;
+
+	while ((index = string.Find('\\', index)) != String::npos) {
+		char sig = string[index + 1];
+		for (uint64 i = 0; i < syntax.numSequences; i++) {
+			EscapeSequence es = syntax.sequence[i];
+
+			if (sig == es.signature) {
+				if (es.base) {
+					uint64 numDigits = GetNumDigits(string, es.base, index + 2);
+
+					if (numDigits == 0) {
+						Compiler::Log(token, HC_ERROR_SYNTAX_INT_LITERAL_NO_DIGIT, index + 2);
+					}
+
+					uint64 value = String::ToUint64(string.str, es.base, index + 2, index + 2 + numDigits - 1);
+
+					if (value > 255) {
+						Compiler::Log(token, HC_ERROR_SYNTAX_INT_LITERAL_TO_BIG, index + 2, value);
+					}
+
+					string.Replace(index, index + 1 + numDigits, (char)value);
+				} else {
+					string.Replace(index, index + 1, (char)es.value);
+				}
+
+				return;
+			}
+		}
+
+		Compiler::Log(token, HC_ERROR_SYNTAX_INVALID_ESCAPE_CHARACTER, index, sig);
+	}
+	
+
+}
+

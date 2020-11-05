@@ -22,23 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 */
 
-#pragma once
+#include "compiler.h"
+#include <stdarg.h>
 
-#include <core/def.h>
-#include <core/log/log.h>
-#include "errorcodes.h"
+static Syntax syntax;
 
-#define HC_DEBUG_BREAK __debugbreak()
+void Compiler::Log(const Token& item, uint64 code, ...) {
+	va_list list;
+	va_start(list, code);
 
-#ifdef HC_DEBUG
-#define HC_ASSERT(x) if (!(x)) { Log::Error("Assertion Failed: %s", #x); HC_DEBUG_BREAK; }
-#else
-#define HC_ASSERT(x)
-#endif
-/*
-constexpr char* GetCodeString(int64 code) {
 	switch (code) {
 		case HC_ERROR_SYNTAX_MISSING_STRING_CLOSE:
-
+			Log::Error(item.line, item.column, item.filename.str, code, "missing closing string character '%c'", syntax.stringEnd);
+			break;
+		case HC_ERROR_SYNTAX_INVALID_ESCAPE_CHARACTER:
+			Log::Warning(item.line, item.column + va_arg(list, uint64), item.filename.str, code, "unrecognized escape character '%c' sequence", va_arg(list, char));
+			break;
+		case HC_ERROR_SYNTAX_INT_LITERAL_NO_DIGIT:
+			Log::Error(item.line, item.column + va_arg(list, uint64), item.filename.str, code, "integer literal must have at least one digit");
+			break;
+		case HC_ERROR_SYNTAX_INT_LITERAL_TO_BIG:
+			Log::Error(item.line, item.column + va_arg(list, uint64), item.filename.str, code, "integer literal to big for a character '%u'", va_arg(list, uint64));
+			break;
 	}
-}*/
+}
