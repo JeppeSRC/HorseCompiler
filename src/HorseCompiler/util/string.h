@@ -74,6 +74,8 @@ public:
 	String& Remove(const char* const other);
 	String& Remove(uint64 start, uint64 end);
 
+	String& RemoveAt(uint64 index);
+
 	String SubString(uint64 start, uint64 end) const;
 	String SubString(const String& start, const String& end) const;
 	String SubString(const char* const start, const char* const end) const;

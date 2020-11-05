@@ -248,6 +248,10 @@ String& String::Remove(uint64 start, uint64 end) {
 	return *this;
 }
 
+String& String::RemoveAt(uint64 index) {
+	return Remove(index, index);
+}
+
 String String::SubString(uint64 start, uint64 end) const {
 	HC_ASSERT(start <= end);
 	HC_ASSERT(start >= 0 && end < length);
