@@ -56,7 +56,7 @@ void Syntax::AnalyzeStrings(const Syntax& syntax, Lexer::AnalysisResult& lexerRe
 			if (tmp.string == "\"")
 				break;
 				
-			AnalyzeEscapeSequence(syntax, tmp);
+			AnalyzeEscapeSequences(syntax, tmp);
 
 			itemStart.string += tmp.string + " ";
 		}
@@ -100,7 +100,7 @@ uint64 GetNumDigits(String& string, uint8 base, uint64 index) {
 	return count;
 }
 
-void Syntax::AnalyzeEscapeSequence(const Syntax& syntax, Token& token) {
+void Syntax::AnalyzeEscapeSequences(const Syntax& syntax, Token& token) {
 	String& string = token.string;
 	uint64 index = 0;
 
