@@ -182,7 +182,6 @@ uint64 String::FindR(const char other, uint64 offset, bool offsetFromStart) cons
 }
 
 uint64 String::Count(const String& other, uint64 offset) const {
-	HC_ASSERT(offset >= 0 && offset < length)
 	uint64 c = 0;
 
 	uint64 index = offset;
