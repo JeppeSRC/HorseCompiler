@@ -111,6 +111,10 @@ public:
 			items.erase(it + start);
 	}
 
+	void Clear() {
+		Remove(0, GetSize() - 1);
+	}
+
 	uint64 GetSize() const { return items.size(); }
 
 	auto begin() { return items.begin(); }
