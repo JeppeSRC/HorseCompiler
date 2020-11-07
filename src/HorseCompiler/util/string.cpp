@@ -206,6 +206,31 @@ uint64 String::Count(const char other, uint64 offset) const {
 	return c;
 }
 
+uint64 String::CountR(const String& other, uint64 offset, bool offsetFromStart) const {
+	uint64 c = 0;
+
+	uint64 index = offsetFromStart ? offset + 1 : length - offset;
+
+	while ((index = FindR(other, index - 1, true)) != npos) { c++; }
+
+	return c;
+}
+
+uint64 String::CountR(const char* const other, uint64 offset, bool offsetFromStart) const {
+	HC_ASSERT(other != nullptr);
+	return CountR(TmpString(other), offset, offsetFromStart);
+}
+
+uint64 String::CountR(const char other, uint64 offset, bool offsetFromStart) const {
+	uint64 c = 0;
+
+	uint64 index = offsetFromStart ? offset + 1 : length - offset;
+
+	while ((index = FindR(other, index - 1, true)) != npos) { c++; }
+
+	return c;
+}
+
 String& String::Append(const String& other) {
 	uint64 newLen = length + other.length;
 	char* tmp = str;

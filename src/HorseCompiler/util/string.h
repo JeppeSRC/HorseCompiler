@@ -68,6 +68,11 @@ public:
 	uint64 Count(const char* const other, uint64 offset = 0) const;
 	uint64 Count(const char other, uint64 offset = 0) const;
 
+	// Counts in reverse
+	uint64 CountR(const String& other, uint64 offset, bool offsetFromStart = false) const;
+	uint64 CountR(const char* const other, uint64 offset, bool offsetFromStart = false) const;
+	uint64 CountR(const char other, uint64 offset, bool offsetFromStart = false) const;
+
 	String& Append(const String& other);
 	String& Append(const char* const other);
 
