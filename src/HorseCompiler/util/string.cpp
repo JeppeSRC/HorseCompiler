@@ -145,11 +145,15 @@ uint64 String::Find(const char other, uint64 offset) const {
 	return npos;
 }
 
-uint64 String::FindR(const String& other, uint64 offset) const {
+uint64 String::FindR(const String& other, uint64 offset, bool offsetFromStart) const {
 	HC_ASSERT(offset <= length && offset >= 0);
-	uint64 len = length - other.length;
 
-	for (uint64 i = length - offset - 1; i >= offset; i--) {
+	uint64 i = offsetFromStart ? length + (offset - length) : length - offset - 1;
+	uint64 max = length - other.length;
+
+	if (i > max) i = max;
+
+	for (; i >= offset; i--) {
 		uint64 j = 0;
 		for (; j < other.length; j++) {
 			if (str[i + j] != other.str[j]) break;
@@ -161,13 +165,16 @@ uint64 String::FindR(const String& other, uint64 offset) const {
 	return npos;
 }
 
-uint64 String::FindR(const char* const other, uint64 offset) const {
+uint64 String::FindR(const char* const other, uint64 offset, bool offsetFromStart) const {
 	return FindR(TmpString(other), offset);
 }
 
-uint64 String::FindR(const char other, uint64 offset) const {
+uint64 String::FindR(const char other, uint64 offset, bool offsetFromStart) const {
 	HC_ASSERT(offset <= length && offset >= 0);
-	for (int64 i = length - offset - 1; (int64)i >= 0; i--) {
+
+	uint64 i = offsetFromStart ? length + (offset - length) : length - offset - 1;
+
+	for (; (int64)i >= 0; i--) {
 		if (str[i] == other) return i;
 	}
 
