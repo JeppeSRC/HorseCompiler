@@ -59,7 +59,7 @@ public:
 	uint64 Find(const char* const other, uint64 offset) const;
 	uint64 Find(const char other, uint64 offset) const;
 	
-	// Searches in reverse, offset is the offset from the end
+	// Searches in reverse
 	uint64 FindR(const String& other, uint64 offset, bool offsetFromStart = false) const;
 	uint64 FindR(const char* const other, uint64 offset, bool offsetFromStart = false) const;
 	uint64 FindR(const char other, uint64 offset, bool offsetFromStart = false) const;
