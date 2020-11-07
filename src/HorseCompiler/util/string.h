@@ -64,9 +64,9 @@ public:
 	uint64 FindR(const char* const other, uint64 offset, bool offsetFromStart = false) const;
 	uint64 FindR(const char other, uint64 offset, bool offsetFromStart = false) const;
 	
-	uint64 Count(const String& other) const;
-	uint64 Count(const char* const other) const;
-	uint64 Count(const char other) const;
+	uint64 Count(const String& other, uint64 offset = 0) const;
+	uint64 Count(const char* const other, uint64 offset = 0) const;
+	uint64 Count(const char other, uint64 offset = 0) const;
 
 	String& Append(const String& other);
 	String& Append(const char* const other);

@@ -181,22 +181,23 @@ uint64 String::FindR(const char other, uint64 offset, bool offsetFromStart) cons
 	return npos;
 }
 
-uint64 String::Count(const String& other) const {
+uint64 String::Count(const String& other, uint64 offset) const {
+	HC_ASSERT(offset >= 0 && offset < length)
 	uint64 c = 0;
 
-	uint64 index = 0;
+	uint64 index = offset;
 
 	while ((index = Find(other, index+1)) != npos) { c++; }
 
 	return c;
 }
 
-uint64 String::Count(const char* const other) const {
+uint64 String::Count(const char* const other, uint64 offset) const {
 	HC_ASSERT(other != nullptr);
-	return Count(TmpString(other));
+	return Count(TmpString(other), offset);
 }
 
-uint64 String::Count(const char other) const {
+uint64 String::Count(const char other, uint64 offset) const {
 	uint64 c = 0;
 
 	uint64 index = 0;
