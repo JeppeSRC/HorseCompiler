@@ -40,7 +40,7 @@ void Syntax::Analyze(const Syntax& syntax, Lexer::AnalysisResult& lexerResult) {
 void Syntax::AnalyzeStrings(const Syntax& syntax, Lexer::AnalysisResult& lexerResult) {
 
 	while (true) {
-		auto [indexStart, itemStart] = lexerResult.tokens.Find(syntax.stringStart, TokenStringCmp);
+		auto [indexStart, itemStart] = lexerResult.tokens.FindTuple(syntax.stringStart, TokenStringCmp);
 
 		if (indexStart == -1) break;
 
@@ -53,7 +53,7 @@ void Syntax::AnalyzeStrings(const Syntax& syntax, Lexer::AnalysisResult& lexerRe
 		for (; i < numTokens; i++) {
 			Token tmp = lexerResult.tokens[i];
 
-			if (tmp.string == "\"")
+			if (tmp.string[0] == syntax.stringEnd)
 				break;
 				
 			AnalyzeEscapeSequences(syntax, tmp);
@@ -87,7 +87,7 @@ uint64 GetNumDigits(String& string, uint8 base, uint64 index) {
 				count += c >= '0' && c <= '9';
 				break;
 			case 16:
-				count += c >= ('0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+				count += (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
 				break;
 			default:
 				break;
