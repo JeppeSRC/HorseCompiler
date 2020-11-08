@@ -33,7 +33,13 @@ struct PreProcessorData {
 } data;
 
 uint64 FindNextNewline(const List<Token>& tokens, uint64 index) {
-	return tokens.Find('\n', Token::CharCmp, index);
+	uint64 line = tokens[index].line;
+
+	for (uint64 i = index; i < tokens.GetSize(); i++) {
+		if (tokens[i].line != line) return i-1;
+	}
+
+	return ~0;
 }
 
 void RemoveComments(List<Token>& tokens) {
