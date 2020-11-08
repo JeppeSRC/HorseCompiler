@@ -43,9 +43,9 @@ uint64 FindNextNewline(const List<Token>& tokens, uint64 index) {
 }
 
 void RemoveComments(List<Token>& tokens) {
-	uint64 index = 0;
+	uint64 index = -1;
 
-	while ((index = tokens.Find('/', Token::CharCmp, index)) != ~0) {
+	while ((index = tokens.Find('/', Token::CharCmp, index+1)) != ~0) {
 		char next = tokens[index + 1].string[0];
 
 		if (next == '/') {
