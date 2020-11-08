@@ -65,6 +65,8 @@ Lexer::AnalysisResult Lexer::Analyze(const String& filename, const Syntax& synta
 	uint64 currLine = 0;
 	uint64 lastIndex = 0;
 
+	bool includeSpaces = false;
+
 	for (uint64 i = 0; i < file.length; i++) {
 		char c = file[i];
 		for (uint64 j = 0; j < indices.GetSize(); j++) {
@@ -77,7 +79,7 @@ Lexer::AnalysisResult Lexer::Analyze(const String& filename, const Syntax& synta
 					t.line = currLine + 1;
 					t.column = lastIndex - ((newLines[currLine - 1 * (currLine > 0)] + 1) * (currLine > 0)) + 1;
 
-					if (!(t.string == " ")) 
+					if (!(t.string == " ") || includeSpaces) 
 						res.tokens.PushBack(t);
 
 				}
@@ -92,7 +94,9 @@ Lexer::AnalysisResult Lexer::Analyze(const String& filename, const Syntax& synta
 					t.column = i - ((newLines[currLine - 1 * (currLine > 0)] + 1) * (currLine > 0)) + 1;
 					t.string = c;
 
-					if (!(t.string == " "))
+					if (c == '"') includeSpaces = !includeSpaces;
+
+					if (!(t.string == " ") || includeSpaces)
 						res.tokens.PushBack(t);
 					break;
 				}
