@@ -44,5 +44,20 @@ void Compiler::Log(const Token& item, uint64 code, ...) {
 		case HC_ERROR_SYNTAX_INT_LITERAL_TO_BIG:
 			Log::Error(item.line, item.column + va_arg(list, uint64), item.filename.str, code, "integer literal to big for a character '%u'", va_arg(list, uint64));
 			break;
+		case HC_ERROR_PREPROCESSOR_NO_DIRECTIVE:
+			Log::Error(item.line, item.column, item.filename.str, code, "no directive");
+			break;
+		case HC_ERROR_PREPROCESSOR_UNKNOWN_DIRECTIVE:
+			Log::Error(item.line, item.column, item.filename.str, code, "unknown preprocessor directive \"%s\"", va_arg(list, char*));
+			break;
+		case HC_ERROR_PREPROCESSOR_INCLUDE_FILE_NOT_FOUND:
+			Log::Error(item.line, item.column, item.filename.str, code, "no such file or directory \"%s\"", va_arg(list, char*));
+			break;
+		case HC_ERROR_PREPROCESSOR_INCLUDE_UNKNOWN_SYMBOL1:
+			Log::Error(item.line, item.column, item.filename.str, code, "unkown symbol in include directive '%c', expected '\"' or '<'", va_arg(list, char));
+			break;
+		case HC_ERROR_PREPROCESSOR_INCLUDE_UNKNOWN_SYMBOL2:
+			Log::Error(item.line, item.column, item.filename.str, code, "unkown symbol in include directive '%c', expected '%c'", va_arg(list, char), va_arg(list, char));
+			break;
 	}
 }
