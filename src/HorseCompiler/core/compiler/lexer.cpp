@@ -31,6 +31,8 @@ SOFTWARE
 
 #include <algorithm>
 
+#define IN_STRING 0x01
+#define IN_INCLUDE 0x02
 
 Lexer::AnalysisResult Lexer::Analyze(const String& filename, const Syntax& syntax) {
 	Lexer::AnalysisResult res;
@@ -65,7 +67,7 @@ Lexer::AnalysisResult Lexer::Analyze(const String& filename, const Syntax& synta
 	uint64 currLine = 0;
 	uint64 lastIndex = 0;
 
-	bool includeSpaces = false;
+	uint8 includeSpaces = false;
 
 	for (uint64 i = 0; i < file.length; i++) {
 		char c = file[i];
@@ -96,11 +98,20 @@ Lexer::AnalysisResult Lexer::Analyze(const String& filename, const Syntax& synta
 					t.column = i - ((newLines[currLine - 1 * (currLine > 0)] + 1) * (currLine > 0)) + 1;
 					t.line = currLine + 1;
 					t.string = c;
-					t.isString = includeSpaces;
+					t.isString = (bool)includeSpaces;
 
 					if (c == '"' && file[i - 1] != '\\') {
-						if (!includeSpaces) t.isString = true;
-						includeSpaces = !includeSpaces;
+						if (includeSpaces == IN_STRING) {
+							t.isString = true;
+							includeSpaces = 0;
+						} else {
+							includeSpaces = IN_STRING;
+						}
+					} else if (includeSpaces == 0 && c == '<') {
+						includeSpaces = IN_INCLUDE;
+					} else if (includeSpaces == IN_INCLUDE && c == '>') {
+						t.isString = false;
+						includeSpaces = 0;
 					}
 
 					if (!(t.string == " ") || includeSpaces)
