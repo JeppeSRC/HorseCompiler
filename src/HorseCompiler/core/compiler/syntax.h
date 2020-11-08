@@ -37,6 +37,15 @@ struct Token {
 	bool isString = false;
 
 	bool operator==(const Token& other) const;
+
+	// List comp functions
+	static bool CharCmp(const Token& item, const char& other) {
+		return item.string[0] == other && item.string.length == 1;
+	}
+
+	static bool StringCmp(const Token& item, const String& other) {
+		return item.string == other;
+	}
 };
 
 /*

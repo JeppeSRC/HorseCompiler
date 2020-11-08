@@ -31,10 +31,6 @@ bool Token::operator==(const Token& other) const {
 	return string == other.string && line == other.line && column == other.column;
 }
 
-bool TokenStringCmp(const Token& item, const char& other) {
-	return item.string[0] == other && item.string.length == 1;
-}
-
 void Syntax::Analyze(const Syntax& syntax, Lexer::AnalysisResult& lexerResult) {
 	AnalyzeStrings(syntax, lexerResult);
 }
@@ -42,7 +38,7 @@ void Syntax::Analyze(const Syntax& syntax, Lexer::AnalysisResult& lexerResult) {
 void Syntax::AnalyzeStrings(const Syntax& syntax, Lexer::AnalysisResult& lexerResult) {
 
 	while (true) {
-		auto [indexStart, itemStart] = lexerResult.tokens.FindTuple(syntax.stringStart, TokenStringCmp);
+		auto [indexStart, itemStart] = lexerResult.tokens.FindTuple(syntax.stringStart, Token::CharCmp);
 
 		if (indexStart == -1) break;
 
