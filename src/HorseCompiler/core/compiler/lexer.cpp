@@ -73,7 +73,7 @@ Lexer::AnalysisResult Lexer::Analyze(const String& filename, const Syntax& synta
 			if (i == indices[j]) {
 				Token t;
 				
-				if (lastIndex <= i - 1) {
+				if ((int64)lastIndex <= (int64)i - 1) {
 					t.filename = filename;
 					t.string = file.SubString(lastIndex, i - 1);
 					t.line = currLine + 1;
