@@ -68,12 +68,12 @@ void RemoveComments(List<Token>& tokens) {
 	}
 }
 
-String MergeList(const List<Token>& tokens) {
-	String res(tokens[0].string);
+String MergeList(const List<Token>& tokens, uint64 start, uint64 end) {
+	String res(tokens[start].string);
 
-	uint64 currentLine = 1;
+	uint64 currentLine = tokens[start].line;
 
-	for (uint64 i = 1; i < tokens.GetSize(); i++) {
+	for (uint64 i =start+1; i <= end; i++) {
 		const Token& t = tokens[i];
 
 		if (currentLine < t.line) {
