@@ -94,6 +94,7 @@ Lexer::AnalysisResult Lexer::Analyze(const String& filename, const Syntax& synta
 
 					t.filename = filename;
 					t.column = i - ((newLines[currLine - 1 * (currLine > 0)] + 1) * (currLine > 0)) + 1;
+					t.line = currLine + 1;
 					t.string = c;
 					t.isString = includeSpaces;
 
