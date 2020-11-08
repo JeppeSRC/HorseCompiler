@@ -26,3 +26,23 @@ uint64 StringUtils::ToUint64(const String& string, uint8 base, uint64 start, uin
 uint64 StringUtils::ToUint64(const char* const string, uint8 base, uint64 start, uint64 end) {
 	return ToUint64(TmpString(string), base, start, end);
 }
+
+void StringUtils::ReplaceChar(String& string, char oldChar, char newChar) {
+	uint64 index = 0;
+
+	while ((index = string.Find(oldChar, index)) != String::npos) {
+		string[index] = newChar;
+	}
+}
+
+String StringUtils::GetPathFromFilename(String filename) {
+	ReplaceChar(filename, '\\', '/');
+
+	uint64 slash = filename.FindR('/', 0);
+
+	if (slash != String::npos) {
+		return filename.Remove(slash + 1, filename.length - 1);
+	}
+
+	return "";
+}

@@ -30,4 +30,6 @@ class StringUtils {
 public:
 	static uint64 ToUint64(const String& string, uint8 base, uint64 start = 0, uint64 end = String::npos);
 	static uint64 ToUint64(const char* const string, uint8 base, uint64 start = 0, uint64 end = String::npos);
+	static void   ReplaceChar(String& string, char oldChar, char newChar);
+	static String GetPathFromFilename(String filename);
 };
