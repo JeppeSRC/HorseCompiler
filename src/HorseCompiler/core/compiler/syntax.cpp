@@ -25,6 +25,8 @@ SOFTWARE
 #include "syntax.h"
 #include "compiler.h"
 
+#include <util/util.h>
+
 bool Token::operator==(const Token& other) const {
 	return string == other.string && line == other.line && column == other.column;
 }
@@ -117,7 +119,7 @@ void Syntax::AnalyzeEscapeSequences(const Syntax& syntax, Token& token) {
 						Compiler::Log(token, HC_ERROR_SYNTAX_INT_LITERAL_NO_DIGIT, index + 2);
 					}
 
-					uint64 value = String::ToUint64(string.str, es.base, index + 2, index + 2 + numDigits - 1);
+					uint64 value = StringUtils::ToUint64(string.str, es.base, index + 2, index + 2 + numDigits - 1);
 
 					if (value > 255) {
 						Compiler::Log(token, HC_ERROR_SYNTAX_INT_LITERAL_TO_BIG, index + 2, value);
