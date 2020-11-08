@@ -1,0 +1,71 @@
+/*
+MIT License
+
+Copyright (c) 2020 Jesper
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE
+*/
+
+#include "preprocessor.h"
+
+#include <util/file.h>
+#include <util/util.h>
+#include <core/compiler/compiler.h>
+
+struct PreProcessorData {
+	List<std::pair<String, String>> defines;
+} data;
+
+uint64 FindNextNewline(const List<Token>& tokens, uint64 index) {
+	return tokens.Find('\n', Token::CharCmp, index);
+}
+
+void RemoveComments(List<Token>& tokens) {
+	uint64 index = 0;
+
+	while ((index = tokens.Find('/', Token::CharCmp, index)) != ~0) {
+		char next = tokens[index + 1].string[0];
+
+		if (next == '/') {
+			uint64 newLine = FindNextNewline(tokens, index);
+
+			if (newLine == ~0) newLine = tokens.GetSize() - 1;
+
+			tokens.Remove(index, newLine);
+		} else if (next == '*') {
+			uint64 end = index+2;
+
+			while ((end = tokens.Find('*', Token::CharCmp, end)) != ~0) {
+				if (tokens[end += 1].string[0] == '/') break;
+			}
+
+			if (end == ~0) end = tokens.GetSize() - 1;
+
+			tokens.Remove(index, end);
+		}
+	}
+}
+
+String PreProcessor::Run(Lexer::AnalysisResult& result, const List<String>& includeDir) {
+	List<Token>& tokens = result.tokens;
+
+	RemoveComments(tokens);
+
+	return "";
+}
