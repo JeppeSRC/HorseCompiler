@@ -49,3 +49,13 @@ byte* FileUtils::LoadFile(const String& filename, uint64* size) {
 
 	return data;
 }
+
+bool FileUtils::FileExist(const String& filename) {
+	FILE* file = fopen(filename.str, "rb");
+
+	bool res = file != nullptr;
+
+	fclose(file);
+
+	return res;
+}

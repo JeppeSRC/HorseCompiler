@@ -31,5 +31,6 @@ class FileUtils {
 public:
 	static String LoadTextFile(const String& filename);
 	static byte* LoadFile(const String& filename, uint64* size);
+	static bool  FileExist(const String& filename);
 
 };
