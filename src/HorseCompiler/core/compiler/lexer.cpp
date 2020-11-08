@@ -25,13 +25,19 @@ SOFTWARE
 
 #include "lexer.h"
 #include "syntax.h"
+
+#include <util/file.h>
+#include <util/util.h>
+
 #include <algorithm>
 
 
-Lexer::AnalysisResult Lexer::Analyze(String file, const Syntax& syntax) {
+Lexer::AnalysisResult Lexer::Analyze(const String& filename, const Syntax& syntax) {
 	Lexer::AnalysisResult res;
 	List<uint64> indices;
 	List<uint64> newLines;
+
+	String file = FileUtils::LoadTextFile(filename);
 
 	res.tokens.Reserve(4096);
 	indices.Reserve(4096);
@@ -66,6 +72,7 @@ Lexer::AnalysisResult Lexer::Analyze(String file, const Syntax& syntax) {
 				Token t;
 				
 				if (lastIndex <= i - 1) {
+					t.filename = filename;
 					t.string = file.SubString(lastIndex, i - 1);
 					t.line = currLine + 1;
 					t.column = lastIndex - ((newLines[currLine - 1 * (currLine > 0)] + 1) * (currLine > 0)) + 1;
@@ -81,6 +88,7 @@ Lexer::AnalysisResult Lexer::Analyze(String file, const Syntax& syntax) {
 					currLine++;
 					break;
 				} else {
+					t.filename = filename;
 					t.column = i - ((newLines[currLine - 1 * (currLine > 0)] + 1) * (currLine > 0)) + 1;
 					t.string = c;
 
