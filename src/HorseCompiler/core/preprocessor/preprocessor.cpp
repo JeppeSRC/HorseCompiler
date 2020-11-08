@@ -68,10 +68,33 @@ void RemoveComments(List<Token>& tokens) {
 	}
 }
 
+String MergeList(const List<Token>& tokens) {
+	String res(tokens[0].string);
+
+	uint64 currentLine = 1;
+
+	for (uint64 i = 1; i < tokens.GetSize(); i++) {
+		const Token& t = tokens[i];
+
+		if (currentLine < t.line) {
+			currentLine = t.line;
+			res.Append("\n");
+		}
+
+		if (t.isString) {
+			res.Append(t.string);
+		} else {
+			res.Append(" ").Append(t.string);
+		}
+	}
+
+	return std::move(res);
+}
+
 String PreProcessor::Run(Lexer::AnalysisResult& result, const List<String>& includeDir) {
 	List<Token>& tokens = result.tokens;
 
 	RemoveComments(tokens);
 
-	return "";
+	return std::move(MergeList(tokens));
 }
