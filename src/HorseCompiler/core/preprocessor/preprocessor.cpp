@@ -43,9 +43,11 @@ void CorrectIncludeDir(List<String>& includeDir) {
 
 uint64 FindNextNewline(const List<Token>& tokens, uint64 index) {
 	uint64 line = tokens[index].line;
+	const String& file = tokens[index].filename;
 
 	for (uint64 i = index; i < tokens.GetSize(); i++) {
-		if (tokens[i].line != line) return i-1;
+		const Token& t = tokens[i];
+		if (t.line != line || t.filename != file) return i-1;
 	}
 
 	return ~0;
