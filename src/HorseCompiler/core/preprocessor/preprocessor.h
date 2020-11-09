@@ -31,6 +31,6 @@ SOFTWARE
 
 class PreProcessor {
 public:
-	static String Run(Lexer::AnalysisResult& result, const List<String>& includeDir);
+	static String Run(Lexer::AnalysisResult& result, List<String>& includeDir);
 
 };

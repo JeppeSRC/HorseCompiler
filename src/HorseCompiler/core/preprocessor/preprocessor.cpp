@@ -32,6 +32,15 @@ struct PreProcessorData {
 	List<std::pair<String, String>> defines;
 } data;
 
+void CorrectIncludeDir(List<String>& includeDir) {
+	for (String& string : includeDir) {
+		StringUtils::ReplaceChar(string, '\\', '/');
+
+		if (!string.EndsWith("/"))
+			string.Append("/");
+	}
+}
+
 uint64 FindNextNewline(const List<Token>& tokens, uint64 index) {
 	uint64 line = tokens[index].line;
 
@@ -91,9 +100,10 @@ String MergeList(const List<Token>& tokens, uint64 start, uint64 end) {
 	return std::move(res);
 }
 
-String PreProcessor::Run(Lexer::AnalysisResult& result, const List<String>& includeDir) {
+String PreProcessor::Run(Lexer::AnalysisResult& result, List<String>& includeDir) {
 	List<Token>& tokens = result.tokens;
 
+	CorrectIncludeDir(includeDir);
 	RemoveComments(tokens);
 
 	return std::move(MergeList(tokens));
