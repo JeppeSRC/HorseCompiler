@@ -86,12 +86,14 @@ String MergeList(const List<Token>& tokens, uint64 start, uint64 end) {
 	String res(tokens[start].string);
 
 	int64 currentLine = tokens[start].line;
+	String currentFile = tokens[start].filename;
 
 	for (uint64 i =start+1; i <= end; i++) {
 		const Token& t = tokens[i];
 
-		if (currentLine < t.line) {
+		if (currentLine < t.line || currentFile != t.filename) {
 			currentLine = t.line;
+			currentFile = t.filename;
 			res.Append("\n");
 		}
 
