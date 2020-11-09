@@ -374,6 +374,14 @@ bool String::operator==(const char* const other) const {
 	return Equals(other);
 }
 
+bool String::operator!=(const String& other) const {
+	return !Equals(other);
+}
+
+bool String::operator!=(const char* const other) const {
+	return !Equals(other);
+}
+
 String String::operator+(const String& other) const {
 	String tmp(str);
 

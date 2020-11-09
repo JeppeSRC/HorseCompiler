@@ -102,6 +102,9 @@ public:
 	bool operator==(const String& other) const;
 	bool operator==(const char* const other) const;
 
+	bool operator!=(const String& other) const;
+	bool operator!=(const char* const other) const;
+
 	String operator+(const String& other) const;
 	String operator+(const char* const other) const;
 
