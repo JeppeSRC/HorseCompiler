@@ -80,7 +80,7 @@ void RemoveComments(List<Token>& tokens) {
 String MergeList(const List<Token>& tokens, uint64 start, uint64 end) {
 	String res(tokens[start].string);
 
-	uint64 currentLine = tokens[start].line;
+	int64 currentLine = tokens[start].line;
 
 	for (uint64 i =start+1; i <= end; i++) {
 		const Token& t = tokens[i];
