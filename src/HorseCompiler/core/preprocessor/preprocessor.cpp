@@ -28,8 +28,11 @@ SOFTWARE
 #include <util/util.h>
 #include <core/compiler/compiler.h>
 
+void ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir, const Syntax& syntax);
+
 struct PreProcessorData {
 	List<std::pair<String, String>> defines;
+	List<String> includedFiles;
 } data;
 
 void CorrectIncludeDir(List<String>& includeDir) {
@@ -102,11 +105,87 @@ String MergeList(const List<Token>& tokens, uint64 start, uint64 end) {
 	return std::move(res);
 }
 
-String PreProcessor::Run(Lexer::AnalysisResult& result, List<String>& includeDir) {
+String PreProcessor::Run(Lexer::AnalysisResult& result, List<String>& includeDir, const Syntax& syntax) {
 	List<Token>& tokens = result.tokens;
 
 	CorrectIncludeDir(includeDir);
 	RemoveComments(tokens);
 
-	return std::move(MergeList(tokens));
+	for (uint64 i = 0; i < tokens.GetSize(); i++) {
+		Token& t = tokens[i];
+
+		if (t.isString) continue;
+
+		char c = t.string[0];
+
+		if (c != '#') continue;
+
+		Token& directive = tokens[i + 1];
+
+		if (directive.string == "include") {
+			ProcessInclude(tokens, i-- + 2, includeDir, syntax);
+		}
+
+	}
+
+
+
+	return std::move(MergeList(tokens, 0, tokens.GetSize() - 1));
+}
+
+void ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir, const Syntax& syntax) {
+	Token& t = tokens[index];
+
+	bool local = false;
+	char startChar = t.string[0];
+
+	uint64 end = 0;
+	uint64 newLine = FindNextNewline(tokens, index);
+
+	if (startChar == '"') {
+		local = true;
+		end = tokens.Find('"', Token::CharCmp, index + 1);
+	} else if (startChar == '<') {
+		end = tokens.Find('>', Token::CharCmp, index + 1);
+	} else {
+		Compiler::Log(t, HC_ERROR_PREPROCESSOR_INCLUDE_UNKNOWN_SYMBOL1, startChar);
+	}
+
+	if (newLine == ~0) newLine = tokens.GetSize() - 1;
+
+	if (end == ~0 || end > newLine) {
+		Token& n = tokens[newLine];
+		Compiler::Log(n, HC_ERROR_PREPROCESSOR_INCLUDE_UNKNOWN_SYMBOL2, n.string[n.string.length - 1], startChar == '<' ? '>' : '"');
+	}
+
+	String includeFile = MergeList(tokens, index + 1, end - 1);
+	String localPath = StringUtils::GetPathFromFilename(t.filename);
+	String finalFile;
+
+	if (local) {
+		if (FileUtils::FileExist(localPath + includeFile)) {
+			finalFile = localPath + includeFile;
+		}
+	}
+
+	for (uint64 i = 0; i < includeDir.GetSize(); i++) {
+		if (finalFile.length > 0) break;
+
+		const String& dir = includeDir[i];
+
+		if (FileUtils::FileExist(dir + includeFile)) {
+			finalFile = dir + includeFile;
+		}
+	}
+
+	if (finalFile.length == 0) {
+		Compiler::Log(t, HC_ERROR_PREPROCESSOR_INCLUDE_FILE_NOT_FOUND, includeFile.str);
+	}
+
+	Lexer::AnalysisResult res = Lexer::Analyze(finalFile, syntax);
+
+	index -= 2;
+
+	tokens.Remove(index, newLine);
+	tokens.Insert(res.tokens, index);
 }
