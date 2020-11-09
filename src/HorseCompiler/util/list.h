@@ -152,6 +152,14 @@ public:
 		return { (uint64)~0, T() };
 	}
 
+	void Insert(const T& item, uint64 index) {
+		items.insert(begin() + index, item);
+	}
+
+	void Insert(const List<T>& item, uint64 index) {
+		items.insert(begin() + index, item.begin(), item.end());
+	}
+
 	void Remove(uint64 start, uint64 end) {
 		HC_ASSERT(start <= end);
 		HC_ASSERT(start >= 0 && end < GetSize());
@@ -172,5 +180,6 @@ public:
 
 	auto begin() { return items.begin(); }
 	auto end() { return items.end(); }
-
+	const auto begin() const { return items.begin(); }
+	const auto end() const { return items.end(); }
 };
