@@ -29,12 +29,22 @@ SOFTWARE
 
 static Syntax syntax;
 
+String Compiler::currentDir = "<NotSet>";
+
 void Compiler::SetSyntax(Syntax newSyntax) {
 	syntax = newSyntax;
 }
 
 Syntax* Compiler::GetSyntax() {
 	return &syntax;
+}
+
+const String& Compiler::GetCurrentDir() {
+	return currentDir;
+}
+
+void Compiler::SetCurrentDir(const String& cwd) {
+	currentDir = cwd;
 }
 
 void Compiler::Log(const Token& item, uint64 code, ...) {

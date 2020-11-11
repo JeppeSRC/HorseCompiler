@@ -29,10 +29,14 @@ SOFTWARE
 
 class Compiler {
 private:
+	static String currentDir;
 
 public:
 	static void SetSyntax(Syntax syntax);
 	static Syntax* GetSyntax();
+
+	static const String& GetCurrentDir();
+	static void SetCurrentDir(const String& cwd);
 
 	static void Log(const Token& item, uint64 code, ...);
 };
