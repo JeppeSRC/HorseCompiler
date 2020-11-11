@@ -31,14 +31,15 @@ bool Token::operator==(const Token& other) const {
 	return string == other.string && line == other.line && column == other.column;
 }
 
-void Syntax::Analyze(const Syntax& syntax, Lexer::AnalysisResult& lexerResult) {
+void Syntax::Analyze(Lexer::AnalysisResult& lexerResult) {
+	Syntax* syntax = Compiler::GetSyntax();
 	AnalyzeStrings(syntax, lexerResult);
 }
 
-void Syntax::AnalyzeStrings(const Syntax& syntax, Lexer::AnalysisResult& lexerResult) {
+void Syntax::AnalyzeStrings(const Syntax* syntax, Lexer::AnalysisResult& lexerResult) {
 
 	while (true) {
-		auto [indexStart, itemStart] = lexerResult.tokens.FindTuple(syntax.stringStart, Token::CharCmp);
+		auto [indexStart, itemStart] = lexerResult.tokens.FindTuple(syntax->stringStart, Token::CharCmp);
 
 		if (indexStart == -1) break;
 
@@ -51,7 +52,7 @@ void Syntax::AnalyzeStrings(const Syntax& syntax, Lexer::AnalysisResult& lexerRe
 		for (; i < numTokens; i++) {
 			Token tmp = lexerResult.tokens[i];
 
-			if (tmp.string[0] == syntax.stringEnd)
+			if (tmp.string[0] == syntax->stringEnd)
 				break;
 				
 			AnalyzeEscapeSequences(syntax, tmp);
@@ -98,14 +99,14 @@ uint64 GetNumDigits(String& string, uint8 base, uint64 index) {
 	return count;
 }
 
-void Syntax::AnalyzeEscapeSequences(const Syntax& syntax, Token& token) {
+void Syntax::AnalyzeEscapeSequences(const Syntax* syntax, Token& token) {
 	String& string = token.string;
 	uint64 index = 0;
 
 	while ((index = string.Find('\\', index)) != String::npos) {
 		char sig = string[index + 1];
-		for (uint64 i = 0; i < syntax.numSequences; i++) {
-			EscapeSequence es = syntax.sequence[i];
+		for (uint64 i = 0; i < syntax->numSequences; i++) {
+			EscapeSequence es = syntax->sequence[i];
 
 			if (sig == es.signature) {
 				if (es.base) {

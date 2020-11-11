@@ -32,7 +32,7 @@ private:
 
 public:
 	static void SetSyntax(Syntax syntax);
-	static Syntax& GetSyntax();
+	static Syntax* GetSyntax();
 
 	static void Log(const Token& item, uint64 code, ...);
 };

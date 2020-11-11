@@ -28,7 +28,7 @@ SOFTWARE
 #include <util/util.h>
 #include <core/compiler/compiler.h>
 
-void ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir, const Syntax& syntax);
+void ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir);
 
 struct PreProcessorData {
 	List<std::pair<String, String>> defines;
@@ -107,7 +107,7 @@ String MergeList(const List<Token>& tokens, uint64 start, uint64 end) {
 	return std::move(res);
 }
 
-String PreProcessor::Run(Lexer::AnalysisResult& result, List<String>& includeDir, const Syntax& syntax) {
+String PreProcessor::Run(Lexer::AnalysisResult& result, List<String>& includeDir) {
 	List<Token>& tokens = result.tokens;
 
 	CorrectIncludeDir(includeDir);
@@ -125,7 +125,7 @@ String PreProcessor::Run(Lexer::AnalysisResult& result, List<String>& includeDir
 		Token& directive = tokens[i + 1];
 
 		if (directive.string == "include") {
-			ProcessInclude(tokens, i-- + 2, includeDir, syntax);
+			ProcessInclude(tokens, i-- + 2, includeDir);
 		}
 
 	}
@@ -135,7 +135,7 @@ String PreProcessor::Run(Lexer::AnalysisResult& result, List<String>& includeDir
 	return std::move(MergeList(tokens, 0, tokens.GetSize() - 1));
 }
 
-void ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir, const Syntax& syntax) {
+void ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir) {
 	Token& t = tokens[index];
 
 	bool local = false;
@@ -184,7 +184,7 @@ void ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& inclu
 		Compiler::Log(t, HC_ERROR_PREPROCESSOR_INCLUDE_FILE_NOT_FOUND, includeFile.str);
 	}
 
-	Lexer::AnalysisResult res = Lexer::Analyze(finalFile, syntax);
+	Lexer::AnalysisResult res = Lexer::Analyze(finalFile);
 
 	index -= 2;
 

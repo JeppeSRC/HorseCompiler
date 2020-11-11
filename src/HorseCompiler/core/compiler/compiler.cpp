@@ -25,7 +25,17 @@ SOFTWARE
 #include "compiler.h"
 #include <stdarg.h>
 
+
+
 static Syntax syntax;
+
+void Compiler::SetSyntax(Syntax newSyntax) {
+	syntax = newSyntax;
+}
+
+Syntax* Compiler::GetSyntax() {
+	return &syntax;
+}
 
 void Compiler::Log(const Token& item, uint64 code, ...) {
 	va_list list;

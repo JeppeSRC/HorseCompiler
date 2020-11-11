@@ -25,6 +25,7 @@ SOFTWARE
 
 #include "lexer.h"
 #include "syntax.h"
+#include "compiler.h"
 
 #include <util/file.h>
 #include <util/util.h>
@@ -34,7 +35,7 @@ SOFTWARE
 #define IN_STRING 0x01
 #define IN_INCLUDE 0x02
 
-Lexer::AnalysisResult Lexer::Analyze(const String& filename, const Syntax& syntax) {
+Lexer::AnalysisResult Lexer::Analyze(const String& filename) {
 	Lexer::AnalysisResult res;
 	List<uint64> indices;
 	List<uint64> newLines;
@@ -45,12 +46,14 @@ Lexer::AnalysisResult Lexer::Analyze(const String& filename, const Syntax& synta
 	indices.Reserve(4096);
 	newLines.Reserve(4096);
 
+	Syntax* syntax = Compiler::GetSyntax();
+
 	uint64 index = 0;
 
-	for (uint64 i = 0; i < syntax.delimiters.length; i++) {
+	for (uint64 i = 0; i < syntax->delimiters.length; i++) {
 		index = 0;
 
-		while ((index = file.Find(syntax.delimiters[i], index)) != String::npos) {
+		while ((index = file.Find(syntax->delimiters[i], index)) != String::npos) {
 			indices.PushBack(index++);
 		}
 	}

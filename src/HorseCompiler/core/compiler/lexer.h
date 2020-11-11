@@ -37,5 +37,5 @@ public:
 		List<Token> tokens;
 	};
 
-	static AnalysisResult Analyze(const String& filename, const Syntax& syntax);
+	static AnalysisResult Analyze(const String& filename);
 };
