@@ -23,13 +23,14 @@ SOFTWARE
 */
 
 #include "compiler.h"
+#include <util/util.h>
 #include <stdarg.h>
 
 
 
 static Syntax syntax;
 
-String Compiler::currentDir = "<NotSet>";
+String Compiler::currentDir = "";
 
 void Compiler::SetSyntax(Syntax newSyntax) {
 	syntax = newSyntax;
@@ -45,6 +46,10 @@ const String& Compiler::GetCurrentDir() {
 
 void Compiler::SetCurrentDir(const String& cwd) {
 	currentDir = cwd;
+	StringUtils::ReplaceChar(currentDir, '\\', '/');
+
+	if (!currentDir.EndsWith("/"))
+		currentDir.Append("/");
 }
 
 void Compiler::Log(const Token& item, uint64 code, ...) {
