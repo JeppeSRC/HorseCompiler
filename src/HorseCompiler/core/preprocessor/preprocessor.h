@@ -30,7 +30,16 @@ SOFTWARE
 
 
 class PreProcessor {
+private:
+	List<std::pair<String, String>> defines;
+	List<String>* includeDir;
+
 public:
-	static String Run(Lexer::AnalysisResult& result, List<String>& includeDir);
+	PreProcessor(List<String>& includeDir);
+
+	String Run(Lexer::AnalysisResult& result);
+
+private:
+	void ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir);
 
 };

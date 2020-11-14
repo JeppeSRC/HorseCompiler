@@ -26,7 +26,9 @@ int main(int argc, char** argv) {
 
 	List<String> includes;
 	
-	printf("%s\n", PreProcessor::Run(res, includes).str);
+	PreProcessor pp(includes);
+
+	printf("%s\n", pp.Run(res).str);
 
 	//Syntax::Analyze(syntax, res);
 

@@ -28,13 +28,6 @@ SOFTWARE
 #include <util/util.h>
 #include <core/compiler/compiler.h>
 
-void ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir);
-
-struct PreProcessorData {
-	List<std::pair<String, String>> defines;
-	List<String> includedFiles;
-} data;
-
 void CorrectIncludeDir(List<String>& includeDir) {
 	for (String& string : includeDir) {
 		StringUtils::ReplaceChar(string, '\\', '/');
@@ -107,10 +100,14 @@ String MergeList(const List<Token>& tokens, uint64 start, uint64 end) {
 	return std::move(res);
 }
 
-String PreProcessor::Run(Lexer::AnalysisResult& result, List<String>& includeDir) {
+PreProcessor::PreProcessor(List<String>& includeDir) {
+	this->includeDir = &includeDir;
+}
+
+String PreProcessor::Run(Lexer::AnalysisResult& result) {
 	List<Token>& tokens = result.tokens;
 
-	CorrectIncludeDir(includeDir);
+	CorrectIncludeDir(*includeDir);
 	RemoveComments(tokens);
 
 	for (uint64 i = 0; i < tokens.GetSize(); i++) {
@@ -125,7 +122,7 @@ String PreProcessor::Run(Lexer::AnalysisResult& result, List<String>& includeDir
 		Token& directive = tokens[i + 1];
 
 		if (directive.string == "include") {
-			ProcessInclude(tokens, i-- + 2, includeDir);
+			ProcessInclude(tokens, i-- + 2, *includeDir);
 		}
 
 	}
@@ -135,7 +132,7 @@ String PreProcessor::Run(Lexer::AnalysisResult& result, List<String>& includeDir
 	return std::move(MergeList(tokens, 0, tokens.GetSize() - 1));
 }
 
-void ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir) {
+void PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir) {
 	Token& t = tokens[index];
 
 	bool local = false;
