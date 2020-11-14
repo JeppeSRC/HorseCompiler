@@ -100,15 +100,42 @@ String MergeList(const List<Token>& tokens, uint64 start, uint64 end) {
 	return std::move(res);
 }
 
+FileNode* FindCurrentNode(FileNode* nodes, const String& currentFile) {
+	if (nodes->name == currentFile) return nodes;
+
+	for (uint64 i = 0; i < nodes->files.GetSize(); i++) {
+		FileNode* n = FindCurrentNode(nodes->files[i], currentFile);
+
+		if (n) return n;
+	}
+
+	return nullptr;
+}
+
+FileNode* CheckRecursion(FileNode* currentNode, const String& file) {
+	if (currentNode->name == file) return currentNode;
+
+	if (currentNode->parent) {
+		return CheckRecursion(currentNode->parent, file);
+	}
+
+	return nullptr;
+}
+
 PreProcessor::PreProcessor(List<String>& includeDir) {
 	this->includeDir = &includeDir;
 }
+
+
 
 String PreProcessor::Run(Lexer::AnalysisResult& result) {
 	List<Token>& tokens = result.tokens;
 
 	CorrectIncludeDir(*includeDir);
 	RemoveComments(tokens);
+
+	FileNode root = { tokens[0].filename, nullptr };
+
 
 	for (uint64 i = 0; i < tokens.GetSize(); i++) {
 		Token& t = tokens[i];
@@ -122,7 +149,7 @@ String PreProcessor::Run(Lexer::AnalysisResult& result) {
 		Token& directive = tokens[i + 1];
 
 		if (directive.string == "include") {
-			ProcessInclude(tokens, i-- + 2, *includeDir);
+			ProcessInclude(tokens, i-- + 2, *includeDir, &root);
 		}
 
 	}
@@ -132,7 +159,7 @@ String PreProcessor::Run(Lexer::AnalysisResult& result) {
 	return std::move(MergeList(tokens, 0, tokens.GetSize() - 1));
 }
 
-void PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir) {
+void PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir, FileNode* nodes) {
 	Token& t = tokens[index];
 
 	bool local = false;
@@ -180,6 +207,19 @@ void PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<
 	if (finalFile.length == 0) {
 		Compiler::Log(t, HC_ERROR_PREPROCESSOR_INCLUDE_FILE_NOT_FOUND, includeFile.str);
 	}
+
+	FileNode* current = FindCurrentNode(nodes, t.filename);
+	FileNode* rec = CheckRecursion(current, finalFile);
+
+	if (rec) {
+		Compiler::Log(t, HC_ERROR_PREPROCESSOR_INCLUDE_RECURSION, finalFile.str);
+	}
+
+	FileNode* node = new FileNode;
+
+	node->parent = current;
+	node->name = finalFile;
+	current->files.PushBack(node);
 
 	Lexer::AnalysisResult res = Lexer::Analyze(finalFile);
 

@@ -28,11 +28,17 @@ SOFTWARE
 #include <util/list.h>
 #include <core/compiler/lexer.h>
 
+struct FileNode {
+	String name; // Name of this file
+	FileNode* parent; // Parent file where it was included
+	List<FileNode*> files; // Files included in this file
+};
 
 class PreProcessor {
 private:
 	List<std::pair<String, String>> defines;
 	List<String>* includeDir;
+
 
 public:
 	PreProcessor(List<String>& includeDir);
@@ -40,6 +46,6 @@ public:
 	String Run(Lexer::AnalysisResult& result);
 
 private:
-	void ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir);
+	void ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir, FileNode* nodes);
 
 };
