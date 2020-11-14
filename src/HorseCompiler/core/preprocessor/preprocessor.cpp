@@ -227,6 +227,9 @@ void PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<
 
 		Lexer::AnalysisResult res = Lexer::Analyze(finalFile);
 		tokens.Insert(res.tokens, index);
+
+	} else {
+		Log::Debug("Ignoring \"%s\" already included", finalFile.str);
 	}
 
 }
