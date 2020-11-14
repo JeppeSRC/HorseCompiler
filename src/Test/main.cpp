@@ -10,6 +10,12 @@
 #include <Windows.h>
 
 int main(int argc, char** argv) {
+	char buf[1024];
+
+	GetCurrentDirectoryA(1024, buf);
+
+	Compiler::SetCurrentDir(buf);
+
 	Syntax* syntax = Compiler::GetSyntax();
 
 	syntax->delimiters = " #=+-*/<>.,^&|(){}[]%\"'!?:;";
@@ -22,7 +28,7 @@ int main(int argc, char** argv) {
 	syntax->sequence[1].signature = 'x';
 	syntax->sequence[1].base = 16;
 
-	auto res = Lexer::Analyze("test.c");
+	auto res = Lexer::Analyze(Compiler::GetCurrentDir() + "test.c");
 
 	List<String> includes;
 	
