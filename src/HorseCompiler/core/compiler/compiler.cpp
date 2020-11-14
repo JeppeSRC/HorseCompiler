@@ -23,6 +23,7 @@ SOFTWARE
 */
 
 #include "compiler.h"
+
 #include <util/util.h>
 #include <stdarg.h>
 
@@ -83,6 +84,9 @@ void Compiler::Log(const Token& item, uint64 code, ...) {
 			break;
 		case HC_ERROR_PREPROCESSOR_INCLUDE_UNKNOWN_SYMBOL2:
 			Log::Error(item.line, item.column, item.filename.str, code, "unkown symbol in include directive '%c', expected '%c'", va_arg(list, char), va_arg(list, char));
+			break;
+		case HC_ERROR_PREPROCESSOR_INCLUDE_RECURSION:
+			Log::Error(item.line, item.column, item.filename.str, code, "\"%s\" causes recursion", va_arg(list, char*));
 			break;
 	}
 }
