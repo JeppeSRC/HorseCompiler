@@ -48,5 +48,5 @@ public:
 
 private:
 	void ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir, FileNode* nodes);
-
+	void ProcessPragma(List<Token>& tokens, uint64 index);
 };

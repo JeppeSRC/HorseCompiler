@@ -149,11 +149,11 @@ String PreProcessor::Run(Lexer::AnalysisResult& result) {
 
 		if (directive.string == "include") {
 			ProcessInclude(tokens, i-- + 2, *includeDir, &root);
+		} else if (directive.string == "pragma") {
+			ProcessPragma(tokens, i-- + 2);
 		}
 
 	}
-
-
 
 	return std::move(MergeList(tokens, 0, tokens.GetSize() - 1));
 }
@@ -231,3 +231,16 @@ void PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<
 
 }
 
+void PreProcessor::ProcessPragma(List<Token>& tokens, uint64 index) {
+	Token& pragmaDirective = tokens[index];
+
+	uint64 end = FindNextNewline(tokens, index);
+
+	if (pragmaDirective.string == "once") {
+		includedFiles.PushBack(pragmaDirective.filename);
+	} else {
+		Compiler::Log(pragmaDirective, HC_ERROR_PREPROCESSOR_PRAGMA_UNKNOWN_DIRECTIVE, pragmaDirective.string.str);
+	}
+
+	tokens.Remove(index - 2, end);
+}
