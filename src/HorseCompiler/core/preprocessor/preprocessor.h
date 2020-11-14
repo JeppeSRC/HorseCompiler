@@ -38,6 +38,7 @@ class PreProcessor {
 private:
 	List<std::pair<String, String>> defines;
 	List<String>* includeDir;
+	List<String> includedFiles; // FIles to be ignore if included again
 
 
 public:

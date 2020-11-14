@@ -136,7 +136,6 @@ String PreProcessor::Run(Lexer::AnalysisResult& result) {
 
 	FileNode root = { tokens[0].filename, nullptr };
 
-
 	for (uint64 i = 0; i < tokens.GetSize(); i++) {
 		Token& t = tokens[i];
 
@@ -215,16 +214,20 @@ void PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<
 		Compiler::Log(t, HC_ERROR_PREPROCESSOR_INCLUDE_RECURSION, finalFile.str);
 	}
 
-	FileNode* node = new FileNode;
-
-	node->parent = current;
-	node->name = finalFile;
-	current->files.PushBack(node);
-
-	Lexer::AnalysisResult res = Lexer::Analyze(finalFile);
 
 	index -= 2;
-
 	tokens.Remove(index, newLine);
-	tokens.Insert(res.tokens, index);
+
+	if (includedFiles.Find(finalFile) == ~0) { //Not already included
+		FileNode* node = new FileNode;
+
+		node->parent = current;
+		node->name = finalFile;
+		current->files.PushBack(node);
+
+		Lexer::AnalysisResult res = Lexer::Analyze(finalFile);
+		tokens.Insert(res.tokens, index);
+	}
+
 }
+
