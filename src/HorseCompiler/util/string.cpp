@@ -275,6 +275,8 @@ String& String::Remove(uint64 start, uint64 end) {
 	memcpy(str, tmp, start);
 	memcpy(str + start, tmp + end, length - end);
 
+	str[newLen] = 0;
+
 	length = newLen;
 
 	return *this;
