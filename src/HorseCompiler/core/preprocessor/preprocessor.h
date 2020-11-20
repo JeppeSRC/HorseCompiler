@@ -37,8 +37,8 @@ struct FileNode {
 class PreProcessor {
 private:
 	List<String>* includeDir;
-	List<String> includedFiles; // FIles to be ignore if included again
 	List<std::pair<String, String>> defines;
+	List<String> includedFiles; // Files to be ignore if included again
 
 
 public:
