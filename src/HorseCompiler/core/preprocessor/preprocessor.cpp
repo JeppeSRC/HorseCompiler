@@ -151,6 +151,8 @@ String PreProcessor::Run(Lexer::AnalysisResult& result) {
 			ProcessInclude(tokens, i-- + 2, *includeDir, &root);
 		} else if (directive.string == "pragma") {
 			ProcessPragma(tokens, i-- + 2);
+		} else if (directive.string == "define") {
+			ProcessDefine(tokens, i-- + 2);
 		}
 
 	}
@@ -246,4 +248,19 @@ void PreProcessor::ProcessPragma(List<Token>& tokens, uint64 index) {
 	}
 
 	tokens.Remove(index - 2, end);
+}
+
+void PreProcessor::ProcessDefine(List<Token>& tokens, uint64 index) {
+	uint64 newLine = FindNextNewline(tokens, index);
+
+	Token& name = tokens[index];
+	List<Token> def;
+
+	for (uint64 i = index+1; i <= newLine; i++) {
+		def.PushBack(tokens[i]);
+	}
+	
+	defines.PushBack(std::pair(name.string, def));
+
+	Log::Debug("Define: %s -> %s", name.string.str, MergeList(tokens, index + 1, newLine).str);
 }

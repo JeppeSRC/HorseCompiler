@@ -37,8 +37,8 @@ struct FileNode {
 class PreProcessor {
 private:
 	List<String>* includeDir;
-	List<std::pair<String, String>> defines;
 	List<String> includedFiles; // Files to be ignore if included again
+	List<std::pair<String, List<Token>>> defines;
 
 
 public:
@@ -49,4 +49,5 @@ public:
 private:
 	void ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir, FileNode* nodes);
 	void ProcessPragma(List<Token>& tokens, uint64 index);
+	void ProcessDefine(List<Token>& tokens, uint64 index);
 };
