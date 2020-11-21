@@ -145,6 +145,10 @@ String PreProcessor::Run(Lexer::AnalysisResult& result) {
 
 		if (c != '#') continue;
 
+		if (i + 1 == tokens.GetSize()) {
+			Compiler::Log(t, HC_ERROR_PREPROCESSOR_NO_DIRECTIVE);
+		}
+
 		Token& directive = tokens[i + 1];
 
 		if (directive.string == "include") {
@@ -153,6 +157,8 @@ String PreProcessor::Run(Lexer::AnalysisResult& result) {
 			ProcessPragma(tokens, i-- + 2);
 		} else if (directive.string == "define") {
 			ProcessDefine(tokens, i-- + 2);
+		} else {
+			Compiler::Log(t, HC_ERROR_PREPROCESSOR_UNKNOWN_DIRECTIVE, directive.string.str);
 		}
 
 	}
