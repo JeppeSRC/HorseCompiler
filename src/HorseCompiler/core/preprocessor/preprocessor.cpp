@@ -141,6 +141,8 @@ String PreProcessor::Run(Lexer::AnalysisResult& result) {
 
 		if (t.isString) continue;
 
+		ReplaceDefine(tokens, i);
+
 		char c = t.string[0];
 
 		if (c != '#') continue;
@@ -265,4 +267,20 @@ void PreProcessor::ProcessDefine(List<Token>& tokens, uint64 index) {
 	defines.PushBack(std::pair(name.string, def));
 
 	Log::Debug("Define: %s -> %s", name.string.str, MergeList(def, 0, def.GetSize()-1).str);
+
+}
+
+void PreProcessor::ReplaceDefine(List<Token>& tokens, uint64 index) {
+	const String& name = tokens[index].string;
+
+	auto [def, items] = defines.FindTuple(name, FindDefineCmp, 0);
+
+	if (def == ~0) return;
+
+	tokens.Remove(index, index);
+	tokens.Insert(items.second, index);
+}
+
+bool PreProcessor::FindDefineCmp(const std::pair<String, List<Token>>& item, const String& name) {
+	return item.first == name;
 }
