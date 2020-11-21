@@ -126,8 +126,6 @@ PreProcessor::PreProcessor(List<String>& includeDir) {
 	this->includeDir = &includeDir;
 }
 
-
-
 String PreProcessor::Run(Lexer::AnalysisResult& result) {
 	List<Token>& tokens = result.tokens;
 
