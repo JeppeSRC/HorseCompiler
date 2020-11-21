@@ -253,14 +253,16 @@ void PreProcessor::ProcessPragma(List<Token>& tokens, uint64 index) {
 void PreProcessor::ProcessDefine(List<Token>& tokens, uint64 index) {
 	uint64 newLine = FindNextNewline(tokens, index);
 
-	Token& name = tokens[index];
+	Token name = tokens[index];
 	List<Token> def;
 
 	for (uint64 i = index+1; i <= newLine; i++) {
 		def.PushBack(tokens[i]);
 	}
 	
+	tokens.Remove(index - 2, newLine);
+
 	defines.PushBack(std::pair(name.string, def));
 
-	Log::Debug("Define: %s -> %s", name.string.str, MergeList(tokens, index + 1, newLine).str);
+	Log::Debug("Define: %s -> %s", name.string.str, MergeList(def, 0, def.GetSize()-1).str);
 }
