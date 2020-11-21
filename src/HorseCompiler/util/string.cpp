@@ -97,7 +97,7 @@ bool String::Equals(const char* const other) const {
 }
 
 bool String::StartsWith(const String& other) const {
-	return strncmp(str, other.str, length) == 0;
+	return strncmp(str, other.str, other.length) == 0;
 }
 
 bool String::StartsWith(const char* const other) const {
