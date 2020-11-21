@@ -40,6 +40,8 @@ public:
 		Reserve(reserve);
 	}
 
+	List(std::initializer_list<T> list) : items(list) { }
+
 	List(const List& other) = default;
 	List(List&& other) = default;
 	
