@@ -277,8 +277,8 @@ void PreProcessor::ProcessDefine(List<Token>& tokens, uint64 index) {
 
 	tokens.Remove(index - 2, newLine);
 
+	Log::Debug("Define: %s -> %s", name.string.str, def.GetSize() > 0 ? MergeList(def, 0, def.GetSize()-1).str : "");
 
-	Log::Debug("Define: %s -> %s", name.string.str, MergeList(def, 0, def.GetSize()-1).str);
 }
 
 }
