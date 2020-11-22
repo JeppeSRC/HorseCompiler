@@ -266,11 +266,20 @@ void PreProcessor::ProcessDefine(List<Token>& tokens, uint64 index) {
 		def.PushBack(tokens[i]);
 	}
 	
+	uint64 loc = ~0;
+
+	if ((loc = defines.Find(name.string, FindDefineCmp, 0)) != ~0) {
+		defines[loc].second = def;
+		Compiler::Log(name, HC_ERROR_PREPROCESSOR_MACRO_REDEFINITION, name.string.str);
+	} else {
+		defines.PushBack(std::pair(name.string, def));
+	}
+
 	tokens.Remove(index - 2, newLine);
 
-	defines.PushBack(std::pair(name.string, def));
 
 	Log::Debug("Define: %s -> %s", name.string.str, MergeList(def, 0, def.GetSize()-1).str);
+}
 
 }
 

@@ -91,5 +91,8 @@ void Compiler::Log(const Token& item, uint64 code, ...) {
 		case HC_ERROR_PREPROCESSOR_PRAGMA_UNKNOWN_DIRECTIVE:
 			Log::Warning(item.line, item.column, item.filename.str, code, "unknown pragma directive \"%s\"", va_arg(list, char*));
 			break;
+		case HC_ERROR_PREPROCESSOR_MACRO_REDEFINITION:
+			Log::Warning(item.line, item.column, item.filename.str, code, "macro redefinition \"%s\"", va_arg(list, char*));
+			break;
 	}
 }
