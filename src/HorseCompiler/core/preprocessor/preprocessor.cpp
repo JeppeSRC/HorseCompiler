@@ -49,6 +49,79 @@ uint64 FindNextNewline(const List<Token>& tokens, uint64 index) {
 	return ~0;
 }
 
+uint64 FindEndif(const List<Token>& tokens, uint64 index) {
+	uint64 count = 0;
+
+	for (uint64 i = index; i < tokens.GetSize(); i++) {
+		const Token& t = tokens[i];
+
+		if (t.string[0] != '#') continue;
+		
+		if (i + 1 == tokens.GetSize()) {
+			Compiler::Log(t, HC_ERROR_PREPROCESSOR_NO_DIRECTIVE);
+		}
+
+		const Token& directive = tokens[i + 1];
+		const String& str = directive.string;
+		
+		if (str.StartsWith("if")) {
+			count++;
+		} else if (str == "endif") {
+			if (count > 0) count--;
+			else return i;
+		}
+	}
+
+	return ~0;
+}
+
+uint64 FindElse(const List<Token>& tokens, uint64 start, uint64 end) {
+	uint64 count = 0;
+
+	for (uint64 i = end-1; i >= start; i--) {
+		const Token& t = tokens[i];
+
+		if (t.string[0] != '#') continue;
+
+		const Token& directive = tokens[i + 1];
+		const String& str = directive.string;
+
+		if (str == "endif") {
+			count++;
+		} else if (str == "else") {
+			if (count > 0) count--;
+			else return i;
+		}
+	}
+
+	return ~0;
+}
+
+List<uint64> FindElifs(const List<Token>& tokens, uint64 start, uint64 end) {
+	List<uint64> elifs;
+
+	uint64 count = 0;
+
+	for (uint64 i = start; i < end; i++) {
+		const Token& t = tokens[i];
+
+		if (t.string[0] != '#') continue;
+
+		const Token& directive = tokens[i + 1];
+		const String& str = directive.string;
+
+		if (str.StartsWith("if")) {
+			count++;
+		} else if (str == "endif") {
+			count--;
+		} else if (str == "elif") {
+			if (count == 0) elifs.PushBack(i);
+		}
+	}
+
+	return std::move(elifs);
+}
+
 void RemoveComments(List<Token>& tokens) {
 	uint64 index = -1;
 
@@ -157,10 +230,11 @@ String PreProcessor::Run(Lexer::AnalysisResult& result) {
 			ProcessPragma(tokens, i-- + 2);
 		} else if (directive.string == "define") {
 			ProcessDefine(tokens, i-- + 2);
+		} else if (directive.string.StartsWith("if")) {
+			ProcessIf(tokens, i-- + 2);
 		} else {
 			Compiler::Log(t, HC_ERROR_PREPROCESSOR_UNKNOWN_DIRECTIVE, directive.string.str);
 		}
-
 	}
 
 	return std::move(MergeList(tokens, 0, tokens.GetSize() - 1));
@@ -281,6 +355,53 @@ void PreProcessor::ProcessDefine(List<Token>& tokens, uint64 index) {
 
 }
 
+void PreProcessor::ProcessIf(List<Token>& tokens, uint64 index) {
+	uint64 newLine = FindNextNewline(tokens, index);
+	uint64 end = FindEndif(tokens, newLine);
+	uint64 els = FindElse(tokens, newLine, end);
+	List<uint64> elifs = FindElifs(tokens, newLine, end);
+
+	const String& ifType = tokens[index - 1].string;
+
+	bool res = false;
+
+	if (ifType == "ifdef") {
+		res = defines.Find(tokens[index].string, FindDefineCmp, 0) != ~0;
+	} else {
+		res = EvaluateExpression(tokens, index, newLine);
+	}
+
+	uint64 remStart = ~0;
+
+	if (res) {
+		remStart = elifs.GetSize() > 0 ? elifs[0] : els != ~0 ? els : end;
+		end += 1;
+
+		tokens.Remove(remStart, end);
+		tokens.Remove(index - 2, newLine);
+	} else {
+		for (uint64 i = 0; i < elifs.GetSize(); i++) {
+			uint64 start = elifs[i];
+			newLine = FindNextNewline(tokens, start+2);
+			res = EvaluateExpression(tokens, start + 2, newLine);
+
+			if (res) {
+				remStart = elifs.GetSize() > i + 1 ? elifs[i + 1] : els != ~0 ? els : end;
+				tokens.Remove(remStart, end + 1);
+				tokens.Remove(index - 2, newLine);
+				break;
+			} 
+		}
+
+		if (remStart == ~0) {
+			if (els == ~0) {
+				tokens.Remove(index - 2, end + 1);
+			} else {
+				tokens.Remove(end, end + 1);
+				tokens.Remove(index - 2, els + 1);
+			}
+		}
+	}
 }
 
 void PreProcessor::ReplaceDefine(List<Token>& tokens, uint64 index) {
@@ -292,6 +413,13 @@ void PreProcessor::ReplaceDefine(List<Token>& tokens, uint64 index) {
 
 	tokens.Remove(index, index);
 	tokens.Insert(items.second, index);
+}
+
+bool PreProcessor::EvaluateExpression(List<Token>& tokens, uint64 start, uint64 end) {
+
+
+
+	return true;
 }
 
 bool PreProcessor::FindDefineCmp(const std::pair<String, List<Token>>& item, const String& name) {

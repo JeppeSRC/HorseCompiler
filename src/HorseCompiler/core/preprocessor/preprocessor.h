@@ -40,7 +40,6 @@ private:
 	List<String> includedFiles; // Files to be ignore if included again
 	List<std::pair<String, List<Token>>> defines;
 
-
 public:
 	PreProcessor(List<String>& includeDir);
 
@@ -50,8 +49,10 @@ private:
 	void ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir, FileNode* nodes);
 	void ProcessPragma(List<Token>& tokens, uint64 index);
 	void ProcessDefine(List<Token>& tokens, uint64 index);
+	void ProcessIf(List<Token>& tokens, uint64 index);
 
 	void ReplaceDefine(List<Token>& tokens, uint64 index);
+	bool EvaluateExpression(List<Token>& tokens, uint64 start, uint64 end);
 
 private:
 	static bool FindDefineCmp(const std::pair<String, List<Token>>& item, const String& name);
