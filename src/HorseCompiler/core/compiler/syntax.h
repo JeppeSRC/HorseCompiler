@@ -34,6 +34,7 @@ struct Token {
 	int64 line;
 	int64 column;
 
+	bool trailingSpace = false; //Set to true if there's a space after this token
 	bool isString = false;
 
 	bool operator==(const Token& other) const;

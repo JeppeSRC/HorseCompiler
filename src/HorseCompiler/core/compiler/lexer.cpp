@@ -46,6 +46,8 @@ Lexer::AnalysisResult Lexer::Analyze(const String& filename) {
 	indices.Reserve(4096);
 	newLines.Reserve(4096);
 
+	res.tokens.PushBack(Token());
+
 	Syntax* syntax = Compiler::GetSyntax();
 
 	uint64 index = 0;
@@ -71,6 +73,7 @@ Lexer::AnalysisResult Lexer::Analyze(const String& filename) {
 	uint64 lastIndex = 0;
 
 	uint8 includeSpaces = false;
+	bool setNextSpace = true;
 
 	for (uint64 i = 0; i < file.length; i++) {
 		char c = file[i];
@@ -85,8 +88,15 @@ Lexer::AnalysisResult Lexer::Analyze(const String& filename) {
 					t.column = lastIndex - ((newLines[currLine - 1 * (currLine > 0)] + 1) * (currLine > 0)) + 1;
 					t.isString = includeSpaces;
 
-					if (!(t.string == " ") || includeSpaces) 
+					uint64 tmp = 0;
+
+					while ((tmp = t.string.Find('\t', tmp)) != ~0) {
+						t.string.RemoveAt(tmp);
+					}
+
+					if (t.string.length > 0) {
 						res.tokens.PushBack(t);
+					}
 
 				}
 
@@ -117,14 +127,25 @@ Lexer::AnalysisResult Lexer::Analyze(const String& filename) {
 						includeSpaces = 0;
 					}
 
-					if (!(t.string == " ") || includeSpaces)
+					if (includeSpaces) {
 						res.tokens.PushBack(t);
+					} else if (t.string == " ") {
+						if (!setNextSpace) continue;
+						res.tokens[res.tokens.GetSize() - 1].trailingSpace = true;
+						setNextSpace = false;
+					} else {
+						res.tokens.PushBack(t);
+						setNextSpace = true;
+					}
+
 					break;
 				}
 			}
 		}
 		
 	}
+
+	res.tokens.Remove(0, 0);
 
 	return res;
 }
