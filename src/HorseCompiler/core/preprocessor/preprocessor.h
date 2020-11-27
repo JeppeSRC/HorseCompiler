@@ -50,6 +50,7 @@ private:
 	void ProcessPragma(List<Token>& tokens, uint64 index);
 	void ProcessDefine(List<Token>& tokens, uint64 index);
 	void ProcessIf(List<Token>& tokens, uint64 index);
+	void ProcessError(List<Token>& tokens, uint64 index);
 
 	void ReplaceDefine(List<Token>& tokens, uint64 index);
 	uint64 EvaluateExpression(List<Token>& tokens, uint64 start, uint64 end);

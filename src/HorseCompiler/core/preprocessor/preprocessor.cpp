@@ -232,6 +232,8 @@ String PreProcessor::Run(Lexer::AnalysisResult& result) {
 			ProcessDefine(tokens, i-- + 2);
 		} else if (directive.string.StartsWith("if")) {
 			ProcessIf(tokens, i-- + 2);
+		} else if (directive.string.StartsWith("error")) {
+			ProcessError(tokens, i-- + 2);
 		} else {
 			Compiler::Log(t, HC_ERROR_PREPROCESSOR_UNKNOWN_DIRECTIVE, directive.string.str);
 		}
@@ -402,6 +404,18 @@ void PreProcessor::ProcessIf(List<Token>& tokens, uint64 index) {
 			}
 		}
 	}
+}
+
+void PreProcessor::ProcessError(List<Token>& tokens, uint64 index) {
+	uint64 end = FindNextNewline(tokens, index);
+
+	if (end == ~0) {
+		end = tokens.GetSize() - 1;
+	}
+
+	String message = MergeList(tokens, index, end);
+
+	Compiler::Log(tokens[index - 1], HC_ERROR_PREPROCESSOR_ERROR_DIRECTIVE, message.str);
 }
 
 void PreProcessor::ReplaceDefine(List<Token>& tokens, uint64 index) {
