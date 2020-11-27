@@ -104,6 +104,10 @@ void LogInternal(const char* const filename, int64 line, int64 column, int64 cod
 	}
 
 	SetConsoleTextAttribute(handle, info.wAttributes);
+
+	if constexpr (level == Level::Error) {
+		//TODO: handle errors
+	}
 }
 
 void Log::Info(const char* const message, ...) { va_list args; va_start(args, message); LogInternal<Level::Info>(message, args); }
