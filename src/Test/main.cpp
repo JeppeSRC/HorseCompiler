@@ -34,7 +34,9 @@ int main(int argc, char** argv) {
 	
 	PreProcessor pp(includes);
 
-	printf("%s\n", pp.Run(res).str);
+	String s = pp.Run(res);
+
+	printf("%s\n", s.str);
 
 	//Syntax::Analyze(syntax, res);
 
