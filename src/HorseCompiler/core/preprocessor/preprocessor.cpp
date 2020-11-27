@@ -415,11 +415,9 @@ void PreProcessor::ReplaceDefine(List<Token>& tokens, uint64 index) {
 	tokens.Insert(items.second, index);
 }
 
-
-
-
-	return true;
 uint64 PreProcessor::EvaluateExpression(List<Token>& tokens, uint64 start, uint64 end) {
+	//TODO: implement later
+	return false;
 }
 
 bool PreProcessor::FindDefineCmp(const std::pair<String, List<Token>>& item, const String& name) {
