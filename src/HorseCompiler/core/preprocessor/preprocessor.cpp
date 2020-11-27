@@ -368,7 +368,7 @@ void PreProcessor::ProcessIf(List<Token>& tokens, uint64 index) {
 	if (ifType == "ifdef") {
 		res = defines.Find(tokens[index].string, FindDefineCmp, 0) != ~0;
 	} else {
-		res = EvaluateExpression(tokens, index, newLine);
+		res = EvaluateExpression(tokens, index, newLine) != 0;
 	}
 
 	uint64 remStart = ~0;
@@ -415,11 +415,11 @@ void PreProcessor::ReplaceDefine(List<Token>& tokens, uint64 index) {
 	tokens.Insert(items.second, index);
 }
 
-bool PreProcessor::EvaluateExpression(List<Token>& tokens, uint64 start, uint64 end) {
 
 
 
 	return true;
+uint64 PreProcessor::EvaluateExpression(List<Token>& tokens, uint64 start, uint64 end) {
 }
 
 bool PreProcessor::FindDefineCmp(const std::pair<String, List<Token>>& item, const String& name) {

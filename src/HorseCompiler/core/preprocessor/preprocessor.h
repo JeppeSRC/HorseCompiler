@@ -52,7 +52,7 @@ private:
 	void ProcessIf(List<Token>& tokens, uint64 index);
 
 	void ReplaceDefine(List<Token>& tokens, uint64 index);
-	bool EvaluateExpression(List<Token>& tokens, uint64 start, uint64 end);
+	uint64 EvaluateExpression(List<Token>& tokens, uint64 start, uint64 end);
 
 private:
 	static bool FindDefineCmp(const std::pair<String, List<Token>>& item, const String& name);
