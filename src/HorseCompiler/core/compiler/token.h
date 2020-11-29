@@ -24,17 +24,27 @@ SOFTWARE
 
 #pragma once
 
-#include <core/def.h>
 #include <util/string.h>
-#include <util/list.h>
 
-#include "token.h"
+struct Token {
+	String string;
+	String filename;
+	int64 line;
+	int64 column;
 
-class Lexer {
-public:
-	struct AnalysisResult {
-		List<Token> tokens;
-	};
+	bool trailingSpace = false; //Set to true if there's a space after this token
+	bool isString = false;
 
-	static AnalysisResult Analyze(const String& filename);
+
+
+	bool operator==(const Token& other) const;
+
+	// List comp functions
+	static bool CharCmp(const Token& item, const char& other) {
+		return item.string[0] == other && item.string.length == 1;
+	}
+
+	static bool StringCmp(const Token& item, const String& other) {
+		return item.string == other;
+	}
 };

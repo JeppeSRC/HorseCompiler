@@ -27,10 +27,6 @@ SOFTWARE
 
 #include <util/util.h>
 
-bool Token::operator==(const Token& other) const {
-	return string == other.string && line == other.line && column == other.column;
-}
-
 void Syntax::Analyze(Lexer::AnalysisResult& lexerResult) {
 	Syntax* syntax = Compiler::GetSyntax();
 	AnalyzeStrings(syntax, lexerResult);
