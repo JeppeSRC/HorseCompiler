@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
 
 	printf("%s\n", s.str);
 
-	//Syntax::Analyze(syntax, res);
+	syntax->Analyze(res);
 
 
 }

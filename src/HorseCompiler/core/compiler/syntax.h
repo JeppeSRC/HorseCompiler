@@ -56,9 +56,9 @@ public:
 	EscapeSequence* sequence;
 
 public:
-	static void Analyze(Lexer::AnalysisResult& lexerResult);
+	void Analyze(Lexer::AnalysisResult& lexerResult);
 
 private:
-	static void AnalyzeStrings(const Syntax* syntax, Lexer::AnalysisResult& lexerResult);
-	static void AnalyzeEscapeSequences(const Syntax* syntax, Token& token);
+	void AnalyzeStrings(Lexer::AnalysisResult& lexerResult);
+	void AnalyzeEscapeSequences(Token& token);
 };
