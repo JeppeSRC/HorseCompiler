@@ -26,6 +26,53 @@ SOFTWARE
 
 #include <util/string.h>
 
+enum class TokenType : uint32 {
+	Unknown,
+
+	OpAdd,
+	OpSub,
+	OpMul,
+	OpDiv,
+	OpCompoundAdd,
+	OpCompoundSub,
+	OpCompoundMul,
+	OpCompoundDiv,
+
+	OpBitNot,
+	OpBitAnd,
+	OpBitOr,
+	OpBitXOr,
+	OpLeftShift,
+	OpRightShift,
+
+	OpNot,
+	OpAnd,
+	OpOr,
+	OpEqual,
+	OpNotEqual,
+
+	OpInc,
+	OpDec,
+
+	OpLess,
+	OpGreater,
+	OpLessEq,
+	OpGreaterEq,
+	
+	OpSelector,
+	OpSeperator,
+
+	OpTernary1,
+	OpTernary2,
+
+	ParenthesisOpen,
+	ParenthesisClose,
+	BracketOpen,
+	BracketClose,
+	SqBracketOpen,
+	SqBracketClose
+};
+
 struct Token {
 	String string;
 	String filename;
@@ -35,7 +82,7 @@ struct Token {
 	bool trailingSpace = false; //Set to true if there's a space after this token
 	bool isString = false;
 
-
+	TokenType type;
 
 	bool operator==(const Token& other) const;
 
