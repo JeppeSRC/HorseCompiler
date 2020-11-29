@@ -70,7 +70,10 @@ enum class TokenType : uint32 {
 	BracketOpen,
 	BracketClose,
 	SqBracketOpen,
-	SqBracketClose
+	SqBracketClose,
+
+	Identifier,
+	Number
 };
 
 struct Token {
