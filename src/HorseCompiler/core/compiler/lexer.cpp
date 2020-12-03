@@ -95,6 +95,7 @@ Lexer::AnalysisResult Lexer::Analyze(const String& filename) {
 					}
 
 					if (t.string.length > 0) {
+						t.trailingSpace = file[i] == ' ';
 						res.tokens.PushBack(t);
 					}
 

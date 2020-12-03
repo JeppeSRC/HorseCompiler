@@ -149,12 +149,12 @@ void RemoveComments(List<Token>& tokens) {
 }
 
 String MergeList(const List<Token>& tokens, uint64 start, uint64 end) {
-	String res(tokens[start].string);
+	String res("");
 
 	int64 currentLine = tokens[start].line;
 	String currentFile = tokens[start].filename;
 
-	for (uint64 i =start+1; i <= end; i++) {
+	for (uint64 i =start; i <= end; i++) {
 		const Token& t = tokens[i];
 
 		if (currentLine < t.line || currentFile != t.filename) {
@@ -166,7 +166,9 @@ String MergeList(const List<Token>& tokens, uint64 start, uint64 end) {
 		if (t.isString) {
 			res.Append(t.string);
 		} else {
-			res.Append(" ").Append(t.string);
+			res.Append(t.string);
+
+			if (t.trailingSpace) res.Append(" ");
 		}
 	}
 
