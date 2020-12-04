@@ -92,6 +92,7 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 
 					if (t.string.length > 0) {
 						t.trailingSpace = file[i] == ' ';
+
 						result.PushBack(t);
 					}
 
@@ -146,6 +147,44 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 
 	AnalyzeStrings(result);
 
+	for (uint64 i = 0; i < result.GetSize(); i++) {
+		Token& token = result[i];
+
+		if (token.isString) continue;
+
+		for (uint64 j = 0; j < lang->syntax.tokenTypes.GetSize(); j++) {
+			const TokenTypeDef& def = lang->syntax.tokenTypes[j];
+			uint64 len = def.def.length;
+
+			if (len == 1 && token.string[0] == def.def[0]) {
+				token.type = def.type;
+			} else {
+				bool match = true;
+
+				for (uint64 k = 0; k < len; k++) {
+					if (def.def[k] != result[i + k].string[0] || result[i].trailingSpace) {
+						match = false;
+						break;
+					}
+				}
+
+				if (match) {
+					token.type = def.type;
+					token.string = def.def;
+					result.Remove(i + 1, i + len);
+				}
+			}
+		}
+
+		if (token.type == TokenType::Unknown) {
+			if (token.string[0] >= '0' && token.string[0] <= '9') {
+				token.type = TokenType::Immediate;
+			} else {
+				token.type = TokenType::Identifier;
+			}
+		}
+	}
+
 	return std::move(result);
 }
 
@@ -177,6 +216,8 @@ void Compiler::AnalyzeStrings(List<Token>& tokens) {
 		if (i >= numTokens) {
 			Compiler::Log(itemStart, HC_ERROR_SYNTAX_MISSING_STRING_CLOSE, lang->syntax.stringEnd);
 		}
+
+		itemStart.type = TokenType::String;
 
 		tokens.Remove(indexStart + 1, i);
 	}

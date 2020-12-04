@@ -25,9 +25,12 @@ SOFTWARE
 #pragma once
 
 #include <util/string.h>
+#include "language.h"
 
-enum class TokenType : uint32 {
+enum class TokenType {
 	Unknown,
+
+	OpAssign,
 
 	OpAdd,
 	OpSub,
@@ -61,9 +64,10 @@ enum class TokenType : uint32 {
 	
 	OpSelector,
 	OpSeperator,
+	OpSemicolon,
+	OpColon,
 
-	OpTernary1,
-	OpTernary2,
+	OpTernary,
 
 	ParenthesisOpen,
 	ParenthesisClose,
@@ -72,8 +76,10 @@ enum class TokenType : uint32 {
 	SqBracketOpen,
 	SqBracketClose,
 
+	String,
+
 	Identifier,
-	Number
+	Immediate
 };
 
 struct Token {
@@ -85,8 +91,8 @@ struct Token {
 	bool trailingSpace = false; //Set to true if there's a space after this token
 	bool isString = false;
 
-	TokenType type;
-
+	TokenType type = TokenType::Unknown;
+	
 	bool operator==(const Token& other) const;
 
 	// List comp functions

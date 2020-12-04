@@ -27,7 +27,7 @@ SOFTWARE
 #include <util/string.h>
 #include <util/list.h>
 
-
+/*
 struct Keyword {
 	enum Type {
 		Unknown,
@@ -67,17 +67,21 @@ struct Keyword {
 	} type;
 
 	String string;
-
-	Keyword() : type(Unknown), string("") {}
+	
 };
 
 enum class TokenType;
-struct Operator {
+struct Operator { 
 	TokenType type;
 	String string;
 };
+*/
 
-
+enum class TokenType;
+struct TokenTypeDef {
+	TokenType type;
+	String def;
+};
 
 struct Syntax {
 	String delimiters;
@@ -103,8 +107,9 @@ struct Syntax {
 		uint8 value = 0;
 	} *escSequence;
 
-	List<Keyword> keywords;
-	List<Operator> operators;
+	List<TokenTypeDef> tokenTypes;
+	//List<Keyword> keywords;
+	//List<Operator> operators; // Defines operators and punctuation characters
 };
 
 class Language {
