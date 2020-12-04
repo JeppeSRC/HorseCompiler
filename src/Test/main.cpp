@@ -1,4 +1,3 @@
-#include <core/compiler/syntax.h>
 #include <core/log/log.h>
 #include <util/list.h>
 #include <util/file.h>
@@ -14,31 +13,74 @@ int main(int argc, char** argv) {
 
 	GetCurrentDirectoryA(1024, buf);
 
-	Compiler::SetCurrentDir(buf);
+	Language lang;
 
-	Syntax* syntax = Compiler::GetSyntax();
+	Compiler compiler(String(buf), &lang);
 
-	syntax->delimiters = " #=+-*/<>.,^&|(){}[]%\"'!?:;";
-	syntax->stringStart = '"';
-	syntax->stringEnd = '"';
-	syntax->numSequences = 2;
-	syntax->sequence = new EscapeSequence[3];
-	syntax->sequence[0].signature = 'n';
-	syntax->sequence[0].value = '\n';
-	syntax->sequence[1].signature = 'x';
-	syntax->sequence[1].base = 16;
+	lang.syntax.delimiters = " #=+-*/<>.,^&|(){}[]%\"'!?:;";
+	lang.syntax.stringStart = '"';
+	lang.syntax.stringEnd = '"';
+	lang.syntax.numSequences = 2;
+	lang.syntax.escSequence = new Syntax::EscapeSequence[3];
+	lang.syntax.escSequence[0].signature = 'n';
+	lang.syntax.escSequence[0].value = '\n';
+	lang.syntax.escSequence[1].signature = 'x';
+	lang.syntax.escSequence[1].base = 16;
 
-	auto res = Lexer::Analyze(Compiler::GetCurrentDir() + "test.c");
+	List<TokenTypeDef>& type = lang.syntax.tokenTypes;
+
+	type.PushBack({ TokenType::OpAssign, "=" });
+	type.PushBack({ TokenType::OpAdd, "+" });
+	type.PushBack({ TokenType::OpSub, "-" });
+	type.PushBack({ TokenType::OpMul, "*" });
+	type.PushBack({ TokenType::OpDiv, "/" });
+	type.PushBack({ TokenType::OpCompoundAdd, "+=" });
+	type.PushBack({ TokenType::OpCompoundSub, "-=" });
+	type.PushBack({ TokenType::OpCompoundMul, "*=" });
+	type.PushBack({ TokenType::OpCompoundDiv, "/=" });
+
+	type.PushBack({ TokenType::OpBitNot, "~" });
+	type.PushBack({ TokenType::OpBitAnd, "&" });
+	type.PushBack({ TokenType::OpBitOr, "|" });
+	type.PushBack({ TokenType::OpLeftShift, "<<" });
+	type.PushBack({ TokenType::OpRightShift, ">>" });
+
+	type.PushBack({ TokenType::OpNot, "!" });
+	type.PushBack({ TokenType::OpAnd, "&&" });
+	type.PushBack({ TokenType::OpOr, "||" });
+	type.PushBack({ TokenType::OpEqual, "==" });
+	type.PushBack({ TokenType::OpNotEqual, "!=" });
+
+	type.PushBack({ TokenType::OpInc, "++" });
+	type.PushBack({ TokenType::OpDec, "--" });
+
+	type.PushBack({ TokenType::OpLess, "<" });
+	type.PushBack({ TokenType::OpGreater, ">" });
+	type.PushBack({ TokenType::OpLessEq, "<=" });
+	type.PushBack({ TokenType::OpGreaterEq, ">=" });
+
+	type.PushBack({ TokenType::OpSelector, "." });
+	type.PushBack({ TokenType::OpSeperator, "," });
+	type.PushBack({ TokenType::OpSemicolon, ";" });
+	type.PushBack({ TokenType::OpColon, ":" });
+
+	type.PushBack({ TokenType::OpTernary, "?" });
+
+	type.PushBack({ TokenType::ParenthesisOpen, "(" });
+	type.PushBack({ TokenType::ParenthesisClose, ")" });
+	type.PushBack({ TokenType::BracketOpen, "{" });
+	type.PushBack({ TokenType::BracketClose, "}" });
+	type.PushBack({ TokenType::SqBracketOpen, "[" });
+	type.PushBack({ TokenType::SqBracketClose, "]" });
+	type.PushBack({ TokenType::OpSemicolon, ";" });
+
+	auto res = compiler.LexicalAnalazys("test.c");
 
 	List<String> includes;
 	
-	PreProcessor pp(includes);
+	PreProcessor pp(includes, &compiler);
 
 	String s = pp.Run(res);
 
 	printf("%s\n", s.str);
-
-	syntax->Analyze(res);
-
-
 }
