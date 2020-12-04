@@ -24,12 +24,70 @@ SOFTWARE
 
 #pragma once
 
-#include <core/def.h>
 #include <util/string.h>
-#include "lexer.h"
+#include <util/list.h>
 
 
-/*
+struct Keyword {
+	enum Type {
+		Unknown,
+
+		//Control Flow
+		If,
+		Else,
+		For,
+		Do,
+		While,
+		Switch,
+		Case,
+		Continue,
+		Break,
+		Default,
+		Return,
+		Goto,
+
+		//Primitive Types
+		Void,
+		Char,
+		Short,
+		Int,
+		Long,
+		Float,
+		Double,
+
+		//Other Type Stuff
+		Unsigned,
+		Signed,
+		Auto,
+		Typedef,
+		Sizeof,
+		Const,
+		Struct,
+
+	} type;
+
+	String string;
+
+	Keyword() : type(Unknown), string("") {}
+};
+
+enum class TokenType;
+struct Operator {
+	TokenType type;
+	String string;
+};
+
+
+
+struct Syntax {
+	String delimiters;
+	char stringStart;
+	char stringEnd;
+	char stringEscapeChar;
+
+	uint8 numSequences;
+
+	/*
 	Defines a string escape sequence e.g "Escape Sequence \x21". Where \x21 is the escape sequence,
 	'x' specifies a byte in hex.
 
@@ -39,26 +97,17 @@ SOFTWARE
 	be placed in the string.
 */
 
-struct EscapeSequence {
-	char signature;
-	uint8 base = 0;
-	uint8 value = 0;
+	struct EscapeSequence {
+		char signature;
+		uint8 base = 0;
+		uint8 value = 0;
+	} *escSequence;
+
+	List<Keyword> keywords;
+	List<Operator> operators;
 };
 
-class Syntax {
+class Language {
 public:
-	String delimiters;
-	char stringStart;
-	char stringEnd;
-	char stringEscapeChar;
-
-	uint8 numSequences;
-	EscapeSequence* sequence;
-
-public:
-	void Analyze(Lexer::AnalysisResult& lexerResult);
-
-private:
-	void AnalyzeStrings(Lexer::AnalysisResult& lexerResult);
-	void AnalyzeEscapeSequences(Token& token);
+	Syntax syntax;
 };

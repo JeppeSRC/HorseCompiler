@@ -197,13 +197,12 @@ FileNode* CheckRecursion(FileNode* currentNode, const String& file) {
 	return nullptr;
 }
 
-PreProcessor::PreProcessor(List<String>& includeDir) {
+PreProcessor::PreProcessor(List<String>& includeDir, Compiler* compiler) {
 	this->includeDir = &includeDir;
+	this->compiler = compiler;
 }
 
-String PreProcessor::Run(Lexer::AnalysisResult& result) {
-	List<Token>& tokens = result.tokens;
-
+String PreProcessor::Run(List<Token>& tokens) {
 	CorrectIncludeDir(*includeDir);
 	RemoveComments(tokens);
 
@@ -311,8 +310,8 @@ void PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<
 		node->name = finalFile;
 		current->files.PushBack(node);
 
-		Lexer::AnalysisResult res = Lexer::Analyze(finalFile);
-		tokens.Insert(res.tokens, index);
+		List<Token> res = compiler->LexicalAnalazys(finalFile);
+		tokens.Insert(res, index);
 
 	} else {
 		Log::Debug("Ignoring \"%s\" already included", finalFile.str);

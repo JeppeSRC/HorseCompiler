@@ -24,19 +24,24 @@ SOFTWARE
 
 #pragma once
 
-#include "lexer.h"
-#include "syntax.h"
+#include "token.h"
+#include "language.h"
 
 class Compiler {
-private:
-	static String currentDir;
+private: 
+	String currentDir;
+	Language* lang;
 
 public:
-	static void SetSyntax(Syntax syntax);
-	static Syntax* GetSyntax();
+	Compiler(const String& currentDir, Language* lang);
 
-	static const String& GetCurrentDir();
-	static void SetCurrentDir(const String& cwd);
+	List<Token> LexicalAnalazys(const String& filename);
+	void SyntaxAnalazys(List<Token>& lexerResult);
 
+private: // Internal functions
+	void AnalyzeStrings(List<Token>& lexerResult);
+	void AnalyzeEscapeSequences(Token& token);
+
+public: //static stuff
 	static void Log(const Token& item, uint64 code, ...);
 };

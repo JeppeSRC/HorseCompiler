@@ -22,19 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 */
 
-#pragma once
+#include "compiler.h"
 
-#include <core/def.h>
-#include <util/string.h>
-#include <util/list.h>
+#include <util/util.h>
 
-#include "token.h"
+void Compiler::SyntaxAnalazys(List<Token>& lexerResult) {
 
-class Lexer {
-public:
-	struct AnalysisResult {
-		List<Token> tokens;
-	};
+}
 
-	static AnalysisResult Analyze(const String& filename);
-};

@@ -24,9 +24,9 @@ SOFTWARE
 
 #pragma once
 
+#include <core/compiler/compiler.h>
 #include <util/string.h>
 #include <util/list.h>
-#include <core/compiler/lexer.h>
 
 struct FileNode {
 	String name; // Name of this file
@@ -39,11 +39,12 @@ private:
 	List<String>* includeDir;
 	List<String> includedFiles; // Files to be ignore if included again
 	List<std::pair<String, List<Token>>> defines;
+	Compiler* compiler;
 
 public:
-	PreProcessor(List<String>& includeDir);
+	PreProcessor(List<String>& includeDir, Compiler* compiler);
 
-	String Run(Lexer::AnalysisResult& result);
+	String Run(List<Token>& result);
 
 private:
 	void ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir, FileNode* nodes);

@@ -23,8 +23,6 @@ SOFTWARE
 */
 
 
-#include "lexer.h"
-#include "syntax.h"
 #include "compiler.h"
 
 #include <util/file.h>
@@ -35,27 +33,25 @@ SOFTWARE
 #define IN_STRING 0x01
 #define IN_INCLUDE 0x02
 
-Lexer::AnalysisResult Lexer::Analyze(const String& filename) {
-	Lexer::AnalysisResult res;
+List<Token> Compiler::LexicalAnalazys(const String& filename) {
+	List<Token> result;
 	List<uint64> indices;
 	List<uint64> newLines;
 
 	String file = FileUtils::LoadTextFile(filename);
 
-	res.tokens.Reserve(4096);
+	result.Reserve(4096);
 	indices.Reserve(4096);
 	newLines.Reserve(4096);
 
-	res.tokens.PushBack(Token());
-
-	Syntax* syntax = Compiler::GetSyntax();
+	result.PushBack(Token());
 
 	uint64 index = 0;
 
-	for (uint64 i = 0; i < syntax->delimiters.length; i++) {
+	for (uint64 i = 0; i < lang->syntax.delimiters.length; i++) {
 		index = 0;
 
-		while ((index = file.Find(syntax->delimiters[i], index)) != String::npos) {
+		while ((index = file.Find(lang->syntax.delimiters[i], index)) != String::npos) {
 			indices.PushBack(index++);
 		}
 	}
@@ -96,7 +92,7 @@ Lexer::AnalysisResult Lexer::Analyze(const String& filename) {
 
 					if (t.string.length > 0) {
 						t.trailingSpace = file[i] == ' ';
-						res.tokens.PushBack(t);
+						result.PushBack(t);
 					}
 
 				}
@@ -129,13 +125,13 @@ Lexer::AnalysisResult Lexer::Analyze(const String& filename) {
 					}
 
 					if (includeSpaces) {
-						res.tokens.PushBack(t);
+						result.PushBack(t);
 					} else if (t.string == " ") {
 						if (!setNextSpace) continue;
-						res.tokens[res.tokens.GetSize() - 1].trailingSpace = true;
+						result[result.GetSize() - 1].trailingSpace = true;
 						setNextSpace = false;
 					} else {
-						res.tokens.PushBack(t);
+						result.PushBack(t);
 						setNextSpace = true;
 					}
 
@@ -146,7 +142,110 @@ Lexer::AnalysisResult Lexer::Analyze(const String& filename) {
 		
 	}
 
-	res.tokens.Remove(0, 0);
+	result.Remove(0, 0);
 
-	return res;
+	AnalyzeStrings(result);
+
+	return std::move(result);
+}
+
+
+void Compiler::AnalyzeStrings(List<Token>& tokens) {
+
+	while (true) {
+		auto [indexStart, itemStart] = tokens.FindTuple(lang->syntax.stringStart, Token::CharCmp);
+
+		if (indexStart == -1) break;
+
+		int64 i = indexStart + 1;
+		int64 numTokens = tokens.GetSize();
+
+		itemStart.string = "";
+		itemStart.isString = true;
+
+		for (; i < numTokens; i++) {
+			Token tmp = tokens[i];
+
+			if (tmp.string[0] == lang->syntax.stringEnd)
+				break;
+
+			AnalyzeEscapeSequences(tmp);
+
+			itemStart.string += tmp.string;
+		}
+
+		if (i >= numTokens) {
+			Compiler::Log(itemStart, HC_ERROR_SYNTAX_MISSING_STRING_CLOSE, lang->syntax.stringEnd);
+		}
+
+		tokens.Remove(indexStart + 1, i);
+	}
+}
+
+uint64 GetNumDigits(String& string, uint8 base, uint64 index) {
+	uint64 count = 0;
+
+	char c = string[index];
+
+	while (index < string.length) {
+		switch (base) {
+			case 2:
+				count += c >= '0' && c <= '1';
+				break;
+			case 8:
+				count += c >= '0' && c <= '7';
+				break;
+			case 10:
+				count += c >= '0' && c <= '9';
+				break;
+			case 16:
+				count += (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+				break;
+			default:
+				break;
+		}
+
+		index++;
+	}
+
+
+	return count;
+}
+
+void Compiler::AnalyzeEscapeSequences(Token& token) {
+	String& string = token.string;
+	uint64 index = 0;
+
+	while ((index = string.Find('\\', index)) != String::npos) {
+		char sig = string[index + 1];
+		for (uint64 i = 0; i < lang->syntax.numSequences; i++) {
+			Syntax::EscapeSequence es = lang->syntax.escSequence[i];
+
+			if (sig == es.signature) {
+				if (es.base) {
+					uint64 numDigits = GetNumDigits(string, es.base, index + 2);
+
+					if (numDigits == 0) {
+						Compiler::Log(token, HC_ERROR_SYNTAX_INT_LITERAL_NO_DIGIT, index + 2);
+					}
+
+					uint64 value = StringUtils::ToUint64(string.str, es.base, index + 2, index + 2 + numDigits - 1);
+
+					if (value > 255) {
+						Compiler::Log(token, HC_ERROR_SYNTAX_INT_LITERAL_TO_BIG, index + 2, value);
+					}
+
+					string.Replace(index, index + 1 + numDigits, (char)value);
+				} else {
+					string.Replace(index, index + 1, (char)es.value);
+				}
+
+				return;
+			}
+		}
+
+		Compiler::Log(token, HC_ERROR_SYNTAX_INVALID_ESCAPE_CHARACTER, index, sig);
+	}
+
+
 }

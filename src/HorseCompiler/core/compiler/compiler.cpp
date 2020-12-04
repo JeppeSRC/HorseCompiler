@@ -27,25 +27,7 @@ SOFTWARE
 #include <util/util.h>
 #include <stdarg.h>
 
-
-
-static Syntax syntax;
-
-String Compiler::currentDir = "";
-
-void Compiler::SetSyntax(Syntax newSyntax) {
-	syntax = newSyntax;
-}
-
-Syntax* Compiler::GetSyntax() {
-	return &syntax;
-}
-
-const String& Compiler::GetCurrentDir() {
-	return currentDir;
-}
-
-void Compiler::SetCurrentDir(const String& cwd) {
+Compiler::Compiler(const String& cwd, Language* language) : lang(language) {
 	currentDir = cwd;
 	StringUtils::ReplaceChar(currentDir, '\\', '/');
 
@@ -59,7 +41,7 @@ void Compiler::Log(const Token& item, uint64 code, ...) {
 
 	switch (code) {
 		case HC_ERROR_SYNTAX_MISSING_STRING_CLOSE:
-			Log::Error(item.line, item.column, item.filename.str, code, "missing closing string character '%c'", syntax.stringEnd);
+			Log::Error(item.line, item.column, item.filename.str, code, "missing closing string character '%c'", va_arg(list, char));
 			break;
 		case HC_ERROR_SYNTAX_INVALID_ESCAPE_CHARACTER:
 			Log::Warning(item.line, item.column + va_arg(list, uint64), item.filename.str, code, "unrecognized escape character '%c' sequence", va_arg(list, char));
