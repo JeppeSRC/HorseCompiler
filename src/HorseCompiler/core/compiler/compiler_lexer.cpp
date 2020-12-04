@@ -178,7 +178,7 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 
 		if (token.type == TokenType::Unknown) {
 			if (token.string[0] >= '0' && token.string[0] <= '9') {
-				token.type = TokenType::Immediate;
+				token.type = TokenType::Literal;
 			} else {
 				token.type = TokenType::Identifier;
 			}
@@ -217,7 +217,7 @@ void Compiler::AnalyzeStrings(List<Token>& tokens) {
 			Compiler::Log(itemStart, HC_ERROR_SYNTAX_MISSING_STRING_CLOSE, lang->syntax.stringEnd);
 		}
 
-		itemStart.type = TokenType::String;
+		itemStart.type = TokenType::Literal;
 
 		tokens.Remove(indexStart + 1, i);
 	}

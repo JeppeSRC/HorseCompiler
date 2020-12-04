@@ -76,10 +76,8 @@ enum class TokenType {
 	SqBracketOpen,
 	SqBracketClose,
 
-	String,
-
 	Identifier,
-	Immediate
+	Literal
 };
 
 struct Token {
