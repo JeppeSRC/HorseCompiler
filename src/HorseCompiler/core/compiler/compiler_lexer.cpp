@@ -32,6 +32,7 @@ SOFTWARE
 
 #define IN_STRING 0x01
 #define IN_INCLUDE 0x02
+#define IN_CHAR 0x03
 
 List<Token> Compiler::LexicalAnalazys(const String& filename) {
 	List<Token> result;
@@ -111,6 +112,16 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 					t.string = c;
 					t.isString = (bool)includeSpaces;
 
+					if (c == lang->syntax.charStart) {
+						if (includeSpaces == 0) {
+							includeSpaces = IN_CHAR;
+						}
+					} else if (c == lang->syntax.charEnd) {
+						if (includeSpaces == IN_CHAR) {
+							includeSpaces = 0;
+						}
+					}
+
 					if (c == '"' && file[i - 1] != '\\') {
 						if (includeSpaces == IN_STRING) {
 							t.isString = true;
@@ -123,7 +134,7 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 					} else if (includeSpaces == IN_INCLUDE && c == '>') {
 						t.isString = false;
 						includeSpaces = 0;
-					}
+					} 
 
 					if (includeSpaces) {
 						result.PushBack(t);
@@ -220,6 +231,28 @@ void Compiler::AnalyzeStrings(List<Token>& tokens) {
 		itemStart.type = TokenType::Literal;
 
 		tokens.Remove(indexStart + 1, i);
+	}
+
+	while (true) {
+		auto [indexStart, itemStart] = tokens.FindTuple(lang->syntax.charStart, Token::CharCmp);
+
+		if (indexStart == -1) break;
+
+		uint64 end = tokens.Find(lang->syntax.charEnd, Token::CharCmp, indexStart+1);
+		uint64 len = end - (indexStart + 1);
+
+		String tmp("");
+
+		if (len > 1) {
+			Compiler::Log(itemStart, HC_ERROR_SYNTAX_CHAR_LITERAL_TO_MANY_CHARS);
+		} else if (len == 1) {
+			tmp.Append(tokens[indexStart + 1].string);
+		}
+
+		itemStart.string = tmp;
+		itemStart.type = TokenType::Literal;
+
+		tokens.Remove(indexStart + 1, end);
 	}
 }
 
