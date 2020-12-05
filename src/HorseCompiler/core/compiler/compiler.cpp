@@ -79,5 +79,8 @@ void Compiler::Log(const Token& item, uint64 code, ...) {
 		case HC_ERROR_PREPROCESSOR_ERROR_DIRECTIVE:
 			Log::Error(item.line, item.column, item.filename.str, code, "\"%s\"", va_arg(list, char*));
 			break;
+		case HC_ERROR_SYNTAX_CHAR_LITERAL_TO_MANY_CHARS:
+			Log::Error(item.line, item.column, item.filename.str, code, "char literal has to many chars");
+			break;
 	}
 }
