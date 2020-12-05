@@ -20,6 +20,8 @@ int main(int argc, char** argv) {
 	lang.syntax.delimiters = " #=+-*/<>.,^&|(){}[]%\"'!?:;";
 	lang.syntax.stringStart = '"';
 	lang.syntax.stringEnd = '"';
+	lang.syntax.charStart = '\'';
+	lang.syntax.charEnd = '\'';
 	lang.syntax.numSequences = 2;
 	lang.syntax.escSequence = new Syntax::EscapeSequence[3];
 	lang.syntax.escSequence[0].signature = 'n';

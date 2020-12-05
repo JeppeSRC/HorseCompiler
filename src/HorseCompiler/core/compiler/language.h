@@ -88,6 +88,9 @@ struct Syntax {
 	char stringStart;
 	char stringEnd;
 	char stringEscapeChar;
+	char charStart;
+	char charEnd;
+
 
 	uint8 numSequences;
 
