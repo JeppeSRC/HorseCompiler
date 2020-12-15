@@ -32,17 +32,17 @@ enum class TokenType {
 
 	OpAssign,
 
-	OpAdd,
-	OpSub,
-	OpMul,
-	OpDiv,
+	Plus,
+	Minus,
+	Asterix,
+	Slash,
 	OpCompoundAdd,
 	OpCompoundSub,
 	OpCompoundMul,
 	OpCompoundDiv,
 
 	OpBitNot,
-	OpBitAnd,
+	Ampersand,
 	OpBitOr,
 	OpBitXOr,
 	OpLeftShift,
@@ -62,12 +62,12 @@ enum class TokenType {
 	OpLessEq,
 	OpGreaterEq,
 	
-	OpSelector,
-	OpSeperator,
-	OpSemicolon,
-	OpColon,
+	Dot,
+	Comma,
+	Semicolon,
+	Colon,
 
-	OpTernary,
+	Questionmark,
 
 	ParenthesisOpen,
 	ParenthesisClose,

@@ -32,17 +32,17 @@ int main(int argc, char** argv) {
 	List<TokenTypeDef>& type = lang.syntax.tokenTypes;
 
 	type.PushBack({ TokenType::OpAssign, "=" });
-	type.PushBack({ TokenType::OpAdd, "+" });
-	type.PushBack({ TokenType::OpSub, "-" });
-	type.PushBack({ TokenType::OpMul, "*" });
-	type.PushBack({ TokenType::OpDiv, "/" });
+	type.PushBack({ TokenType::Plus, "+" });
+	type.PushBack({ TokenType::Minus, "-" });
+	type.PushBack({ TokenType::Asterix, "*" });
+	type.PushBack({ TokenType::Slash, "/" });
 	type.PushBack({ TokenType::OpCompoundAdd, "+=" });
 	type.PushBack({ TokenType::OpCompoundSub, "-=" });
 	type.PushBack({ TokenType::OpCompoundMul, "*=" });
 	type.PushBack({ TokenType::OpCompoundDiv, "/=" });
 
 	type.PushBack({ TokenType::OpBitNot, "~" });
-	type.PushBack({ TokenType::OpBitAnd, "&" });
+	type.PushBack({ TokenType::Ampersand, "&" });
 	type.PushBack({ TokenType::OpBitOr, "|" });
 	type.PushBack({ TokenType::OpLeftShift, "<<" });
 	type.PushBack({ TokenType::OpRightShift, ">>" });
@@ -61,12 +61,12 @@ int main(int argc, char** argv) {
 	type.PushBack({ TokenType::OpLessEq, "<=" });
 	type.PushBack({ TokenType::OpGreaterEq, ">=" });
 
-	type.PushBack({ TokenType::OpSelector, "." });
-	type.PushBack({ TokenType::OpSeperator, "," });
-	type.PushBack({ TokenType::OpSemicolon, ";" });
-	type.PushBack({ TokenType::OpColon, ":" });
+	type.PushBack({ TokenType::Dot, "." });
+	type.PushBack({ TokenType::Comma, "," });
+	type.PushBack({ TokenType::Semicolon, ";" });
+	type.PushBack({ TokenType::Colon, ":" });
 
-	type.PushBack({ TokenType::OpTernary, "?" });
+	type.PushBack({ TokenType::Questionmark, "?" });
 
 	type.PushBack({ TokenType::ParenthesisOpen, "(" });
 	type.PushBack({ TokenType::ParenthesisClose, ")" });
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 	type.PushBack({ TokenType::BracketClose, "}" });
 	type.PushBack({ TokenType::SqBracketOpen, "[" });
 	type.PushBack({ TokenType::SqBracketClose, "]" });
-	type.PushBack({ TokenType::OpSemicolon, ";" });
+	type.PushBack({ TokenType::Semicolon, ";" });
 
 	auto res = compiler.LexicalAnalazys("test.c");
 
