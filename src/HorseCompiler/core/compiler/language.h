@@ -27,56 +27,6 @@ SOFTWARE
 #include <util/string.h>
 #include <util/list.h>
 
-/*
-struct Keyword {
-	enum Type {
-		Unknown,
-
-		//Control Flow
-		If,
-		Else,
-		For,
-		Do,
-		While,
-		Switch,
-		Case,
-		Continue,
-		Break,
-		Default,
-		Return,
-		Goto,
-
-		//Primitive Types
-		Void,
-		Char,
-		Short,
-		Int,
-		Long,
-		Float,
-		Double,
-
-		//Other Type Stuff
-		Unsigned,
-		Signed,
-		Auto,
-		Typedef,
-		Sizeof,
-		Const,
-		Struct,
-
-	} type;
-
-	String string;
-	
-};
-
-enum class TokenType;
-struct Operator { 
-	TokenType type;
-	String string;
-};
-*/
-
 enum class TokenType;
 struct TokenTypeDef {
 	TokenType type;
@@ -111,8 +61,6 @@ struct Syntax {
 	} *escSequence;
 
 	List<TokenTypeDef> tokenTypes;
-	//List<Keyword> keywords;
-	//List<Operator> operators; // Defines operators and punctuation characters
 };
 
 class Language {
