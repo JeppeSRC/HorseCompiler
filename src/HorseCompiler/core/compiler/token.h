@@ -27,60 +27,6 @@ SOFTWARE
 #include <util/string.h>
 #include "language.h"
 
-enum class TokenType {
-	Unknown,
-
-	OpAssign,
-
-	Plus,
-	Minus,
-	Asterix,
-	Slash,
-	OpCompoundAdd,
-	OpCompoundSub,
-	OpCompoundMul,
-	OpCompoundDiv,
-
-	OpBitNot,
-	Ampersand,
-	OpBitOr,
-	OpBitXOr,
-	OpLeftShift,
-	OpRightShift,
-
-	OpNot,
-	OpAnd,
-	OpOr,
-	OpEqual,
-	OpNotEqual,
-
-	OpInc,
-	OpDec,
-
-	OpLess,
-	OpGreater,
-	OpLessEq,
-	OpGreaterEq,
-	
-	Dot,
-	Comma,
-	Semicolon,
-	Colon,
-
-	Questionmark,
-
-	ParenthesisOpen,
-	ParenthesisClose,
-	BracketOpen,
-	BracketClose,
-	SqBracketOpen,
-	SqBracketClose,
-
-	Keyword,
-	Identifier,
-	Literal
-};
-
 struct Token {
 	String string;
 	String filename;

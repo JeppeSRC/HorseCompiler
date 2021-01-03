@@ -27,7 +27,75 @@ SOFTWARE
 #include <util/string.h>
 #include <util/list.h>
 
-enum class TokenType;
+
+enum class TokenType {
+	/*
+	* Each group is allocated 100 numbers:
+	*	Operators 100-199
+	*	MiscTokens 200-299
+	*   Others 300+
+	* */
+
+	Unknown,
+
+	Operators = 100,
+	OpAssign,
+
+	Plus,
+	Minus,
+	Asterix,
+	Slash,
+	OpCompoundAdd,
+	OpCompoundSub,
+	OpCompoundMul,
+	OpCompoundDiv,
+
+	OpBitNot,
+	Ampersand,
+	OpBitOr,
+	OpBitXOr,
+	OpLeftShift,
+	OpRightShift,
+
+	OpNot,
+	OpAnd,
+	OpOr,
+	OpEqual,
+	OpNotEqual,
+
+	OpInc,
+	OpDec,
+
+	OpLess,
+	OpGreater,
+	OpLessEq,
+	OpGreaterEq,
+
+	MiscTokens = 200,
+
+	Dot,
+	Comma,
+	Semicolon,
+	Colon,
+
+	Questionmark,
+
+	ParenthesisOpen,
+	ParenthesisClose,
+	BracketOpen,
+	BracketClose,
+	SqBracketOpen,
+	SqBracketClose,
+
+	// End of misc tokens
+	Others = 300,
+
+	Keyword,
+	Identifier,
+	Literal
+};
+
+
 struct TokenTypeDef {
 	TokenType type;
 	String def;
