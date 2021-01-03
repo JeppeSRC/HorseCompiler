@@ -158,6 +158,8 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 
 	AnalyzeStrings(result);
 
+
+	//TokenTypes
 	for (uint64 i = 0; i < result.GetSize(); i++) {
 		Token& token = result[i];
 
@@ -192,6 +194,23 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 				token.type = TokenType::Literal;
 			} else {
 				token.type = TokenType::Identifier;
+			}
+		}
+	}
+
+		//Keywords
+	for (uint64 i = 0; i < result.GetSize(); i++) {
+		Token& token = result[i];
+
+		if (token.isString || token.type != TokenType::Identifier) continue;
+
+		for (uint64 j = 0; j < lang->keywords.GetSize(); j++) {
+			const KeywordDef& def = lang->keywords[j];
+			
+			if (token.string == def.def) {
+				token.type = TokenType::Keyword;
+				token.keyword = def.keyword;
+				break;
 			}
 		}
 	}

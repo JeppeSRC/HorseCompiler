@@ -76,6 +76,7 @@ enum class TokenType {
 	SqBracketOpen,
 	SqBracketClose,
 
+	Keyword,
 	Identifier,
 	Literal
 };
@@ -90,6 +91,7 @@ struct Token {
 	bool isString = false;
 
 	TokenType type = TokenType::Unknown;
+	KeywordType keyword = KeywordType::Unknown;
 	
 	bool operator==(const Token& other) const;
 

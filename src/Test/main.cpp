@@ -10,9 +10,9 @@
 
 int main(int argc, char** argv) {
 	char buf[1024];
-
+	
 	GetCurrentDirectoryA(1024, buf);
-
+	
 	Language lang;
 
 	Compiler compiler(String(buf), &lang);
@@ -75,6 +75,37 @@ int main(int argc, char** argv) {
 	type.PushBack({ TokenType::SqBracketOpen, "[" });
 	type.PushBack({ TokenType::SqBracketClose, "]" });
 	type.PushBack({ TokenType::Semicolon, ";" });
+
+	auto& keywords = lang.keywords;
+
+	keywords.PushBack({ KeywordType::Char, "char" });
+	keywords.PushBack({ KeywordType::Short, "short" });
+	keywords.PushBack({ KeywordType::Int, "int" });
+	keywords.PushBack({ KeywordType::Long, "long" });
+	keywords.PushBack({ KeywordType::Float, "float" });
+	keywords.PushBack({ KeywordType::Double, "double" });
+	keywords.PushBack({ KeywordType::Vec2, "vec2" });
+	keywords.PushBack({ KeywordType::Vec3, "vec3" });
+	keywords.PushBack({ KeywordType::Vec4, "vec4" });
+	keywords.PushBack({ KeywordType::Mat4, "mat4" });
+	keywords.PushBack({ KeywordType::Const, "const" });
+	keywords.PushBack({ KeywordType::Signed, "signed" });
+	keywords.PushBack({ KeywordType::Unsigned, "unsigned" });
+	keywords.PushBack({ KeywordType::Typedef, "typedef" });
+
+	keywords.PushBack({ KeywordType::If, "if" });
+	keywords.PushBack({ KeywordType::For, "for" });
+	keywords.PushBack({ KeywordType::While, "while" });
+	keywords.PushBack({ KeywordType::Switch, "switch" });
+	
+	keywords.PushBack({ KeywordType::Struct, "struct" });
+
+	keywords.PushBack({ KeywordType::Extern, "extern" });
+
+	keywords.PushBack({KeywordType::Layout, "layout" });
+	keywords.PushBack({KeywordType::In, "in" });
+	keywords.PushBack({KeywordType::Out, "out" });
+
 
 	auto res = compiler.LexicalAnalazys("test.c");
 

@@ -33,6 +33,39 @@ struct TokenTypeDef {
 	String def;
 };
 
+enum class KeywordType {
+	Unknown,
+
+	Char,
+	Short,
+	Int,
+	Long,
+	Float,
+	Double,
+	Vec2,
+	Vec3,
+	Vec4,
+	Mat4,
+	Const,
+	Signed,
+	Unsigned,
+	Typedef,
+	If,
+	For,
+	While,
+	Switch,
+	Struct,
+	Extern,
+	Layout,
+	In,
+	Out
+};
+
+struct KeywordDef {
+	KeywordType keyword;
+	String def;
+};
+
 struct Syntax {
 	String delimiters;
 	char stringStart;
@@ -66,4 +99,5 @@ struct Syntax {
 class Language {
 public:
 	Syntax syntax;
+	List<KeywordDef> keywords;
 };
