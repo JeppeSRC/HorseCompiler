@@ -35,7 +35,9 @@ private:
 	std::vector<T> items;
 
 public:
-	List() = default;
+	List() {
+		items.clear();
+	}
 	List(uint64 reserve) {
 		Reserve(reserve);
 	}
