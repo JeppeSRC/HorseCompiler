@@ -30,13 +30,13 @@ Pattern::PatternItem::PatternItem(TokenType token, const List<PatternItem>& next
 
 Pattern::PatternItem::PatternItem(TokenType token, const PatternItem& next) {
 	tokens.PushBack(token);
-	if (next.next.GetSize()) this->next.PushBack(next);
+	if (next.tokens.GetSize()) this->next.PushBack(next);
 }
 
 Pattern::PatternItem::PatternItem(const List<TokenType>& tokens, const List<PatternItem>& next) : tokens(tokens), next(next) {}
 
 Pattern::PatternItem::PatternItem(const List<TokenType>& tokens, const PatternItem& next) : tokens(tokens) {
-	if (next.next.GetSize()) this->next.PushBack(next);
+	if (next.tokens.GetSize()) this->next.PushBack(next);
 }
 
 
@@ -48,7 +48,7 @@ Pattern::PatternItem::PatternItem(TokenType token, KeywordType keyword, const Li
 
 Pattern::PatternItem::PatternItem(TokenType token, KeywordType keyword, const PatternItem& next) {
 	tokens.PushBack(token);
-	if (next.next.GetSize()) this->next.PushBack(next);
+	if (next.tokens.GetSize()) this->next.PushBack(next);
 	keywords.PushBack(keyword);
 }
 
@@ -57,7 +57,7 @@ Pattern::PatternItem::PatternItem(const List<TokenType>& tokens, KeywordType key
 }
 
 Pattern::PatternItem::PatternItem(const List<TokenType>& tokens, KeywordType keyword, const PatternItem& next) : tokens(tokens) {
-	if (next.next.GetSize()) this->next.PushBack(next);
+	if (next.tokens.GetSize()) this->next.PushBack(next);
 	keywords.PushBack(keyword);
 }
 
@@ -69,14 +69,14 @@ Pattern::PatternItem::PatternItem(TokenType token, const List<KeywordType>& keyw
 
 Pattern::PatternItem::PatternItem(TokenType token, const List<KeywordType>& keyword, const PatternItem& next) : keywords(keyword) {
 	tokens.PushBack(token);
-	if (next.next.GetSize()) this->next.PushBack(next);
+	if (next.tokens.GetSize()) this->next.PushBack(next);
 }
 
 Pattern::PatternItem::PatternItem(const List<TokenType>& tokens, const List<KeywordType>& keyword, const List<PatternItem>& next) : keywords(keyword), tokens(tokens), next(next) {
 }
 
 Pattern::PatternItem::PatternItem(const List<TokenType>& tokens, const List<KeywordType>& keyword, const PatternItem& next) : keywords(keyword), tokens(tokens) {
-	if (next.next.GetSize()) this->next.PushBack(next);
+	if (next.tokens.GetSize()) this->next.PushBack(next);
 }
 
 
