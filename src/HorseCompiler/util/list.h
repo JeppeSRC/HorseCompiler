@@ -68,8 +68,8 @@ public:
 		items.push_back(item);
 	}
 
-	T PopBack() {
-		return std::move(items.pop_back());
+	void PopBack() {
+		return items.pop_back();
 	}
 
 	uint64 Find(const T& item, uint64 offset = 0) {
