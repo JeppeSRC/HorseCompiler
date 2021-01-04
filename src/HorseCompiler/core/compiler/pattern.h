@@ -29,6 +29,12 @@ SOFTWARE
 #include <util/list.h>
 #include <core/compiler/token.h>
 
+enum class PatternType {
+	Unknown,
+	Variable,
+	Function,
+	
+};
 
 class Pattern {
 public:
@@ -64,11 +70,16 @@ public:
 		PatternItem() {}
 	};
 
-	struct VariablePattern {
-		List<PatternItem> first;
 
+	struct BasePattern {
+		List<PatternItem> first;
+		PatternType type;
+	protected:
+		BasePattern(PatternType type) : type(type) { }
+	};
+
+	struct VariablePattern : public BasePattern {
 		VariablePattern();
-		~VariablePattern(); // Not really necessary but whatever
 	} variablePattern;
 
 

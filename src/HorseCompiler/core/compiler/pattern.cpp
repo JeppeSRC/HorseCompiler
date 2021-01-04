@@ -25,8 +25,9 @@ SOFTWARE
 #include "pattern.h"
 
 
-Pattern::VariablePattern::VariablePattern() {
-	PatternItem end({ TokenType::OpAssign, TokenType::Semicolon });
+Pattern::VariablePattern::VariablePattern() : BasePattern(PatternType::Variable) {
+	List<TokenType> tmp({ TokenType::OpAssign, TokenType::Semicolon });
+	PatternItem end(tmp);
 	PatternItem name(TokenType::Identifier, end);
 
 	List<KeywordType> types = { KeywordType::Char, KeywordType::Short, KeywordType::Int,
@@ -82,8 +83,4 @@ Pattern::VariablePattern::VariablePattern() {
 
 }
 
-Pattern::VariablePattern::~VariablePattern() {
-	/*for (uint64 i = 0; i < first.GetSize(); i++) {
-		delete first[i];
-	}*/
 }
