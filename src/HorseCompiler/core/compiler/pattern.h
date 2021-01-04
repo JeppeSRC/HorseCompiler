@@ -35,14 +35,15 @@ public:
 	struct PatternItem {
 		PatternItem(TokenType token, const List<PatternItem>& next);
 		PatternItem(TokenType token, const PatternItem& next = PatternItem());
-		PatternItem(const List<TokenType>& tokens, const List<PatternItem>& next);
-		PatternItem(const List<TokenType>& tokens, const PatternItem& next = PatternItem());
 		PatternItem(TokenType token, KeywordType keyword, const List<PatternItem>& next);
 		PatternItem(TokenType token, KeywordType keyword, const PatternItem& next = PatternItem());
-		PatternItem(const List<TokenType>& tokens, KeywordType keyword, const List<PatternItem>& next);
-		PatternItem(const List<TokenType>& tokens, KeywordType keyword, const PatternItem& next = PatternItem());
 		PatternItem(TokenType token, const List<KeywordType>& keyword, const List<PatternItem>& next);
 		PatternItem(TokenType token, const List<KeywordType>& keyword, const PatternItem& next = PatternItem());
+
+		PatternItem(const List<TokenType>& tokens, const List<PatternItem>& next);
+		PatternItem(const List<TokenType>& tokens, const PatternItem& next = PatternItem());
+		PatternItem(const List<TokenType>& tokens, KeywordType keyword, const List<PatternItem>& next);
+		PatternItem(const List<TokenType>& tokens, KeywordType keyword, const PatternItem& next = PatternItem());
 		PatternItem(const List<TokenType>& tokens, const List<KeywordType>& keyword, const List<PatternItem>& next);
 		PatternItem(const List<TokenType>& tokens, const List<KeywordType>& keyword, const PatternItem& next = PatternItem());
 		~PatternItem();
