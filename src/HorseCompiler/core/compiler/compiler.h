@@ -26,6 +26,7 @@ SOFTWARE
 
 #include "token.h"
 #include "language.h"
+#include "pattern.h"
 
 class Compiler {
 private: 
@@ -42,6 +43,14 @@ private: // Internal functions
 	void AnalyzeStrings(List<Token>& lexerResult);
 	void AnalyzeEscapeSequences(Token& token);
 
+	struct PatternResult {
+		PatternType type = PatternType::Unknown;
+		List<Pattern::PatternItemResult> items;
+	};
+
+	void MatchAnyPattern(const Pattern& pattern, List<Token>& tokens, PatternResult* result); // Looks for a pattern
+	void MatchPattern(const Pattern::BasePattern* pattern, List<Token>& tokens, PatternResult* result); // Matches a specific pattern
+	
 public: //static stuff
 	static void Log(const Token& item, uint64 code, ...);
 };

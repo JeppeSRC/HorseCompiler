@@ -4,6 +4,7 @@
 #include <core/error/error.h>
 #include <core/preprocessor/preprocessor.h>
 #include <core/compiler/compiler.h>
+#include <core/compiler/pattern.h>
 
 #include <chrono>
 #include <Windows.h>
@@ -116,4 +117,6 @@ int main(int argc, char** argv) {
 	String s = pp.Run(res);
 
 	printf("%s\n", s.str);
+
+	compiler.SyntaxAnalazys(res);
 }

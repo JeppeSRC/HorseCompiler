@@ -71,6 +71,11 @@ public:
 	};
 
 
+	struct PatternItemResult {
+		TokenType token;
+		Token data;
+	};
+
 	struct BasePattern {
 		List<PatternItem> first;
 		PatternType type;
