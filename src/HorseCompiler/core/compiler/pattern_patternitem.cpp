@@ -78,10 +78,3 @@ Pattern::PatternItem::PatternItem(const List<TokenType>& tokens, const List<Keyw
 Pattern::PatternItem::PatternItem(const List<TokenType>& tokens, const List<KeywordType>& keyword, const PatternItem& next) : keywords(keyword), tokens(tokens) {
 	if (next.tokens.GetSize()) this->next.PushBack(next);
 }
-
-
-Pattern::PatternItem::~PatternItem() {
-	/*for (uint64 i = 0; i < next.GetSize(); i++) {
-		delete next[i];
-	}*/
-}
