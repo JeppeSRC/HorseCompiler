@@ -52,7 +52,6 @@ public:
 		PatternItem(const List<TokenType>& tokens, KeywordType keyword, const PatternItem& next = PatternItem());
 		PatternItem(const List<TokenType>& tokens, const List<KeywordType>& keyword, const List<PatternItem>& next);
 		PatternItem(const List<TokenType>& tokens, const List<KeywordType>& keyword, const PatternItem& next = PatternItem());
-		~PatternItem();
 
 		List<TokenType> tokens; // see below
 		List<KeywordType> keywords; // list of possible keywords
