@@ -79,6 +79,7 @@ int main(int argc, char** argv) {
 
 	auto& keywords = lang.keywords;
 
+	keywords.PushBack({ KeywordType::Void, "void" });
 	keywords.PushBack({ KeywordType::Char, "char" });
 	keywords.PushBack({ KeywordType::Short, "short" });
 	keywords.PushBack({ KeywordType::Int, "int" });
