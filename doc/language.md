@@ -6,7 +6,9 @@
 - [Data Types](#data-types)
 - [Pipeline Layout](#pipeline-layout)
 - [Builtin](#builtin)
-- [Example](#example-)
+-- [Variables](#variables)
+-- [Functions](#functions)
+- [Example](#example)
 
 ## Introduction
 
@@ -89,6 +91,8 @@ List of supported [Uniform Types](uniforms_opengl.md)
 
 ## Builtin
 
+#### Variables
+
 Name            | Type          | Shader
 ---             | ----          | -----
 Position        | Output        | Vertex
@@ -107,6 +111,10 @@ in vec4 fragCoord = FragCoord;
 ```
 
 More info in [SPIR-V Documentation](https://www.khronos.org/registry/spir-v/specs/unified1/SPIRV.html#_a_id_builtin_a_builtin)
+
+#### Functions
+
+[SPIR-V Extended Instructions](https://www.khronos.org/registry/spir-v/specs/1.0/GLSL.std.450.html) for a list of builtin functions. 
 
 ## Example
 
