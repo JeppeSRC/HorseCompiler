@@ -39,8 +39,8 @@ Pattern::VariablePattern::VariablePattern() : BasePattern(PatternType::Variable)
 
 	PatternItem cnst(TokenType::Keyword, KeywordType::Const);
 	PatternItem type({ TokenType::Keyword, TokenType::Identifier }, types);
-	PatternItem sign(TokenType::Keyword, { KeywordType::Signed, KeywordType::Unsigned }, type);
 	PatternItem type2(TokenType::Keyword, types2);
+	PatternItem sign(TokenType::Keyword, { KeywordType::Signed, KeywordType::Unsigned }, type2);
 
 	//<type> <name>
 	//<type> <const> <name>
@@ -59,11 +59,12 @@ Pattern::VariablePattern::VariablePattern() : BasePattern(PatternType::Variable)
 	//<const> <sign> <type> <name>
 	{
 		auto t = type;
+		auto t2 = type2;
 		auto c = cnst;
 		auto s = sign;
 
 		t.next.PushBack(name);
-		s.next.PushBack(t);
+		t2.next.PushBack(name);
 
 		c.next = { s, t };
 		first.PushBack(c);
@@ -72,13 +73,12 @@ Pattern::VariablePattern::VariablePattern() : BasePattern(PatternType::Variable)
 	//<sign> <type> <name>
 	//<sign> <type> <const> <name>
 	{
-		auto t = type;
+		auto t2 = type2;
 		auto c = cnst;
 		auto s = sign;
 
 		c.next.PushBack(name);
-		t.next = { name, c };
-		s.next.PushBack(t);
+		t2.next = { name, c };
 
 		first.PushBack(s);
 	}
