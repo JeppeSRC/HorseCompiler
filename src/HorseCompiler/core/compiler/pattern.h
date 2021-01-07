@@ -86,5 +86,13 @@ public:
 		VariablePattern();
 	} variablePattern;
 
+	struct ParamPattern : public BasePattern {
+		ParamPattern();
+	};
+
+	struct FunctionDeclarationPattern : public BasePattern {
+		ParamPattern param;
+		FunctionDeclarationPattern();
+	} functionPattern;
 
 };
