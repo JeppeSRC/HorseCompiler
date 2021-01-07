@@ -86,4 +86,130 @@ Pattern::VariablePattern::VariablePattern() : BasePattern(PatternType::Variable)
 
 }
 
+Pattern::FunctionDeclarationPattern::FunctionDeclarationPattern() : BasePattern(PatternType::Function) {
+	List<TokenType> tmp{ TokenType::Semicolon, TokenType::BracketOpen };
+	PatternItem colonOrBody(tmp);
+	PatternItem close(TokenType::ParenthesisClose, colonOrBody);
+	PatternItem open(TokenType::ParenthesisOpen, close);
+	PatternItem name(TokenType::Identifier, open);
+
+	List<KeywordType> types = { KeywordType::Char, KeywordType::Short, KeywordType::Int,
+								KeywordType::Long, KeywordType::Float, KeywordType::Double,
+								KeywordType::Vec2, KeywordType::Vec3, KeywordType::Vec4,
+								KeywordType::Mat4, KeywordType::Void };
+
+	List<KeywordType> types2 = { KeywordType::Char, KeywordType::Short, KeywordType::Int, KeywordType::Long };
+
+	PatternItem cnst(TokenType::Keyword, KeywordType::Const);
+	PatternItem type({ TokenType::Keyword, TokenType::Identifier }, types);
+	PatternItem type2(TokenType::Keyword, types2);
+	PatternItem sign(TokenType::Keyword, { KeywordType::Signed, KeywordType::Unsigned }, type2);
+
+	//<type> <name>
+	//<type> <const> <name>
+	{
+		auto t = type;
+		auto c = cnst;
+
+		c.next.PushBack(name);
+
+		t.next = { name, c };
+
+		first.PushBack(t);
+	}
+
+	//<const> <type> <name>
+	//<const> <sign> <type> <name>
+	{
+		auto t = type;
+		auto t2 = type2;
+		auto c = cnst;
+		auto s = sign;
+
+		t.next.PushBack(name);
+		t2.next.PushBack(name);
+
+		c.next = { s, t };
+		first.PushBack(c);
+	}
+
+	//<sign> <type> <name>
+	//<sign> <type> <const> <name>
+	{
+		auto t2 = type2;
+		auto c = cnst;
+		auto s = sign;
+
+		c.next.PushBack(name);
+		t2.next = { name, c };
+
+		first.PushBack(s);
+	}
+}
+
+Pattern::ParamPattern::ParamPattern() : BasePattern(PatternType::Function) {
+	List<TokenType> tmp({ TokenType::Comma, TokenType::ParenthesisClose });
+	PatternItem end(tmp);
+	PatternItem name(TokenType::Identifier, end);
+	PatternItem ref(TokenType::Ampersand, name);
+
+	List<KeywordType> types = { KeywordType::Char, KeywordType::Short, KeywordType::Int,
+								KeywordType::Long, KeywordType::Float, KeywordType::Double,
+								KeywordType::Vec2, KeywordType::Vec3, KeywordType::Vec4,
+								KeywordType::Mat4 };
+
+	List<KeywordType> types2 = { KeywordType::Char, KeywordType::Short, KeywordType::Int, KeywordType::Long };
+
+	PatternItem cnst(TokenType::Keyword, KeywordType::Const);
+	PatternItem type({ TokenType::Keyword, TokenType::Identifier }, types);
+	PatternItem type2(TokenType::Keyword, types2);
+	PatternItem sign(TokenType::Keyword, { KeywordType::Signed, KeywordType::Unsigned }, type2);
+
+	//<type> <name>
+	//<type> <const> <name>
+	//<type> <ref> <name>
+	//<type> <const> <ref> <name>
+	{
+		auto t = type;
+		auto c = cnst;
+
+		c.next = { name, ref };
+
+		t.next = { name, c , ref };
+
+		first.PushBack(t);
+	}
+
+	//<const> <type> <name>
+	//<const> <sign> <type> <name>
+	//<const> <type> <ref> <name>
+	//<const> <sign> <type> <ref> <name>
+	{
+		auto t = type;
+		auto t2 = type2;
+		auto c = cnst;
+		auto s = sign;
+
+		t.next = { name , ref };
+		t2.next = { name , ref };
+
+		c.next = { s, t };
+		first.PushBack(c);
+	}
+
+	//<sign> <type> <name>
+	//<sign> <type> <const> <name>
+	//<sign> <type> <ref> <name>
+	//<sign> <type> <const> <ref> <name>
+	{
+		auto t2 = type2;
+		auto c = cnst;
+		auto s = sign;
+
+		c.next = { name , ref };
+		t2.next = { name, c, ref };
+
+		first.PushBack(s);
+	}
+
 }
