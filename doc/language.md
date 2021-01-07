@@ -118,7 +118,7 @@ More info in [SPIR-V Documentation](https://www.khronos.org/registry/spir-v/spec
 
 ## Example
 
-Simple example with a vertex and fragment stage that renders a shaded model.
+Simple example with a vertex and fragment stage that renders a teextured model.
 
 ### Vertex Shader:
 ```
