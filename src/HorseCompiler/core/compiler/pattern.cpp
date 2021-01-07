@@ -35,9 +35,12 @@ Pattern::VariablePattern::VariablePattern() : BasePattern(PatternType::Variable)
 								KeywordType::Vec2, KeywordType::Vec3, KeywordType::Vec4,
 								KeywordType::Mat4 };
 
+	List<KeywordType> types2 = { KeywordType::Char, KeywordType::Short, KeywordType::Int, KeywordType::Long };
+
 	PatternItem cnst(TokenType::Keyword, KeywordType::Const);
 	PatternItem type({ TokenType::Keyword, TokenType::Identifier }, types);
 	PatternItem sign(TokenType::Keyword, { KeywordType::Signed, KeywordType::Unsigned }, type);
+	PatternItem type2(TokenType::Keyword, types2);
 
 	//<type> <name>
 	//<type> <const> <name>
