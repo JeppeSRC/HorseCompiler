@@ -115,6 +115,8 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 					if (c == lang->syntax.charStart) {
 						if (includeSpaces == 0) {
 							includeSpaces = IN_CHAR;
+						} else if (includeSpaces == IN_CHAR) {
+							includeSpaces = 0;
 						}
 					} else if (c == lang->syntax.charEnd) {
 						if (includeSpaces == IN_CHAR) {
