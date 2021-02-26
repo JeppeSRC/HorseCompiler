@@ -45,12 +45,12 @@ void Compiler::MatchAnyPattern(const Pattern& pattern, List<Token>& tokens, Patt
 
 		if (result->type != PatternType::Unknown) return;
 	}
-	
+
 }
 
 void Compiler::MatchPattern(const Pattern::BasePattern* pattern, List<Token>& tokens, PatternResult* result) {
 	uint8 count = 0;
-	
+
 	if (pattern->type == PatternType::Variable) {
 		const Pattern::BasePattern& p = *pattern;
 		const List<Pattern::PatternItem>* next = &p.first;
