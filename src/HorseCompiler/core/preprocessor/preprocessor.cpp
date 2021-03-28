@@ -327,7 +327,7 @@ void PreProcessor::ProcessPragma(List<Token>& tokens, uint64 index) {
 	if (pragmaDirective.string == "once") {
 		includedFiles.PushBack(pragmaDirective.filename);
 	} else {
-		Compiler::Log(pragmaDirective, HC_ERROR_PREPROCESSOR_PRAGMA_UNKNOWN_DIRECTIVE, pragmaDirective.string.str);
+		Compiler::Log(pragmaDirective, HC_WARN_PREPROCESSOR_PRAGMA_UNKNOWN_DIRECTIVE, pragmaDirective.string.str);
 	}
 
 	tokens.Remove(index - 2, end);
@@ -347,7 +347,7 @@ void PreProcessor::ProcessDefine(List<Token>& tokens, uint64 index) {
 
 	if ((loc = defines.Find(name.string, FindDefineCmp, 0)) != ~0) {
 		defines[loc].second = def;
-		Compiler::Log(name, HC_ERROR_PREPROCESSOR_MACRO_REDEFINITION, name.string.str);
+		Compiler::Log(name, HC_WARN_PREPROCESSOR_MACRO_REDEFINITION, name.string.str);
 	} else {
 		defines.PushBack(std::pair(name.string, def));
 	}

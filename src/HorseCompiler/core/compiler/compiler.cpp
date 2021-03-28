@@ -41,46 +41,64 @@ void Compiler::Log(const Token& item, uint64 code, ...) {
 
 	switch (code) {
 		case HC_ERROR_SYNTAX_MISSING_STRING_CLOSE:
-			Log::Error(item.line, item.column, item.filename.str, code, "missing closing string character '%c'", va_arg(list, char));
+			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: missing closing string character '%c'", va_arg(list, char));
 			break;
-		case HC_ERROR_SYNTAX_INVALID_ESCAPE_CHARACTER:
-			Log::Warning(item.line, item.column + va_arg(list, uint64), item.filename.str, code, "unrecognized escape character '%c' sequence", va_arg(list, char));
+		case HC_WARN_SYNTAX_INVALID_ESCAPE_CHARACTER:
+			Log::Warning(item.line, item.column + va_arg(list, uint64), item.filename.str, code, "syntax error: unrecognized escape character '%c' sequence", va_arg(list, char));
 			break;
 		case HC_ERROR_SYNTAX_INT_LITERAL_NO_DIGIT:
-			Log::Error(item.line, item.column + va_arg(list, uint64), item.filename.str, code, "integer literal must have at least one digit");
+			Log::Error(item.line, item.column + va_arg(list, uint64), item.filename.str, code, "syntax error: integer literal must have at least one digit");
 			break;
 		case HC_ERROR_SYNTAX_INT_LITERAL_TO_BIG:
-			Log::Error(item.line, item.column + va_arg(list, uint64), item.filename.str, code, "integer literal to big for a character '%u'", va_arg(list, uint64));
+			Log::Error(item.line, item.column + va_arg(list, uint64), item.filename.str, code, "syntax error: integer literal to big for a character '%u'", va_arg(list, uint64));
 			break;
 		case HC_ERROR_PREPROCESSOR_NO_DIRECTIVE:
-			Log::Error(item.line, item.column, item.filename.str, code, "no directive");
+			Log::Error(item.line, item.column, item.filename.str, code, "preprocessor error: no directive");
 			break;
 		case HC_ERROR_PREPROCESSOR_UNKNOWN_DIRECTIVE:
-			Log::Error(item.line, item.column, item.filename.str, code, "unknown preprocessor directive \"%s\"", va_arg(list, char*));
+			Log::Error(item.line, item.column, item.filename.str, code, "preprocessor error: unknown preprocessor directive '%s'", va_arg(list, char*));
 			break;
 		case HC_ERROR_PREPROCESSOR_INCLUDE_FILE_NOT_FOUND:
-			Log::Error(item.line, item.column, item.filename.str, code, "no such file or directory \"%s\"", va_arg(list, char*));
+			Log::Error(item.line, item.column, item.filename.str, code, "preprocessor error: no such file or directory \"%s\"", va_arg(list, char*));
 			break;
 		case HC_ERROR_PREPROCESSOR_INCLUDE_UNKNOWN_SYMBOL1:
-			Log::Error(item.line, item.column, item.filename.str, code, "unkown symbol in include directive '%c', expected '\"' or '<'", va_arg(list, char));
+			Log::Error(item.line, item.column, item.filename.str, code, "upreprocessor error: nkown symbol in include directive '%c', expected '\"' or '<'", va_arg(list, char));
 			break;
 		case HC_ERROR_PREPROCESSOR_INCLUDE_UNKNOWN_SYMBOL2:
-			Log::Error(item.line, item.column, item.filename.str, code, "unkown symbol in include directive '%c', expected '%c'", va_arg(list, char), va_arg(list, char));
+			Log::Error(item.line, item.column, item.filename.str, code, "preprocessor error: unkown symbol in include directive '%c', expected '%c'", va_arg(list, char), va_arg(list, char));
 			break;
 		case HC_ERROR_PREPROCESSOR_INCLUDE_RECURSION:
-			Log::Error(item.line, item.column, item.filename.str, code, "\"%s\" causes recursion", va_arg(list, char*));
+			Log::Error(item.line, item.column, item.filename.str, code, "preprocessor error: '%s' causes recursion", va_arg(list, char*));
 			break;
-		case HC_ERROR_PREPROCESSOR_PRAGMA_UNKNOWN_DIRECTIVE:
-			Log::Warning(item.line, item.column, item.filename.str, code, "unknown pragma directive \"%s\"", va_arg(list, char*));
+		case HC_WARN_PREPROCESSOR_PRAGMA_UNKNOWN_DIRECTIVE:
+			Log::Warning(item.line, item.column, item.filename.str, code, "preprocessor error: unknown pragma directive '%s'", va_arg(list, char*));
 			break;
-		case HC_ERROR_PREPROCESSOR_MACRO_REDEFINITION:
-			Log::Warning(item.line, item.column, item.filename.str, code, "macro redefinition \"%s\"", va_arg(list, char*));
+		case HC_WARN_PREPROCESSOR_MACRO_REDEFINITION:
+			Log::Warning(item.line, item.column, item.filename.str, code, "preprocessor error: macro redefinition '%s'", va_arg(list, char*));
 			break;
 		case HC_ERROR_PREPROCESSOR_ERROR_DIRECTIVE:
-			Log::Error(item.line, item.column, item.filename.str, code, "\"%s\"", va_arg(list, char*));
+			Log::Error(item.line, item.column, item.filename.str, code, "preprocessor error: '%s'", va_arg(list, char*));
 			break;
 		case HC_ERROR_SYNTAX_CHAR_LITERAL_TO_MANY_CHARS:
-			Log::Error(item.line, item.column, item.filename.str, code, "char literal has to many chars");
+			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: char literal has to many chars");
+			break;
+		case HC_WARN_SYNTAX_SAME_TYPE_QUALIFIER:
+			Log::Warning(item.line, item.column, item.filename.str, code, "syntax error: same type qualifier used more than once");
+			break;
+		case HC_ERROR_SYNTAX_SIGNED_UNSIGNED_EXCLUSIVE:
+			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: signed/unsigned keywords are mutually exclusive");
+			break;
+		case HC_ERROR_SYNTAX_TYPE_FOLLOWED_BY_TYPE:
+			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: type '%s' followed by '%s' is illegal", va_arg(list, char*), va_arg(list, char*));
+			break;
+		case HC_ERROR_SYNTAX_SIGNED_UNSIGNED_NOT_ALLOWED_ON_TYPE:
+			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: '%s' not allowed on type '%s'", va_arg(list, char*), va_arg(list, char*));
+			break;
+		case HC_ERROR_SYNTAX_TYPENAME_ALREADY_EXIST:
+			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: type-name '%s' already exist", va_arg(list, char*));
+			break;
+		case HC_ERROR_SYNTAX_EXPECTED:
+			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: '%s' expected '%s'", va_arg(list, char*));
 			break;
 	}
 }
