@@ -43,6 +43,7 @@ enum class TokenType {
 
 	Plus,
 	Minus,
+
 	Asterix,
 	Slash,
 	OpCompoundAdd,
@@ -91,6 +92,7 @@ enum class TokenType {
 	Others = 300,
 
 	Keyword,
+	PrimitiveType,
 	Identifier,
 	Literal
 };
@@ -104,19 +106,6 @@ struct TokenTypeDef {
 enum class KeywordType {
 	Unknown,
 
-	Char,
-	Short,
-	Int,
-	Long,
-	Float,
-	Double,
-	Vec2,
-	Vec3,
-	Vec4,
-	Mat4,
-	Const,
-	Signed,
-	Unsigned,
 	Typedef,
 	If,
 	For,
@@ -131,6 +120,31 @@ enum class KeywordType {
 
 struct KeywordDef {
 	KeywordType keyword;
+	String def;
+};
+
+enum class PrimitiveType {
+	Unknown,
+
+	Void,
+
+	Char,
+	Short,
+	Int,
+	//Long,
+	Float,
+	//Double,
+	Vec2,
+	Vec3,
+	Vec4,
+	Mat4,
+	Const,
+	Signed,
+	Unsigned
+};
+
+struct PrimitiveTypeDef {
+	PrimitiveType type;
 	String def;
 };
 
@@ -168,4 +182,5 @@ class Language {
 public:
 	Syntax syntax;
 	List<KeywordDef> keywords;
+	List<PrimitiveTypeDef> primitiveTypes;
 };

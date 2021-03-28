@@ -26,13 +26,102 @@ SOFTWARE
 
 #include "token.h"
 #include "language.h"
-#include "pattern.h"
+#include "ast.h"
+
+class Type {
+public:
+	String name;
+
+	enum {
+		Unkown,
+		Scalar,
+		Vec,
+		Mat,
+		Struct,
+		TypeDef
+	};
+
+	uint8 type;
+	uint8 constness;
+
+	Type(const String& name, uint8 type, uint8 constness) : name(name), type(type), constness(constness) {}
+};
+
+class TypeScalar : public Type {
+public:
+	enum {
+		Float,
+		Int
+	};
+
+	uint8 scalarType;
+	uint8 bits;
+	uint8 sign;
+
+	TypeScalar(const String& name, uint8 type, uint8 constness, uint8 bits, uint8 sign) : Type(name, Type::Scalar, constness), scalarType(type), bits(bits), sign(sign) {}
+
+	bool operator==(const TypeScalar* other) const {
+		return operator==(*other);
+	}
+
+	bool operator==(const TypeScalar& other) const {
+		return scalarType == other.scalarType && bits == other.bits && sign == other.sign;
+	}
+};
+
+class TypeVec : public Type {
+public:
+	TypeScalar* component;
+	uint8 components;
+
+	TypeVec(const String& name, TypeScalar* component, uint8 components, uint8 constness) : Type(name, Type::Vec, constness), component(component), components(components) {}
+
+	bool operator==(const TypeVec* other) const {
+		return operator==(*other);
+	}
+
+	bool operator==(const TypeVec& other) const {
+		return *component == other.component && components == other.components;
+	}
+};
+
+class TypeMat : public Type {
+public:
+	TypeScalar* component;
+	uint8 columns;
+	uint8 rows;
+
+	TypeMat(const String& name, TypeScalar* component, uint8 columns, uint8 rows, uint8 constness) : Type(name, Type::Mat, constness), component(component), columns(columns), rows(rows) {}
+
+	bool operator==(const TypeMat* other) const {
+		return operator==(*other);
+	}
+
+	bool operator==(const TypeMat& other) const {
+		return *component == other.component && rows == other.rows && columns == other.columns;
+	}
+};
+
+class TypeStruct : public Type {
+public:
+	List<Type*> elements;
+
+	TypeStruct(const String& name, const List<Type*>& elements, uint8 constness) : Type(name, Type::Struct, constness), elements(elements) {}
+};
+
+class TypeTypeDef : public Type {
+public:
+	Type* actualType;
+
+	TypeTypeDef(const String& name, Type* type) : Type(name, Type::TypeDef, 0), actualType(type) {}
+};
 
 class Compiler {
-private: 
+private:
 	String currentDir;
 	Language* lang;
 
+	List<Type*> types;
 public:
 	Compiler(const String& currentDir, Language* lang);
 
@@ -43,14 +132,18 @@ private: // Internal functions
 	void AnalyzeStrings(List<Token>& lexerResult);
 	void AnalyzeEscapeSequences(Token& token);
 
-	struct PatternResult {
-		PatternType type = PatternType::Unknown;
-		List<Pattern::PatternItemResult> items;
-	};
+	String GetPrimitiveTypeString(const PrimitiveType& type);
 
-	void MatchAnyPattern(const Pattern& pattern, List<Token>& tokens, PatternResult* result); // Looks for a pattern
-	void MatchPattern(const Pattern::BasePattern* pattern, List<Token>& tokens, PatternResult* result); // Matches a specific pattern
-	
+	Type* GetType(const String& name);
+	TypeScalar* MakeTypeScalar(PrimitiveType type, uint8 sign, uint8 constness);
+	TypeVec* MakeTypeVec(PrimitiveType type, uint8 constness);
+	TypeMat* MakeTypeMat(PrimitiveType type, uint8 constness);
+	TypeTypeDef* MakeTypeTypeDef(Type* type, const String& name);
+
+	uint64 AnalyzeTypedef(List<Token>& tokens, uint64 start);
+	uint64 AnalyzeTypeDeclaration(List<Token>& tokens, uint64 start, Type** retType);
+
 public: //static stuff
 	static void Log(const Token& item, uint64 code, ...);
+	static void Log(const ASTNode* item, uint64 code, ...);
 };

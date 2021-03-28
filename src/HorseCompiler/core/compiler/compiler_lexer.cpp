@@ -77,7 +77,7 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 		for (uint64 j = 0; j < indices.GetSize(); j++) {
 			if (i == indices[j]) {
 				Token t;
-				
+
 				if ((int64)lastIndex <= (int64)i - 1) {
 					t.filename = filename;
 					t.string = file.SubString(lastIndex, i - 1);
@@ -136,7 +136,7 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 					} else if (includeSpaces == IN_INCLUDE && c == '>') {
 						t.isString = false;
 						includeSpaces = 0;
-					} 
+					}
 
 					if (includeSpaces) {
 						result.PushBack(t);
@@ -153,7 +153,7 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 				}
 			}
 		}
-		
+
 	}
 
 	result.Remove(0, 0);
@@ -200,7 +200,7 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 		}
 	}
 
-		//Keywords
+	//Keywords
 	for (uint64 i = 0; i < result.GetSize(); i++) {
 		Token& token = result[i];
 
@@ -208,10 +208,27 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 
 		for (uint64 j = 0; j < lang->keywords.GetSize(); j++) {
 			const KeywordDef& def = lang->keywords[j];
-			
+
 			if (token.string == def.def) {
 				token.type = TokenType::Keyword;
 				token.keyword = def.keyword;
+				break;
+			}
+		}
+	}
+
+	//Primitives
+	for (uint64 i = 0; i < result.GetSize(); i++) {
+		Token& token = result[i];
+
+		if (token.isString || token.type != TokenType::Identifier) continue;
+
+		for (uint64 j = 0; j < lang->primitiveTypes.GetSize(); j++) {
+			const PrimitiveTypeDef& def = lang->primitiveTypes[j];
+
+			if (token.string == def.def) {
+				token.type = TokenType::PrimitiveType;
+				token.primitiveType = def.type;
 				break;
 			}
 		}
@@ -339,7 +356,7 @@ void Compiler::AnalyzeEscapeSequences(Token& token) {
 			}
 		}
 
-		Compiler::Log(token, HC_ERROR_SYNTAX_INVALID_ESCAPE_CHARACTER, index, sig);
+		Compiler::Log(token, HC_WARN_SYNTAX_INVALID_ESCAPE_CHARACTER, index, sig);
 	}
 
 

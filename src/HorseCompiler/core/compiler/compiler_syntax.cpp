@@ -23,95 +23,155 @@ SOFTWARE
 */
 
 #include "compiler.h"
-
-
 #include <util/util.h>
 
+bool FindTokenCMP(const Token& item, const TokenType& token) {
+	return item.type == token;
+}
+
+bool FindTypeCMP(const PrimitiveTypeDef& item, const PrimitiveType& type) {
+	return item.type == type;
+}
+
 void Compiler::SyntaxAnalazys(List<Token>& tokens) {
-	Pattern pattern;
 
-	while (tokens.GetSize()) {
-		PatternResult res;
-		MatchAnyPattern(pattern, tokens, &res);
+	for (uint64 i = 0; i < tokens.GetSize(); i++) {
+		const Token& t = tokens[i];
+
+		if (t.type == TokenType::Keyword) {
+			if (t.keyword == KeywordType::Typedef) {
+				i = AnalyzeTypedef(tokens, i);
+			}
+		}
 	}
 
 }
 
-void Compiler::MatchAnyPattern(const Pattern& pattern, List<Token>& tokens, PatternResult* result) {
-	List<Pattern::BasePattern*> patterns = { (Pattern::BasePattern*)&pattern.variablePattern };
+uint64 Compiler::AnalyzeTypedef(List<Token>& tokens, uint64 start) {
+	Type* type = nullptr;
+	uint64 index = AnalyzeTypeDeclaration(tokens, start + 1, &type);
 
-	for (uint64 i = 0; i < patterns.GetSize(); i++) {
-		MatchPattern(patterns[i], tokens, result);
+	if (index++ == ~0) return ~0;
 
-		if (result->type != PatternType::Unknown) return;
+	String name = tokens[index].string;
+
+	Type* tmp = GetType(name);
+
+	if (tmp != nullptr) {
+		Compiler::Log(tokens[index], HC_ERROR_SYNTAX_TYPENAME_ALREADY_EXIST, name.str);
 	}
 
+	MakeTypeTypeDef(type, name);
+
+	if (tokens[++index].type != TokenType::Semicolon) {
+		Compiler::Log(tokens[index], HC_ERROR_SYNTAX_EXPECTED, tokens[index].string.str, ';');
+		return ~0;
+	}
+
+	return index;
 }
 
-void Compiler::MatchPattern(const Pattern::BasePattern* pattern, List<Token>& tokens, PatternResult* result) {
-	uint8 count = 0;
+uint64 Compiler::AnalyzeTypeDeclaration(List<Token>& tokens, uint64 start, Type** retType) {
+	Token signToken;
+	uint8 sign = 2;
+	uint8 constness = 0;
 
-	if (pattern->type == PatternType::Variable) {
-		const Pattern::BasePattern& p = *pattern;
-		const List<Pattern::PatternItem>* next = &p.first;
+	Type* tmp = nullptr;
+	PrimitiveType type = PrimitiveType::Unknown;
 
-		while (true) {
-			const List<Pattern::PatternItem>& list = *next;
+	uint64 i = 0;
 
-			if (list.GetSize() == 0) break;
+	for (i = start; i < tokens.GetSize(); i++) {
+		const Token& token = tokens[i];
 
-			for (uint64 i = 0; i < list.GetSize(); i++) {
-				const Pattern::PatternItem& item = list[i];
+		if (token.type != TokenType::PrimitiveType) {
+			if (token.type == TokenType::Identifier) {
+				tmp = GetType(token.string);
 
-				bool match = false;
-				TokenType actual = tokens[count].type;
-				TokenType tok;
-
-				//Check if any of the tokens match
-				for (uint64 j = 0; j < item.tokens.GetSize(); j++) {
-					tok = item.tokens[j];
-
-					switch (tok) {
-						case TokenType::Operators: {
-							int32 operators = (int32)TokenType::Operators;
-							int32 t = (int32)actual;
-
-							match = (t > operators && t < operators + 100);
-							break;
-						}
-						case TokenType::MiscTokens:	{
-							int32 misc = (int32)TokenType::MiscTokens;
-							int32 t = (int32)actual;
-
-							match = (t > misc && t < misc + 100);
-							break;
-						}
-						case TokenType::Keyword:
-							for (uint64 c = 0; c < item.keywords.GetSize(); c++) {
-								if (tokens[count].keyword == item.keywords[c]) {
-									match = true;
-									break;
-								}
-							}
-
-							break;
-						default:
-							match = actual == tok;
+				if (tmp == nullptr) {
+					break;
+				} else if (type != PrimitiveType::Unknown) {
+					Compiler::Log(token, HC_ERROR_SYNTAX_TYPE_FOLLOWED_BY_TYPE, GetPrimitiveTypeString(type).str, tmp->name.str);
+					return ~0;
+				}
+			}
+		} else {
+			switch (token.primitiveType) {
+				case PrimitiveType::Const:
+					if (constness) {
+						Compiler::Log(token, HC_WARN_SYNTAX_SAME_TYPE_QUALIFIER);
 					}
 
-					if (match) break;
-				}
+					constness = 1;
+					break;
+				case PrimitiveType::Unsigned:
+					if (sign == 0) {
+						Compiler::Log(token, HC_WARN_SYNTAX_SAME_TYPE_QUALIFIER);
+						return ~0;
+					} else if (sign == 1) {
+						Compiler::Log(token, HC_ERROR_SYNTAX_SIGNED_UNSIGNED_EXCLUSIVE);
+						return ~0;
+					}
 
-				if (!match) continue;
+					sign = 0;
+					signToken = token;
+					break;
+				case PrimitiveType::Signed:
+					if (sign == 1) {
+						Compiler::Log(token, HC_WARN_SYNTAX_SAME_TYPE_QUALIFIER);
+						return ~0;
+					} else if (sign == 0) {
+						Compiler::Log(token, HC_ERROR_SYNTAX_SIGNED_UNSIGNED_EXCLUSIVE);
+						return ~0;
+					}
 
-				result->items.PushBack({ tok, tokens[count++] });
-				next = &item.next;
-				break;
+					sign = 1;
+					signToken = token;
+					break;
+				case PrimitiveType::Char:
+				case PrimitiveType::Short:
+				case PrimitiveType::Int:
+				case PrimitiveType::Float:
+				case PrimitiveType::Vec2:
+				case PrimitiveType::Vec3:
+				case PrimitiveType::Vec4:
+				case PrimitiveType::Mat4:
+					if (type != PrimitiveType::Unknown) {
+						Compiler::Log(token, HC_ERROR_SYNTAX_TYPE_FOLLOWED_BY_TYPE, GetPrimitiveTypeString(type).str, GetPrimitiveTypeString(token.primitiveType).str);
+						return ~0;
+					}
+
+					type = token.primitiveType;
 			}
 		}
 
-		if (result->items.GetSize() != 0) {
-			result->type = PatternType::Variable;
+	}
+
+	if (type != PrimitiveType::Unknown) {
+		if (type != PrimitiveType::Char && type != PrimitiveType::Short && type != PrimitiveType::Int) {
+			if (sign != 2) {
+				Compiler::Log(signToken, HC_ERROR_SYNTAX_SIGNED_UNSIGNED_NOT_ALLOWED_ON_TYPE, sign == 0 ? "unsigned" : "signed", GetPrimitiveTypeString(type).str);
+				return ~0;
+			}
+		}
+
+		switch (type) {
+			case PrimitiveType::Char:
+			case PrimitiveType::Short:
+			case PrimitiveType::Int:
+			case PrimitiveType::Float:
+				*retType = MakeTypeScalar(type, sign, constness);
+				break;
+			case PrimitiveType::Vec2:
+			case PrimitiveType::Vec4:
+			case PrimitiveType::Vec3:
+				*retType = MakeTypeVec(type, constness);
+				break;
+			case PrimitiveType::Mat4:
+				*retType = MakeTypeMat(type, constness);
 		}
 	}
+
+	return i-1;
 }
+

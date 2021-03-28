@@ -33,6 +33,147 @@ Compiler::Compiler(const String& cwd, Language* language) : lang(language) {
 
 	if (!currentDir.EndsWith("/"))
 		currentDir.Append("/");
+
+}
+
+String Compiler::GetPrimitiveTypeString(const PrimitiveType& type) {
+	for (uint64 i = 0; i < lang->primitiveTypes.GetSize(); i++) {
+		auto& t = lang->primitiveTypes[i];
+
+		if (t.type == type) return t.def;
+	}
+
+	return "";
+}
+
+Type* Compiler::GetType(const String& name) {
+	for (uint64 i = 0; i < types.GetSize(); i++) {
+		if (types[i]->name == name) return types[i];
+	}
+
+	return nullptr;
+}
+
+TypeScalar* Compiler::MakeTypeScalar(PrimitiveType type, uint8 sign, uint8 constness) {
+	String name = constness ? "const " : "";
+
+	// If sign == 2 it will be set the default sign value
+	if (type != PrimitiveType::Float) {
+		if (sign == 0) {
+			name += "unsigned ";
+		} else if (sign == 1) {
+			name += "signed ";
+		}
+	}
+
+	TypeScalar* tmp = nullptr;
+
+	switch (type) {
+		case PrimitiveType::Char:
+			tmp = new TypeScalar(name + "char", TypeScalar::Int, constness, 8, sign);
+			break;
+		case PrimitiveType::Short:
+			tmp = new TypeScalar(name + "short", TypeScalar::Int, constness, 16, sign);
+			break;
+		case PrimitiveType::Int:
+			tmp = new TypeScalar(name + "int", TypeScalar::Int, constness, 32, sign);
+			break;
+		case PrimitiveType::Float:
+			tmp = new TypeScalar(name + "float", TypeScalar::Float, constness, 32, sign);
+			break;
+	}
+
+	for (uint64 i = 0; i < types.GetSize(); i++) {
+		Type* t = types[i];
+
+		if (t->type != Type::Scalar) continue;
+
+		TypeScalar* ts = (TypeScalar*)t;
+
+		if (*ts == tmp) {
+			delete tmp;
+
+			return ts;
+		}
+	}
+
+	types.PushBack(tmp);
+
+	return tmp;
+}
+
+TypeVec* Compiler::MakeTypeVec(PrimitiveType type, uint8 constness) {
+	String name = constness ? "const " : "";
+
+	TypeVec* tmp = nullptr;
+
+	switch (type) {
+		case PrimitiveType::Vec2:
+			tmp = new TypeVec(name + "vec2", MakeTypeScalar(PrimitiveType::Float, 0, constness), 2, constness);
+			break;
+		case PrimitiveType::Vec3:
+			tmp = new TypeVec(name + "vec2", MakeTypeScalar(PrimitiveType::Float, 0, constness), 3, constness);
+			break;
+		case PrimitiveType::Vec4:
+			tmp = new TypeVec(name + "vec2", MakeTypeScalar(PrimitiveType::Float, 0, constness), 4, constness);
+			break;
+	}
+
+	for (uint64 i = 0; i < types.GetSize(); i++) {
+		Type* t = types[i];
+
+		if (t->type != Type::Vec) continue;
+
+		TypeVec* ts = (TypeVec*)t;
+
+		if (*ts == tmp) {
+			delete tmp;
+
+			return ts;
+		}
+	}
+
+	types.PushBack(tmp);
+
+	return tmp;
+}
+
+TypeMat* Compiler::MakeTypeMat(PrimitiveType type, uint8 constness) {
+	String name = constness ? "const " : "";
+
+	TypeMat* tmp = nullptr;
+
+	switch (type) {
+		case PrimitiveType::Mat4:
+			tmp = new TypeMat(name + "mat4", MakeTypeScalar(PrimitiveType::Float, 0, constness), 4, 4, constness);
+			break;
+	}
+
+	for (uint64 i = 0; i < types.GetSize(); i++) {
+		Type* t = types[i];
+
+		if (t->type != Type::Mat) continue;
+
+		TypeMat* ts = (TypeMat*)t;
+
+		if (*ts == tmp) {
+			delete tmp;
+
+			return ts;
+		}
+	}
+
+	types.PushBack(tmp);
+
+	return tmp;
+}
+
+TypeTypeDef* Compiler::MakeTypeTypeDef(Type* type, const String& name) {
+	TypeTypeDef* tmp = new TypeTypeDef(name, type);
+
+	types.PushBack(tmp);
+
+	return tmp;
 }
 
 void Compiler::Log(const Token& item, uint64 code, ...) {

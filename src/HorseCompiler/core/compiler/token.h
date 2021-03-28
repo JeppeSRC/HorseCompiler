@@ -38,7 +38,8 @@ struct Token {
 
 	TokenType type = TokenType::Unknown;
 	KeywordType keyword = KeywordType::Unknown;
-	
+	PrimitiveType primitiveType = PrimitiveType::Unknown;
+
 	bool operator==(const Token& other) const;
 
 	// List comp functions

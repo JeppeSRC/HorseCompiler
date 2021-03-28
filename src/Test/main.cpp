@@ -4,16 +4,15 @@
 #include <core/error/error.h>
 #include <core/preprocessor/preprocessor.h>
 #include <core/compiler/compiler.h>
-#include <core/compiler/pattern.h>
 
 #include <chrono>
 #include <Windows.h>
 
 int main(int argc, char** argv) {
 	char buf[1024];
-	
+
 	GetCurrentDirectoryA(1024, buf);
-	
+
 	Language lang;
 
 	Compiler compiler(String(buf), &lang);
@@ -77,29 +76,33 @@ int main(int argc, char** argv) {
 	type.PushBack({ TokenType::SqBracketClose, "]" });
 	type.PushBack({ TokenType::Semicolon, ";" });
 
+	auto& primitiveTypes = lang.primitiveTypes;
+
+	primitiveTypes.PushBack({ PrimitiveType::Void, "void" });
+	primitiveTypes.PushBack({ PrimitiveType::Char, "char" });
+	primitiveTypes.PushBack({ PrimitiveType::Short, "short" });
+	primitiveTypes.PushBack({ PrimitiveType::Int, "int" });
+//	primitiveTypes.PushBack({ PrimitiveType::Long, "long" });
+	primitiveTypes.PushBack({ PrimitiveType::Float, "float" });
+//	primitiveTypes.PushBack({ PrimitiveType::Double, "double" });
+	primitiveTypes.PushBack({ PrimitiveType::Vec2, "vec2" });
+	primitiveTypes.PushBack({ PrimitiveType::Vec3, "vec3" });
+	primitiveTypes.PushBack({ PrimitiveType::Vec4, "vec4" });
+	primitiveTypes.PushBack({ PrimitiveType::Mat4, "mat4" });
+	primitiveTypes.PushBack({ PrimitiveType::Const, "const" });
+	primitiveTypes.PushBack({ PrimitiveType::Signed, "signed" });
+	primitiveTypes.PushBack({ PrimitiveType::Unsigned, "unsigned" });
+
+
 	auto& keywords = lang.keywords;
 
-	keywords.PushBack({ KeywordType::Void, "void" });
-	keywords.PushBack({ KeywordType::Char, "char" });
-	keywords.PushBack({ KeywordType::Short, "short" });
-	keywords.PushBack({ KeywordType::Int, "int" });
-	keywords.PushBack({ KeywordType::Long, "long" });
-	keywords.PushBack({ KeywordType::Float, "float" });
-	keywords.PushBack({ KeywordType::Double, "double" });
-	keywords.PushBack({ KeywordType::Vec2, "vec2" });
-	keywords.PushBack({ KeywordType::Vec3, "vec3" });
-	keywords.PushBack({ KeywordType::Vec4, "vec4" });
-	keywords.PushBack({ KeywordType::Mat4, "mat4" });
-	keywords.PushBack({ KeywordType::Const, "const" });
-	keywords.PushBack({ KeywordType::Signed, "signed" });
-	keywords.PushBack({ KeywordType::Unsigned, "unsigned" });
 	keywords.PushBack({ KeywordType::Typedef, "typedef" });
 
 	keywords.PushBack({ KeywordType::If, "if" });
 	keywords.PushBack({ KeywordType::For, "for" });
 	keywords.PushBack({ KeywordType::While, "while" });
 	keywords.PushBack({ KeywordType::Switch, "switch" });
-	
+
 	keywords.PushBack({ KeywordType::Struct, "struct" });
 
 	keywords.PushBack({ KeywordType::Extern, "extern" });
@@ -108,11 +111,10 @@ int main(int argc, char** argv) {
 	keywords.PushBack({KeywordType::In, "in" });
 	keywords.PushBack({KeywordType::Out, "out" });
 
-
 	auto res = compiler.LexicalAnalazys("test.c");
 
 	List<String> includes;
-	
+
 	PreProcessor pp(includes, &compiler);
 
 	String s = pp.Run(res);
