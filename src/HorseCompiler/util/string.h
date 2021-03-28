@@ -58,12 +58,12 @@ public:
 	uint64 Find(const String& other, uint64 offset) const;
 	uint64 Find(const char* const other, uint64 offset) const;
 	uint64 Find(const char other, uint64 offset) const;
-	
+
 	// Searches in reverse
 	uint64 FindR(const String& other, uint64 offset, bool offsetFromStart = false) const;
 	uint64 FindR(const char* const other, uint64 offset, bool offsetFromStart = false) const;
 	uint64 FindR(const char other, uint64 offset, bool offsetFromStart = false) const;
-	
+
 	uint64 Count(const String& other, uint64 offset = 0) const;
 	uint64 Count(const char* const other, uint64 offset = 0) const;
 	uint64 Count(const char other, uint64 offset = 0) const;
@@ -116,5 +116,5 @@ class TmpString : public String {
 public:
 	TmpString(const char* const str);
 	~TmpString();
-	
+
 };

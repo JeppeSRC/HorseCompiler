@@ -46,17 +46,17 @@ public:
 
 	List(const List& other) = default;
 	List(List&& other) = default;
-	
+
 	List& operator=(const List& other) = default;
 	List& operator=(List&& other) = default;
 
-	T& operator[](uint64 index) { 
+	T& operator[](uint64 index) {
 		HC_ASSERT(index >= 0 && index < GetSize());
-		return items[index]; 
+		return items[index];
 	}
-	const T& operator[](uint64 index) const { 
+	const T& operator[](uint64 index) const {
 		HC_ASSERT(index >= 0 && index < GetSize());
-		return items[index]; 
+		return items[index];
 	}
 
 	void Reserve(uint64 reserve) {

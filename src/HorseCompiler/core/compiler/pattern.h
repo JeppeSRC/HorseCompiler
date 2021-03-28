@@ -33,7 +33,7 @@ enum class PatternType {
 	Unknown,
 	Variable,
 	Function,
-	
+
 };
 
 class Pattern {
@@ -61,7 +61,7 @@ public:
 		* if tokens has a size of 1 it will either match the token specified unless it's set to one of the following:
 		*	Operators: matches only operators
 		*	MiscTokens: matches only misc tokens
-		* 
+		*
 		* If size is greater than 1 it will match either of the specified tokens
 		* */
 
