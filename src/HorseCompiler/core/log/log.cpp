@@ -22,16 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 */
 
-
 #include "log.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <Windows.h>
 
-#define HC_LOG_COLOR_INFO 0b00001111
-#define HC_LOG_COLOR_DEBUG 0b00001010
+#define HC_LOG_COLOR_INFO    0b00001111
+#define HC_LOG_COLOR_DEBUG   0b00001010
 #define HC_LOG_COLOR_WARNING 0b00001110
-#define HC_LOG_COLOR_ERROR 0b00001100
+#define HC_LOG_COLOR_ERROR   0b00001100
 
 enum class Level {
 	Info,
@@ -40,9 +39,8 @@ enum class Level {
 	Error
 };
 
-template<Level level>
+template <Level level>
 void LogInternal(const char* const message, va_list args) {
-
 	CONSOLE_SCREEN_BUFFER_INFO info;
 
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -73,9 +71,8 @@ void LogInternal(const char* const message, va_list args) {
 	SetConsoleTextAttribute(handle, info.wAttributes);
 }
 
-template<Level level>
+template <Level level>
 void LogInternal(const char* const filename, int64 line, int64 column, int64 code, const char* const message, va_list args) {
-
 	CONSOLE_SCREEN_BUFFER_INFO info;
 
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -110,18 +107,50 @@ void LogInternal(const char* const filename, int64 line, int64 column, int64 cod
 	}
 }
 
-void Log::Info(const char* const message, ...) { va_list args; va_start(args, message); LogInternal<Level::Info>(message, args); }
+void Log::Info(const char* const message, ...) {
+	va_list args;
+	va_start(args, message);
+	LogInternal<Level::Info>(message, args);
+}
 
-void Log::Info(int64 line, int64 column, const char* const filename, int64 code, const char* const message, ...) { va_list args; va_start(args, message); LogInternal<Level::Info>(filename, line, column, code, message, args); }
+void Log::Info(int64 line, int64 column, const char* const filename, int64 code, const char* const message, ...) {
+	va_list args;
+	va_start(args, message);
+	LogInternal<Level::Info>(filename, line, column, code, message, args);
+}
 
-void Log::Debug(const char* const message, ...) { va_list args; va_start(args, message); LogInternal<Level::Debug>(message, args); }
+void Log::Debug(const char* const message, ...) {
+	va_list args;
+	va_start(args, message);
+	LogInternal<Level::Debug>(message, args);
+}
 
-void Log::Debug(int64 line, int64 column, const char* const filename, int64 code, const char* const message, ...) { va_list args; va_start(args, message); LogInternal<Level::Debug>(filename, line, column, code, message, args); }
+void Log::Debug(int64 line, int64 column, const char* const filename, int64 code, const char* const message, ...) {
+	va_list args;
+	va_start(args, message);
+	LogInternal<Level::Debug>(filename, line, column, code, message, args);
+}
 
-void Log::Warning(const char* const message, ...) { va_list args; va_start(args, message); LogInternal<Level::Warning>(message, args); }
+void Log::Warning(const char* const message, ...) {
+	va_list args;
+	va_start(args, message);
+	LogInternal<Level::Warning>(message, args);
+}
 
-void Log::Warning(int64 line, int64 column, const char* const filename, int64 code, const char* const message, ...) { va_list args; va_start(args, message); LogInternal<Level::Warning>(filename, line, column, code, message, args); }
+void Log::Warning(int64 line, int64 column, const char* const filename, int64 code, const char* const message, ...) {
+	va_list args;
+	va_start(args, message);
+	LogInternal<Level::Warning>(filename, line, column, code, message, args);
+}
 
-void Log::Error(const char* const message, ...) { va_list args; va_start(args, message); LogInternal<Level::Error>(message, args); }
+void Log::Error(const char* const message, ...) {
+	va_list args;
+	va_start(args, message);
+	LogInternal<Level::Error>(message, args);
+}
 
-void Log::Error(int64 line, int64 column, const char* const filename, int64 code, const char* const message, ...) { va_list args; va_start(args, message); LogInternal<Level::Error>(filename, line, column, code, message, args); }
+void Log::Error(int64 line, int64 column, const char* const filename, int64 code, const char* const message, ...) {
+	va_list args;
+	va_start(args, message);
+	LogInternal<Level::Error>(filename, line, column, code, message, args);
+}

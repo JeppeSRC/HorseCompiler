@@ -27,7 +27,6 @@ SOFTWARE
 #include <util/string.h>
 #include <util/list.h>
 
-
 enum class TokenType {
 	/*
 	* Each group is allocated 100 numbers:
@@ -35,26 +34,59 @@ enum class TokenType {
 	*	MiscTokens 200-299
 	*   Others 300+
 	* */
-
 	Unknown,
 
-	Operators = 100,
+	MiscTokens = 200,
+
+	Comma,
+	Semicolon,
+	Colon,
+
+	Questionmark,
+
+	ParenthesisOpen,
+	ParenthesisClose,
+	BracketOpen,
+	BracketClose,
+
+	// End of misc tokens
+	Others = 300,
+
+	Keyword,
+	PrimitiveType,
+	Operator,
+	Identifier,
+	Literal
+};
+
+struct TokenTypeDef {
+	TokenType type;
+	String    def;
+};
+
+enum class OperatorType {
+	Unknown,
+
+	Dot,
+	OpSqBracketOpen,
+	OpSqBracketClose,
+
 	OpAssign,
+	OpAdd,
+	OpSub,
+	OpNegate,
 
-	Plus,
-	Minus,
-
-	Asterix,
-	Slash,
+	OpMul,
+	OpDiv,
 	OpCompoundAdd,
 	OpCompoundSub,
 	OpCompoundMul,
 	OpCompoundDiv,
 
 	OpBitNot,
-	Ampersand,
+	OpBitAnd,
 	OpBitOr,
-	OpBitXOr,
+	OpBitXor,
 	OpLeftShift,
 	OpRightShift,
 
@@ -66,41 +98,37 @@ enum class TokenType {
 
 	OpInc,
 	OpDec,
+	OpPreInc,
+	OpPreDec,
+	OpPostInc,
+	OpPostDec,
 
 	OpLess,
 	OpGreater,
 	OpLessEq,
 	OpGreaterEq,
-
-	MiscTokens = 200,
-
-	Dot,
-	Comma,
-	Semicolon,
-	Colon,
-
-	Questionmark,
-
-	ParenthesisOpen,
-	ParenthesisClose,
-	BracketOpen,
-	BracketClose,
-	SqBracketOpen,
-	SqBracketClose,
-
-	// End of misc tokens
-	Others = 300,
-
-	Keyword,
-	PrimitiveType,
-	Identifier,
-	Literal
 };
 
+enum class OperatorAssociativity {
+	LTR,
+	RTL
+};
 
-struct TokenTypeDef {
-	TokenType type;
-	String def;
+enum class OperandType {
+	None,
+	//Variable,
+	//Value,
+	Any
+};
+
+struct OperatorTypeDef {
+	OperatorType          type = OperatorType::Unknown;
+	String                def;
+	OperatorAssociativity associativty;
+	uint32                precedence;
+
+	OperandType leftOperand  = OperandType::Any;
+	OperandType rightOperand = OperandType::Any;
 };
 
 enum class KeywordType {
@@ -108,6 +136,7 @@ enum class KeywordType {
 
 	Typedef,
 	If,
+	Else,
 	For,
 	While,
 	Switch,
@@ -115,12 +144,13 @@ enum class KeywordType {
 	Extern,
 	Layout,
 	In,
-	Out
+	Out,
+	Return
 };
 
 struct KeywordDef {
 	KeywordType keyword;
-	String def;
+	String      def;
 };
 
 enum class PrimitiveType {
@@ -145,17 +175,16 @@ enum class PrimitiveType {
 
 struct PrimitiveTypeDef {
 	PrimitiveType type;
-	String def;
+	String        def;
 };
 
 struct Syntax {
 	String delimiters;
-	char stringStart;
-	char stringEnd;
-	char stringEscapeChar;
-	char charStart;
-	char charEnd;
-
+	char   stringStart;
+	char   stringEnd;
+	char   stringEscapeChar;
+	char   charStart;
+	char   charEnd;
 
 	uint8 numSequences;
 
@@ -170,17 +199,18 @@ struct Syntax {
 */
 
 	struct EscapeSequence {
-		char signature;
-		uint8 base = 0;
+		char  signature;
+		uint8 base  = 0;
 		uint8 value = 0;
-	} *escSequence;
+	} * escSequence;
 
 	List<TokenTypeDef> tokenTypes;
 };
 
 class Language {
 public:
-	Syntax syntax;
-	List<KeywordDef> keywords;
+	Syntax                 syntax;
+	List<KeywordDef>       keywords;
 	List<PrimitiveTypeDef> primitiveTypes;
+	List<OperatorTypeDef>  operators;
 };

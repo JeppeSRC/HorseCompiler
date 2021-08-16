@@ -28,7 +28,7 @@ SOFTWARE
 
 String FileUtils::LoadTextFile(const String& filename) {
 	uint64 size = 0;
-	byte* tmp = LoadFile(filename, &size);
+	byte*  tmp  = LoadFile(filename, &size);
 
 	return std::move(String((char* const)tmp, size));
 }

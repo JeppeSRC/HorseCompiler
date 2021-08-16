@@ -38,12 +38,14 @@ void CorrectIncludeDir(List<String>& includeDir) {
 }
 
 uint64 FindNextNewline(const List<Token>& tokens, uint64 index) {
-	uint64 line = tokens[index].line;
+	uint64        line = tokens[index].line;
 	const String& file = tokens[index].filename;
 
 	for (uint64 i = index; i < tokens.GetSize(); i++) {
 		const Token& t = tokens[i];
-		if (t.line != line || t.filename != file) return i-1;
+
+		if (t.line != line || t.filename != file)
+			return i - 1;
 	}
 
 	return ~0;
@@ -55,20 +57,23 @@ uint64 FindEndif(const List<Token>& tokens, uint64 index) {
 	for (uint64 i = index; i < tokens.GetSize(); i++) {
 		const Token& t = tokens[i];
 
-		if (t.string[0] != '#') continue;
-		
+		if (t.string[0] != '#')
+			continue;
+
 		if (i + 1 == tokens.GetSize()) {
 			Compiler::Log(t, HC_ERROR_PREPROCESSOR_NO_DIRECTIVE);
 		}
 
-		const Token& directive = tokens[i + 1];
-		const String& str = directive.string;
-		
+		const Token&  directive = tokens[i + 1];
+		const String& str       = directive.string;
+
 		if (str.StartsWith("if")) {
 			count++;
 		} else if (str == "endif") {
-			if (count > 0) count--;
-			else return i;
+			if (count > 0)
+				count--;
+			else
+				return i;
 		}
 	}
 
@@ -78,19 +83,22 @@ uint64 FindEndif(const List<Token>& tokens, uint64 index) {
 uint64 FindElse(const List<Token>& tokens, uint64 start, uint64 end) {
 	uint64 count = 0;
 
-	for (uint64 i = end-1; i >= start; i--) {
+	for (uint64 i = end - 1; i >= start; i--) {
 		const Token& t = tokens[i];
 
-		if (t.string[0] != '#') continue;
+		if (t.string[0] != '#')
+			continue;
 
-		const Token& directive = tokens[i + 1];
-		const String& str = directive.string;
+		const Token&  directive = tokens[i + 1];
+		const String& str       = directive.string;
 
 		if (str == "endif") {
 			count++;
 		} else if (str == "else") {
-			if (count > 0) count--;
-			else return i;
+			if (count > 0)
+				count--;
+			else
+				return i;
 		}
 	}
 
@@ -105,17 +113,19 @@ List<uint64> FindElifs(const List<Token>& tokens, uint64 start, uint64 end) {
 	for (uint64 i = start; i < end; i++) {
 		const Token& t = tokens[i];
 
-		if (t.string[0] != '#') continue;
+		if (t.string[0] != '#')
+			continue;
 
-		const Token& directive = tokens[i + 1];
-		const String& str = directive.string;
+		const Token&  directive = tokens[i + 1];
+		const String& str       = directive.string;
 
 		if (str.StartsWith("if")) {
 			count++;
 		} else if (str == "endif") {
 			count--;
 		} else if (str == "elif") {
-			if (count == 0) elifs.PushBack(i);
+			if (count == 0)
+				elifs.PushBack(i);
 		}
 	}
 
@@ -125,23 +135,26 @@ List<uint64> FindElifs(const List<Token>& tokens, uint64 start, uint64 end) {
 void RemoveComments(List<Token>& tokens) {
 	uint64 index = -1;
 
-	while ((index = tokens.Find('/', Token::CharCmp, index+1)) != ~0) {
+	while ((index = tokens.Find('/', Token::CharCmp, index + 1)) != ~0) {
 		char next = tokens[index + 1].string[0];
 
 		if (next == '/') {
 			uint64 newLine = FindNextNewline(tokens, index);
 
-			if (newLine == ~0) newLine = tokens.GetSize() - 1;
+			if (newLine == ~0)
+				newLine = tokens.GetSize() - 1;
 
 			tokens.Remove(index, newLine);
 		} else if (next == '*') {
-			uint64 end = index+2;
+			uint64 end = index + 2;
 
 			while ((end = tokens.Find('*', Token::CharCmp, end)) != ~0) {
-				if (tokens[end += 1].string[0] == '/') break;
+				if (tokens[end += 1].string[0] == '/')
+					break;
 			}
 
-			if (end == ~0) end = tokens.GetSize() - 1;
+			if (end == ~0)
+				end = tokens.GetSize() - 1;
 
 			tokens.Remove(index, end);
 		}
@@ -151,10 +164,10 @@ void RemoveComments(List<Token>& tokens) {
 String MergeList(const List<Token>& tokens, uint64 start, uint64 end) {
 	String res("");
 
-	int64 currentLine = tokens[start].line;
+	int64  currentLine = tokens[start].line;
 	String currentFile = tokens[start].filename;
 
-	for (uint64 i =start; i <= end; i++) {
+	for (uint64 i = start; i <= end; i++) {
 		const Token& t = tokens[i];
 
 		if (currentLine < t.line || currentFile != t.filename) {
@@ -168,7 +181,8 @@ String MergeList(const List<Token>& tokens, uint64 start, uint64 end) {
 		} else {
 			res.Append(t.string);
 
-			if (t.trailingSpace) res.Append(" ");
+			if (t.trailingSpace)
+				res.Append(" ");
 		}
 	}
 
@@ -176,19 +190,22 @@ String MergeList(const List<Token>& tokens, uint64 start, uint64 end) {
 }
 
 FileNode* FindCurrentNode(FileNode* nodes, const String& currentFile) {
-	if (nodes->name == currentFile) return nodes;
+	if (nodes->name == currentFile)
+		return nodes;
 
 	for (uint64 i = 0; i < nodes->files.GetSize(); i++) {
 		FileNode* n = FindCurrentNode(nodes->files[i], currentFile);
 
-		if (n) return n;
+		if (n)
+			return n;
 	}
 
 	return nullptr;
 }
 
 FileNode* CheckRecursion(FileNode* currentNode, const String& file) {
-	if (currentNode->name == file) return currentNode;
+	if (currentNode->name == file)
+		return currentNode;
 
 	if (currentNode->parent) {
 		return CheckRecursion(currentNode->parent, file);
@@ -199,7 +216,7 @@ FileNode* CheckRecursion(FileNode* currentNode, const String& file) {
 
 PreProcessor::PreProcessor(List<String>& includeDir, Compiler* compiler) {
 	this->includeDir = &includeDir;
-	this->compiler = compiler;
+	this->compiler   = compiler;
 }
 
 String PreProcessor::Run(List<Token>& tokens) {
@@ -211,13 +228,15 @@ String PreProcessor::Run(List<Token>& tokens) {
 	for (uint64 i = 0; i < tokens.GetSize(); i++) {
 		Token& t = tokens[i];
 
-		if (t.isString) continue;
+		if (t.isString)
+			continue;
 
 		ReplaceDefine(tokens, i);
 
 		char c = t.string[0];
 
-		if (c != '#') continue;
+		if (c != '#')
+			continue;
 
 		if (i + 1 == tokens.GetSize()) {
 			Compiler::Log(t, HC_ERROR_PREPROCESSOR_NO_DIRECTIVE);
@@ -246,22 +265,23 @@ String PreProcessor::Run(List<Token>& tokens) {
 void PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir, FileNode* nodes) {
 	Token& t = tokens[index];
 
-	bool local = false;
+	bool local     = false;
 	char startChar = t.string[0];
 
-	uint64 end = 0;
+	uint64 end     = 0;
 	uint64 newLine = FindNextNewline(tokens, index);
 
 	if (startChar == '"') {
 		local = true;
-		end = tokens.Find('"', Token::CharCmp, index + 1);
+		end   = tokens.Find('"', Token::CharCmp, index + 1);
 	} else if (startChar == '<') {
 		end = tokens.Find('>', Token::CharCmp, index + 1);
 	} else {
 		Compiler::Log(t, HC_ERROR_PREPROCESSOR_INCLUDE_UNKNOWN_SYMBOL1, startChar);
 	}
 
-	if (newLine == ~0) newLine = tokens.GetSize() - 1;
+	if (newLine == ~0)
+		newLine = tokens.GetSize() - 1;
 
 	if (end == ~0 || end > newLine) {
 		Token& n = tokens[newLine];
@@ -269,7 +289,7 @@ void PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<
 	}
 
 	String includeFile = MergeList(tokens, index + 1, end - 1);
-	String localPath = StringUtils::GetPathFromFilename(t.filename);
+	String localPath   = StringUtils::GetPathFromFilename(t.filename);
 	String finalFile;
 
 	if (local) {
@@ -279,7 +299,8 @@ void PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<
 	}
 
 	for (uint64 i = 0; i < includeDir.GetSize(); i++) {
-		if (finalFile.length > 0) break;
+		if (finalFile.length > 0)
+			break;
 
 		const String& dir = includeDir[i];
 
@@ -293,12 +314,11 @@ void PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<
 	}
 
 	FileNode* current = FindCurrentNode(nodes, t.filename);
-	FileNode* rec = CheckRecursion(current, finalFile);
+	FileNode* rec     = CheckRecursion(current, finalFile);
 
 	if (rec) {
 		Compiler::Log(t, HC_ERROR_PREPROCESSOR_INCLUDE_RECURSION, finalFile.str);
 	}
-
 
 	index -= 2;
 	tokens.Remove(index, newLine);
@@ -307,7 +327,7 @@ void PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<
 		FileNode* node = new FileNode;
 
 		node->parent = current;
-		node->name = finalFile;
+		node->name   = finalFile;
 		current->files.PushBack(node);
 
 		List<Token> res = compiler->LexicalAnalazys(finalFile);
@@ -316,7 +336,6 @@ void PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<
 	} else {
 		Log::Debug("Ignoring \"%s\" already included", finalFile.str);
 	}
-
 }
 
 void PreProcessor::ProcessPragma(List<Token>& tokens, uint64 index) {
@@ -336,13 +355,13 @@ void PreProcessor::ProcessPragma(List<Token>& tokens, uint64 index) {
 void PreProcessor::ProcessDefine(List<Token>& tokens, uint64 index) {
 	uint64 newLine = FindNextNewline(tokens, index);
 
-	Token name = tokens[index];
+	Token       name = tokens[index];
 	List<Token> def;
 
-	for (uint64 i = index+1; i <= newLine; i++) {
+	for (uint64 i = index + 1; i <= newLine; i++) {
 		def.PushBack(tokens[i]);
 	}
-	
+
 	uint64 loc = ~0;
 
 	if ((loc = defines.Find(name.string, FindDefineCmp, 0)) != ~0) {
@@ -354,15 +373,14 @@ void PreProcessor::ProcessDefine(List<Token>& tokens, uint64 index) {
 
 	tokens.Remove(index - 2, newLine);
 
-	Log::Debug("Define: %s -> %s", name.string.str, def.GetSize() > 0 ? MergeList(def, 0, def.GetSize()-1).str : "");
-
+	Log::Debug("Define: %s -> %s", name.string.str, def.GetSize() > 0 ? MergeList(def, 0, def.GetSize() - 1).str : "");
 }
 
 void PreProcessor::ProcessIf(List<Token>& tokens, uint64 index) {
-	uint64 newLine = FindNextNewline(tokens, index);
-	uint64 end = FindEndif(tokens, newLine);
-	uint64 els = FindElse(tokens, newLine, end);
-	List<uint64> elifs = FindElifs(tokens, newLine, end);
+	uint64       newLine = FindNextNewline(tokens, index);
+	uint64       end     = FindEndif(tokens, newLine);
+	uint64       els     = FindElse(tokens, newLine, end);
+	List<uint64> elifs   = FindElifs(tokens, newLine, end);
 
 	const String& ifType = tokens[index - 1].string;
 
@@ -377,7 +395,8 @@ void PreProcessor::ProcessIf(List<Token>& tokens, uint64 index) {
 	uint64 remStart = ~0;
 
 	if (res) {
-		remStart = elifs.GetSize() > 0 ? elifs[0] : els != ~0 ? els : end;
+		remStart = elifs.GetSize() > 0 ? elifs[0] : els != ~0 ? els
+															  : end;
 		end += 1;
 
 		tokens.Remove(remStart, end);
@@ -385,15 +404,16 @@ void PreProcessor::ProcessIf(List<Token>& tokens, uint64 index) {
 	} else {
 		for (uint64 i = 0; i < elifs.GetSize(); i++) {
 			uint64 start = elifs[i];
-			newLine = FindNextNewline(tokens, start+2);
-			res = EvaluateExpression(tokens, start + 2, newLine);
+			newLine      = FindNextNewline(tokens, start + 2);
+			res          = EvaluateExpression(tokens, start + 2, newLine);
 
 			if (res) {
-				remStart = elifs.GetSize() > i + 1 ? elifs[i + 1] : els != ~0 ? els : end;
+				remStart = elifs.GetSize() > i + 1 ? elifs[i + 1] : els != ~0 ? els
+																			  : end;
 				tokens.Remove(remStart, end + 1);
 				tokens.Remove(index - 2, newLine);
 				break;
-			} 
+			}
 		}
 
 		if (remStart == ~0) {
@@ -424,7 +444,8 @@ void PreProcessor::ReplaceDefine(List<Token>& tokens, uint64 index) {
 
 	auto [def, items] = defines.FindTuple(name, FindDefineCmp, 0);
 
-	if (def == ~0) return;
+	if (def == ~0)
+		return;
 
 	tokens.Remove(index, index);
 	tokens.Insert(items.second, index);

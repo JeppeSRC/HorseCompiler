@@ -29,7 +29,7 @@ SOFTWARE
 class String {
 public:
 	uint64 length;
-	char* str;
+	char*  str;
 
 	static constexpr uint64 npos = ~0;
 
@@ -116,5 +116,4 @@ class TmpString : public String {
 public:
 	TmpString(const char* const str);
 	~TmpString();
-
 };

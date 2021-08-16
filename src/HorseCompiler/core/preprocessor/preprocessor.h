@@ -29,17 +29,17 @@ SOFTWARE
 #include <util/list.h>
 
 struct FileNode {
-	String name; // Name of this file
-	FileNode* parent; // Parent file where it was included
+	String          name; // Name of this file
+	FileNode*       parent; // Parent file where it was included
 	List<FileNode*> files; // Files included in this file
 };
 
 class PreProcessor {
 private:
-	List<String>* includeDir;
-	List<String> includedFiles; // Files to be ignore if included again
+	List<String>*                        includeDir;
+	List<String>                         includedFiles; // Files to be ignore if included again
 	List<std::pair<String, List<Token>>> defines;
-	Compiler* compiler;
+	Compiler*                            compiler;
 
 public:
 	PreProcessor(List<String>& includeDir, Compiler* compiler);
@@ -53,7 +53,7 @@ private:
 	void ProcessIf(List<Token>& tokens, uint64 index);
 	void ProcessError(List<Token>& tokens, uint64 index);
 
-	void ReplaceDefine(List<Token>& tokens, uint64 index);
+	void   ReplaceDefine(List<Token>& tokens, uint64 index);
 	uint64 EvaluateExpression(List<Token>& tokens, uint64 start, uint64 end);
 
 private:

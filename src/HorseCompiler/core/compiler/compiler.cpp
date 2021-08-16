@@ -33,14 +33,14 @@ Compiler::Compiler(const String& cwd, Language* language) : lang(language) {
 
 	if (!currentDir.EndsWith("/"))
 		currentDir.Append("/");
-
 }
 
 String Compiler::GetPrimitiveTypeString(const PrimitiveType& type) {
 	for (uint64 i = 0; i < lang->primitiveTypes.GetSize(); i++) {
 		auto& t = lang->primitiveTypes[i];
 
-		if (t.type == type) return t.def;
+		if (t.type == type)
+			return t.def;
 	}
 
 	return "";
@@ -48,7 +48,8 @@ String Compiler::GetPrimitiveTypeString(const PrimitiveType& type) {
 
 Type* Compiler::GetType(const String& name) {
 	for (uint64 i = 0; i < types.GetSize(); i++) {
-		if (types[i]->name == name) return types[i];
+		if (types[i]->name == name)
+			return types[i];
 	}
 
 	return nullptr;
@@ -86,7 +87,8 @@ TypeScalar* Compiler::MakeTypeScalar(PrimitiveType type, uint8 sign, uint8 const
 	for (uint64 i = 0; i < types.GetSize(); i++) {
 		Type* t = types[i];
 
-		if (t->type != Type::Scalar) continue;
+		if (t->type != Type::Scalar)
+			continue;
 
 		TypeScalar* ts = (TypeScalar*)t;
 
@@ -112,17 +114,18 @@ TypeVec* Compiler::MakeTypeVec(PrimitiveType type, uint8 constness) {
 			tmp = new TypeVec(name + "vec2", MakeTypeScalar(PrimitiveType::Float, 0, constness), 2, constness);
 			break;
 		case PrimitiveType::Vec3:
-			tmp = new TypeVec(name + "vec2", MakeTypeScalar(PrimitiveType::Float, 0, constness), 3, constness);
+			tmp = new TypeVec(name + "vec3", MakeTypeScalar(PrimitiveType::Float, 0, constness), 3, constness);
 			break;
 		case PrimitiveType::Vec4:
-			tmp = new TypeVec(name + "vec2", MakeTypeScalar(PrimitiveType::Float, 0, constness), 4, constness);
+			tmp = new TypeVec(name + "vec4", MakeTypeScalar(PrimitiveType::Float, 0, constness), 4, constness);
 			break;
 	}
 
 	for (uint64 i = 0; i < types.GetSize(); i++) {
 		Type* t = types[i];
 
-		if (t->type != Type::Vec) continue;
+		if (t->type != Type::Vec)
+			continue;
 
 		TypeVec* ts = (TypeVec*)t;
 
@@ -152,7 +155,8 @@ TypeMat* Compiler::MakeTypeMat(PrimitiveType type, uint8 constness) {
 	for (uint64 i = 0; i < types.GetSize(); i++) {
 		Type* t = types[i];
 
-		if (t->type != Type::Mat) continue;
+		if (t->type != Type::Mat)
+			continue;
 
 		TypeMat* ts = (TypeMat*)t;
 
@@ -174,6 +178,155 @@ TypeTypeDef* Compiler::MakeTypeTypeDef(Type* type, const String& name) {
 	types.PushBack(tmp);
 
 	return tmp;
+}
+
+bool Compiler::CheckName(const Token& token) {
+	String name = token.string;
+
+	if (token.type != TokenType::Identifier) {
+		return false;
+	}
+
+	if (!(name[0] == '_' || (name[0] >= 'a' && name[0] <= 'z') || (name[0] >= 'A' && name[0] <= 'Z'))) {
+		return false;
+	}
+
+	for (uint64 i = 0; i < lang->keywords.GetSize(); i++) {
+		auto& t = lang->keywords[i];
+
+		if (t.def == name) {
+			return false;
+		}
+	}
+
+	for (uint64 i = 0; i < lang->primitiveTypes.GetSize(); i++) {
+		auto& t = lang->primitiveTypes[i];
+
+		if (t.def == name) {
+			return false;
+		}
+	}
+
+	for (uint64 i = 0; i < types.GetSize(); i++) {
+		auto& t = types[i];
+
+		if (t->name == name) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool FindOpCMP(const OperatorTypeDef& item, const OperatorType& type) {
+	return item.type == type;
+}
+
+OperatorTypeDef Compiler::GetOperator(OperatorType type, OperandType left, OperandType right, bool ignoreOperands) {
+	for (OperatorTypeDef& def : lang->operators) {
+		if (def.type == type) {
+			if (left == OperandType::None && !ignoreOperands) {
+				if (def.leftOperand != OperandType::None)
+					continue;
+			} /*else if (left == OperandType::Variable) {
+				if (def.leftOperand != OperandType::Variable && def.rightOperand != OperandType::Any) continue;
+			} else if (left == OperandType::Value) {
+				if (def.leftOperand != OperandType::Value && def.leftOperand != OperandType::Any) continue;
+			}*/
+
+			if (right == OperandType::None && !ignoreOperands) {
+				if (def.rightOperand != OperandType::None)
+					continue;
+			} /*else if (right == OperandType::Variable) {
+				if (def.rightOperand != OperandType::Variable && def.rightOperand != OperandType::Any) continue;
+			} else if (right == OperandType::Value) {
+				if (def.rightOperand != OperandType::Value && def.rightOperand != OperandType::Any) continue;
+			}*/
+
+			return def;
+		}
+	}
+
+	OperatorTypeDef tmp;
+
+	tmp.leftOperand  = left;
+	tmp.rightOperand = right;
+
+	return tmp;
+}
+
+OperatorTypeDef Compiler::GetOperator(List<Token>& tokens, List<ASTNode*>& nodes, uint64 index) {
+	Token&      token = tokens[index];
+	OperandType left  = OperandType::None;
+	OperandType right = OperandType::None;
+
+	if (nodes.GetSize() > 0) {
+		ASTNode* n = nodes.Back();
+
+		if (n->nodeType == ASTType::Operator && (token.operatorType == OperatorType::OpInc || token.operatorType == OperatorType::OpDec)) {
+			if (n->branches.GetSize() > 0) {
+				left = OperandType::Any;
+			} else {
+				left = OperandType::None;
+			}
+		} else {
+			left = OperandType::Any; //n->nodeType == ASTType::Variable ? OperandType::Variable : OperandType::Value;
+		}
+	}
+
+	if (index + 1 == tokens.GetSize()) {
+		Compiler::Log(token, HC_ERROR_SYNTAX_EOL);
+	}
+
+	Token& r = tokens[index + 1];
+
+	if (r.type == TokenType::Operator) {
+		if (r.operatorType == OperatorType::OpInc || r.operatorType == OperatorType::OpDec) {
+			right = OperandType::Any;
+		} else {
+			right = OperandType::None;
+		}
+	} else if (r.type == TokenType::Identifier || r.type == TokenType::Literal || r.type == TokenType::ParenthesisOpen) {
+		right = OperandType::Any;
+	}
+
+	return GetOperator(token.operatorType, left, right, false);
+}
+
+ASTNode* Compiler::CreateOperandNode(List<Token>& tokens, uint64* index) {
+	Token&   token = tokens[*index];
+	ASTNode* node  = nullptr;
+
+	if (token.type == TokenType::Literal) {
+		Type* type = MakeTypeScalar(token.primitiveType, 0, 0);
+
+		switch (token.primitiveType) {
+			case PrimitiveType::Int:
+				node = new ConstantNode(type, (uint32)atoi(token.string.str), &token);
+				break;
+			case PrimitiveType::Float:
+				node = new ConstantNode(type, (float)atof(token.string.str), &token);
+				break;
+		}
+	} else if (token.type == TokenType::Identifier || token.type == TokenType::PrimitiveType) {
+		Token& next = tokens[*index + 1];
+
+		if (next.type == TokenType::ParenthesisOpen) {
+			(*index)++;
+
+			node = new ASTNode(ASTType::Function, &token);
+
+			node->AddNode(new StringNode(token.string));
+
+			*index = ParseExpression(tokens, *index + 1, node);
+
+		} else {
+			node = new ASTNode(ASTType::Variable, &token);
+			node->AddNode(new StringNode(token.string));
+		}
+	}
+
+	return node;
 }
 
 void Compiler::Log(const Token& item, uint64 code, ...) {
@@ -220,6 +373,9 @@ void Compiler::Log(const Token& item, uint64 code, ...) {
 		case HC_ERROR_PREPROCESSOR_ERROR_DIRECTIVE:
 			Log::Error(item.line, item.column, item.filename.str, code, "preprocessor error: '%s'", va_arg(list, char*));
 			break;
+		case HC_ERROR_LEXER_EOL:
+			Log::Error(item.line, item.column, item.filename.str, code, "lexer error: unexpected end of line");
+			break;
 		case HC_ERROR_SYNTAX_CHAR_LITERAL_TO_MANY_CHARS:
 			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: char literal has to many chars");
 			break;
@@ -239,7 +395,22 @@ void Compiler::Log(const Token& item, uint64 code, ...) {
 			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: type-name '%s' already exist", va_arg(list, char*));
 			break;
 		case HC_ERROR_SYNTAX_EXPECTED:
-			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: '%s' expected '%s'", va_arg(list, char*));
+			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: '%s' expected '%s'", item.string.str, va_arg(list, char*));
+			break;
+		case HC_ERROR_SYNTAX_ERROR:
+			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: '%s'", item.string.str);
+			break;
+		case HC_ERROR_SYNTAX_ILLEGAL_VARIABLE_NAME:
+			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: illegal name '%s', must start with '_', 'a-z' or 'A-Z'. And must not be a keyword or type", item.string.str);
+			break;
+		case HC_ERROR_SYNTAX_VARIABLE_REDEFINITION:
+			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: illegal name '%s', it already exist", item.string.str);
+			break;
+		case HC_ERROR_SYNTAX_EOL:
+			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: unexpected end of file", item.string.str);
+			break;
+		case HC_ERROR_SYNTAX_INVALID_OPERANDS:
+			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: unexpected end of file", item.string.str);
 			break;
 	}
 }

@@ -156,14 +156,16 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 
 	}
 
-	result.Remove(0, 0);
+	result.Remove(0);
 
-	AnalyzeStrings(result);
+	ParseStrings(result);
 
 
 	//TokenTypes
 	for (uint64 i = 0; i < result.GetSize(); i++) {
 		Token& token = result[i];
+
+
 
 		if (token.isString) continue;
 
@@ -192,7 +194,7 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 		}
 
 		if (token.type == TokenType::Unknown) {
-			if (token.string[0] >= '0' && token.string[0] <= '9') {
+			if ((token.string[0] >= '0' && token.string[0] <= '9') ) {
 				token.type = TokenType::Literal;
 			} else {
 				token.type = TokenType::Identifier;
@@ -234,11 +236,112 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 		}
 	}
 
+	OperatorType prevType = OperatorType::Unknown;
+
+	//Operators
+	for (uint64 i = 0; i < result.GetSize(); i++) {
+		Token& token = result[i];
+
+		if (token.isString || token.type != TokenType::Identifier) continue;
+
+		for (uint64 j = 0; j < lang->operators.GetSize(); j++) {
+			const OperatorTypeDef& def = lang->operators[j];
+
+			if (token.string == def.def) {
+				token.type = TokenType::Operator;
+				token.operatorType = def.type;
+
+				if ((def.type == OperatorType::OpAdd || def.type == OperatorType::OpSub || def.type == OperatorType::OpMul || def.type == OperatorType::OpDiv) && token.trailingSpace == false && prevType == OperatorType::Unknown) {
+					prevType = def.type;
+				} else if ((def.type == OperatorType::OpAdd || def.type == OperatorType::OpSub || def.type == OperatorType::OpAssign) && prevType != OperatorType::Unknown) {
+					Token& prevToken = result[i - 1];
+
+					switch (def.type) {
+						case OperatorType::OpAdd:
+							prevToken.operatorType = OperatorType::OpInc;
+							prevToken.string += "+";
+							break;
+						case OperatorType::OpSub:
+							prevToken.operatorType = OperatorType::OpDec;
+							prevToken.string += "-";
+							break;
+						case OperatorType::OpAssign:
+							prevToken.string += "=";
+
+							switch (prevType) {
+								case OperatorType::OpAdd:
+									prevToken.operatorType = OperatorType::OpCompoundAdd;
+									break;
+								case OperatorType::OpSub:
+									prevToken.operatorType = OperatorType::OpCompoundSub;
+									break;
+								case OperatorType::OpMul:
+									prevToken.operatorType = OperatorType::OpCompoundMul;
+									break;
+								case OperatorType::OpDiv:
+									prevToken.operatorType = OperatorType::OpCompoundDiv;
+									break;
+							}
+							break;
+					}
+
+					result.Remove(i--);
+
+					prevType = OperatorType::Unknown;
+				} else {
+					prevType = OperatorType::Unknown;
+				}
+
+				continue;
+			}
+		}
+	}
+
+	for (uint64 i = 0; i < result.GetSize(); i++) {
+		Token& token = result[i];
+
+		if (token.type == TokenType::Literal) {
+			ParseLiteral(result, i);
+		}
+	}
+
 	return std::move(result);
 }
 
 
-void Compiler::AnalyzeStrings(List<Token>& tokens) {
+void Compiler::ParseLiteral(List<Token>& tokens, uint64 index) {
+	Token& token = tokens[index++];
+
+	if (index >= tokens.GetSize() - 1) {
+		Compiler::Log(token, HC_ERROR_LEXER_EOL);
+		return;
+	}
+
+	Token& dot = tokens[index];
+
+	if (dot.type == TokenType::Operator && dot.operatorType == OperatorType::Dot) {
+		token.primitiveType = PrimitiveType::Float;
+		token.string += ".";
+
+		tokens.Remove(index);
+
+		if (index >= tokens.GetSize() - 1) {
+			Compiler::Log(token, HC_ERROR_LEXER_EOL);
+			return;
+		}
+
+		Token& next = tokens[index];
+
+		if (next.type == TokenType::Literal || (next.string.length == 1 && next.string[0] == 'f')) {
+			token.string += next.string;
+			tokens.Remove(index);
+		}
+	} else {
+		token.primitiveType = PrimitiveType::Int;
+	}
+}
+
+void Compiler::ParseStrings(List<Token>& tokens) {
 
 	while (true) {
 		auto [indexStart, itemStart] = tokens.FindTuple(lang->syntax.stringStart, Token::CharCmp);
@@ -257,7 +360,7 @@ void Compiler::AnalyzeStrings(List<Token>& tokens) {
 			if (tmp.string[0] == lang->syntax.stringEnd)
 				break;
 
-			AnalyzeEscapeSequences(tmp);
+			ParseEscapeSequences(tmp);
 
 			itemStart.string += tmp.string;
 		}
@@ -289,6 +392,7 @@ void Compiler::AnalyzeStrings(List<Token>& tokens) {
 
 		itemStart.string = tmp;
 		itemStart.type = TokenType::Literal;
+		itemStart.primitiveType = PrimitiveType::Char;
 
 		tokens.Remove(indexStart + 1, end);
 	}
@@ -324,7 +428,7 @@ uint64 GetNumDigits(String& string, uint8 base, uint64 index) {
 	return count;
 }
 
-void Compiler::AnalyzeEscapeSequences(Token& token) {
+void Compiler::ParseEscapeSequences(Token& token) {
 	String& string = token.string;
 	uint64 index = 0;
 

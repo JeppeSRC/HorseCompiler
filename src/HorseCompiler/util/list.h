@@ -29,7 +29,7 @@ SOFTWARE
 #include <tuple>
 #include <core/error/error.h>
 
-template<typename T>
+template <typename T>
 class List {
 private:
 	std::vector<T> items;
@@ -45,7 +45,7 @@ public:
 	List(std::initializer_list<T> list) : items(list) { }
 
 	List(const List& other) = default;
-	List(List&& other) = default;
+	List(List&& other)      = default;
 
 	List& operator=(const List& other) = default;
 	List& operator=(List&& other) = default;
@@ -69,7 +69,7 @@ public:
 	}
 
 	void PopBack() {
-		return items.pop_back();
+		items.pop_back();
 	}
 
 	uint64 Find(const T& item, uint64 offset = 0) {
@@ -92,8 +92,8 @@ public:
 		return (uint64)~0;
 	}
 
-	template<typename K>
-	uint64 Find(const K& item, bool(*CmpFunc)(const T&, const K&), uint64 offset = 0) {
+	template <typename K>
+	uint64 Find(const K& item, bool (*CmpFunc)(const T&, const K&), uint64 offset = 0) {
 		HC_ASSERT(offset >= 0 && offset <= GetSize());
 		for (uint64 i = offset; i < items.size(); i++) {
 			T& curr = items[i];
@@ -103,8 +103,8 @@ public:
 		return (uint64)~0;
 	}
 
-	template<typename K>
-	uint64 Find(const K& item, bool(*CmpFunc)(const T&, const K&), uint64 offset = 0) const {
+	template <typename K>
+	uint64 Find(const K& item, bool (*CmpFunc)(const T&, const K&), uint64 offset = 0) const {
 		HC_ASSERT(offset >= 0 && offset <= GetSize());
 		for (uint64 i = offset; i < items.size(); i++) {
 			const T& curr = items[i];
@@ -134,8 +134,8 @@ public:
 		return { (uint64)~0, T() };
 	}
 
-	template<typename K>
-	std::tuple<uint64, T&> FindTuple(const K& item, bool(*CmpFunc)(const T&, const K&), uint64 offset = 0) {
+	template <typename K>
+	std::tuple<uint64, T&> FindTuple(const K& item, bool (*CmpFunc)(const T&, const K&), uint64 offset = 0) {
 		HC_ASSERT(offset >= 0 && offset <= GetSize());
 		for (uint64 i = offset; i < items.size(); i++) {
 			T& curr = items[i];
@@ -145,8 +145,8 @@ public:
 		return { (uint64)~0, T() };
 	}
 
-	template<typename K>
-	std::tuple<uint64, T> FindTuple(const K& item, bool(*CmpFunc)(const T&, const K&), uint64 offset = 0) const {
+	template <typename K>
+	std::tuple<uint64, T> FindTuple(const K& item, bool (*CmpFunc)(const T&, const K&), uint64 offset = 0) const {
 		HC_ASSERT(offset >= 0 && offset <= GetSize());
 		for (uint64 i = offset; i < items.size(); i++) {
 			const T& curr = items[i];
@@ -162,6 +162,10 @@ public:
 
 	void Insert(const List<T>& item, uint64 index) {
 		items.insert(begin() + index, item.begin(), item.end());
+	}
+
+	void Remove(uint64 index) {
+		Remove(index, index);
 	}
 
 	void Remove(uint64 start, uint64 end) {
@@ -182,8 +186,16 @@ public:
 
 	uint64 GetSize() const { return items.size(); }
 
-	auto begin() { return items.begin(); }
-	auto end() { return items.end(); }
+	T& Back() {
+		return items.back();
+	}
+
+	const T& Back() const {
+		return items.back();
+	}
+
+	auto       begin() { return items.begin(); }
+	auto       end() { return items.end(); }
 	const auto begin() const { return items.begin(); }
 	const auto end() const { return items.end(); }
 };
