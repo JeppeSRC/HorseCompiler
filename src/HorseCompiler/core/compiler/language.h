@@ -158,7 +158,7 @@ enum class PrimitiveType {
 
 	Void,
 
-	Char,
+	Byte,
 	Short,
 	Int,
 	//Long,

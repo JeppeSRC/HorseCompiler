@@ -392,7 +392,7 @@ void Compiler::ParseStrings(List<Token>& tokens) {
 
 		itemStart.string = tmp;
 		itemStart.type = TokenType::Literal;
-		itemStart.primitiveType = PrimitiveType::Char;
+		itemStart.primitiveType = PrimitiveType::Byte;
 
 		tokens.Remove(indexStart + 1, end);
 	}

@@ -70,7 +70,7 @@ TypeScalar* Compiler::MakeTypeScalar(PrimitiveType type, uint8 sign, uint8 const
 	TypeScalar* tmp = nullptr;
 
 	switch (type) {
-		case PrimitiveType::Char:
+		case PrimitiveType::Byte:
 			tmp = new TypeScalar(name + "char", TypeScalar::Int, constness, 8, sign);
 			break;
 		case PrimitiveType::Short:

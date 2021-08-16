@@ -238,7 +238,7 @@ uint64 Compiler::ParseTypeDeclaration(List<Token>& tokens, uint64 start, Type** 
 					sign      = 1;
 					signToken = token;
 					break;
-				case PrimitiveType::Char:
+				case PrimitiveType::Byte:
 				case PrimitiveType::Short:
 				case PrimitiveType::Int:
 				case PrimitiveType::Float:
@@ -257,7 +257,7 @@ uint64 Compiler::ParseTypeDeclaration(List<Token>& tokens, uint64 start, Type** 
 	}
 
 	if (type != PrimitiveType::Unknown) {
-		if (type != PrimitiveType::Char && type != PrimitiveType::Short && type != PrimitiveType::Int) {
+		if (type != PrimitiveType::Byte && type != PrimitiveType::Short && type != PrimitiveType::Int) {
 			if (sign != 2) {
 				Compiler::Log(signToken, HC_ERROR_SYNTAX_SIGNED_UNSIGNED_NOT_ALLOWED_ON_TYPE, sign == 0 ? "unsigned" : "signed", GetPrimitiveTypeString(type).str);
 				return ~0;
@@ -265,7 +265,7 @@ uint64 Compiler::ParseTypeDeclaration(List<Token>& tokens, uint64 start, Type** 
 		}
 
 		switch (type) {
-			case PrimitiveType::Char:
+			case PrimitiveType::Byte:
 			case PrimitiveType::Short:
 			case PrimitiveType::Int:
 			case PrimitiveType::Float:

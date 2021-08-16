@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
 	auto& primitiveTypes = lang.primitiveTypes;
 
 	primitiveTypes.PushBack({ PrimitiveType::Void, "void" });
-	primitiveTypes.PushBack({ PrimitiveType::Char, "char" });
+	primitiveTypes.PushBack({ PrimitiveType::Byte, "byte" });
 	primitiveTypes.PushBack({ PrimitiveType::Short, "short" });
 	primitiveTypes.PushBack({ PrimitiveType::Int, "int" });
 	//	primitiveTypes.PushBack({ PrimitiveType::Long, "long" });
