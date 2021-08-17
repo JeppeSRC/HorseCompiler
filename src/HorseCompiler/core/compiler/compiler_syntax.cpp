@@ -73,8 +73,7 @@ uint64 Compiler::SyntaxAnalazys(List<Token>& tokens, uint64 start, ASTNode* curr
 			return i;
 		} else {
 			TypeNode* typeNode = new TypeNode(&t);
-
-			uint64 index = ParseTypeDeclaration(tokens, i, typeNode);
+			uint64    index    = ParseTypeDeclaration(tokens, i, typeNode);
 
 			if (index == ~0) {
 				index = ParseExpression(tokens, i, currentNode);
@@ -157,8 +156,7 @@ uint64 Compiler::ParseTypedef(List<Token>& tokens, uint64 start) {
 		return ~0;
 
 	String name = tokens[index].string;
-
-	Type* tmp = GetType(name);
+	Type*  tmp  = GetType(name);
 
 	if (tmp != nullptr) {
 		Compiler::Log(tokens[index], HC_ERROR_SYNTAX_TYPENAME_ALREADY_EXIST, name.str);
@@ -629,7 +627,7 @@ void Compiler::BacktrackNodes(List<ASTNode*>& nodes) {
 	}
 }
 
-/*oken signToken;
+/*	Token signToken;
 	Token constToken;
 	uint8 sign      = 2;
 	uint8 constness = 0;
