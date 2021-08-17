@@ -80,22 +80,22 @@ void LogInternal(const char* const filename, int64 line, int64 column, int64 cod
 
 	if constexpr (level == Level::Info) {
 		SetConsoleTextAttribute(handle, HC_LOG_COLOR_INFO);
-		printf("%s -> %llu:%llu Info (%llu): ", filename, line, column, code);
+		printf("%s -> %llu:%llu Info (0x%llx): ", filename, line, column, code);
 		vprintf(message, args);
 		printf("\n");
 	} else if constexpr (level == Level::Debug) {
 		SetConsoleTextAttribute(handle, HC_LOG_COLOR_DEBUG);
-		printf("%s -> %llu:%llu Debug (%llu): ", filename, line, column, code);
+		printf("%s -> %llu:%llu Debug (0x%llx): ", filename, line, column, code);
 		vprintf(message, args);
 		printf("\n");
 	} else if constexpr (level == Level::Warning) {
 		SetConsoleTextAttribute(handle, HC_LOG_COLOR_WARNING);
-		printf("%s -> %llu:%llu Warning (%llu): ", filename, line, column, code);
+		printf("%s -> %llu:%llu Warning (0x%llx): ", filename, line, column, code);
 		vprintf(message, args);
 		printf("\n");
 	} else if constexpr (level == Level::Error) {
 		SetConsoleTextAttribute(handle, HC_LOG_COLOR_ERROR);
-		printf("%s -> %llu:%llu Error (%llu): ", filename, line, column, code);
+		printf("%s -> %llu:%llu Error (0x%llx): ", filename, line, column, code);
 		vprintf(message, args);
 		printf("\n");
 	}
