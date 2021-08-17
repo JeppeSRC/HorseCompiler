@@ -270,7 +270,7 @@ OperatorTypeDef Compiler::GetOperator(List<Token>& tokens, List<ASTNode*>& nodes
 		} else {
 			right = OperandType::None;
 		}
-	} else if (r.type == TokenType::Identifier || r.type == TokenType::Literal || r.type == TokenType::ParenthesisOpen) {
+	} else if (r.type == TokenType::Identifier || r.type == TokenType::Literal || r.type == TokenType::ParenthesisOpen || r.type == TokenType::PrimitiveType) {
 		right = OperandType::Any;
 	}
 

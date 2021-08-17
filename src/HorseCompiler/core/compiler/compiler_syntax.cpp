@@ -82,71 +82,76 @@ uint64 Compiler::SyntaxAnalazys(List<Token>& tokens, uint64 start, ASTNode* curr
 			TypeNode* typeNode = new TypeNode(&t);
 			uint64    index    = ParseTypeDeclaration(tokens, i, typeNode);
 
-			if (index == ~0) {
-				index = ParseExpression(tokens, i, currentNode);
-			}
-
 			const Token& nameToken = tokens[index];
 
-			if (!CheckName(nameToken)) {
-				Compiler::Log(nameToken, HC_ERROR_SYNTAX_ILLEGAL_VARIABLE_NAME);
-				return ~0;
-			}
-
-			StringNode* stringNode = new StringNode(nameToken.string, &nameToken);
-
-			const Token& next = tokens[++index];
-
-			if (next.type == TokenType::ParenthesisOpen) {
-				ASTNode* func = new ASTNode(ASTType::FunctionDeclaration, &nameToken);
-
-				func->AddNode(typeNode);
-				func->AddNode(stringNode);
-
-				index = ParseFunctionParameters(tokens, index, func);
+			if (nameToken.type == TokenType::Operator) {
+				index = ParseExpression(tokens, i, currentNode);
 
 				if (index == ~0)
-					return index;
-
-				Token& semicolonOrBracket = tokens[index];
-
-				if (semicolonOrBracket.type == TokenType::Semicolon) {
-					currentNode->AddNode(func);
-				} else if (semicolonOrBracket.type == TokenType::BracketOpen) {
-					currentNode->AddNode(func);
-
-					func->nodeType = ASTType::FunctionDefinition;
-
-					currentScope++;
-
-					index = SyntaxAnalazys(tokens, index + 1, func);
-
-					if (index == ~0)
-						return ~0;
-				}
+					return ~0;
 
 				i = index;
-
 			} else {
-				ASTNode* var = new ASTNode(ASTType::VariableDefinition, &nameToken);
+				if (!CheckName(nameToken)) {
+					Compiler::Log(nameToken, HC_ERROR_SYNTAX_ILLEGAL_VARIABLE_NAME);
+					return ~0;
+				}
 
-				currentNode->AddNode(var);
+				StringNode* stringNode = new StringNode(nameToken.string, &nameToken);
 
-				var->AddNode(typeNode);
-				var->AddNode(stringNode);
+				const Token& next = tokens[++index];
 
-				if (next.type == TokenType::Semicolon) {
-					i = index;
-					continue;
-				} else if (next.operatorType == OperatorType::OpAssign) {
-					index = ParseExpression(tokens, index + 1, var);
+				if (next.type == TokenType::ParenthesisOpen) {
+					ASTNode* func = new ASTNode(ASTType::FunctionDeclaration, &nameToken);
+
+					func->AddNode(typeNode);
+					func->AddNode(stringNode);
+
+					index = ParseFunctionParameters(tokens, index, func);
 
 					if (index == ~0)
-						return ~0;
+						return index;
+
+					Token& semicolonOrBracket = tokens[index];
+
+					if (semicolonOrBracket.type == TokenType::Semicolon) {
+						currentNode->AddNode(func);
+					} else if (semicolonOrBracket.type == TokenType::BracketOpen) {
+						currentNode->AddNode(func);
+
+						func->nodeType = ASTType::FunctionDefinition;
+
+						currentScope++;
+
+						index = SyntaxAnalazys(tokens, index + 1, func);
+
+						if (index == ~0)
+							return ~0;
+					}
 
 					i = index;
+
 				} else {
-					Compiler::Log(next, HC_ERROR_SYNTAX_EXPECTED, ";");
+					ASTNode* var = new ASTNode(ASTType::VariableDefinition, &nameToken);
+
+					currentNode->AddNode(var);
+
+					var->AddNode(typeNode);
+					var->AddNode(stringNode);
+
+					if (next.type == TokenType::Semicolon) {
+						i = index;
+						continue;
+					} else if (next.operatorType == OperatorType::OpAssign) {
+						index = ParseExpression(tokens, index + 1, var);
+
+						if (index == ~0)
+							return ~0;
+
+						i = index;
+					} else {
+						Compiler::Log(next, HC_ERROR_SYNTAX_EXPECTED, ";");
+					}
 				}
 			}
 		}
