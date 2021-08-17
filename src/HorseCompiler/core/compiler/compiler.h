@@ -52,14 +52,13 @@ private: // Internal functions
 	TypeScalar*  MakeTypeScalar(PrimitiveType type, uint8 sign, uint8 constness);
 	TypeVec*     MakeTypeVec(PrimitiveType type, uint8 constness);
 	TypeMat*     MakeTypeMat(PrimitiveType type, uint8 constness);
-	TypeTypeDef* MakeTypeTypeDef(Type* type, const String& name);
 
 	bool            CheckName(const Token& token);
 	OperatorTypeDef GetOperator(OperatorType type, OperandType left, OperandType right, bool ignoreOperands);
 	OperatorTypeDef GetOperator(List<Token>& tokens, List<ASTNode*>& nodes, uint64 index);
 	ASTNode*        CreateOperandNode(List<Token>& tokens, uint64* index);
 
-	uint64 ParseTypedef(List<Token>& tokens, uint64 start);
+	uint64 ParseTypedef(List<Token>& tokens, uint64 start, ASTNode* currentNode);
 	uint64 ParseTypeDeclaration(List<Token>& tokens, uint64 start, TypeNode* typeNode);
 	uint64 ParseFunctionParameters(List<Token>& tokens, uint64 start, ASTNode* functionNode);
 	uint64 ParseExpression(List<Token>& tokens, uint64 start, ASTNode* currentNode);

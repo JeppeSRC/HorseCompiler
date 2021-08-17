@@ -172,14 +172,6 @@ TypeMat* Compiler::MakeTypeMat(PrimitiveType type, uint8 constness) {
 	return tmp;
 }
 
-TypeTypeDef* Compiler::MakeTypeTypeDef(Type* type, const String& name) {
-	TypeTypeDef* tmp = new TypeTypeDef(name, type);
-
-	types.PushBack(tmp);
-
-	return tmp;
-}
-
 bool Compiler::CheckName(const Token& token) {
 	String name = token.string;
 

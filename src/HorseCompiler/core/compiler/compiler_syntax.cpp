@@ -35,9 +35,11 @@ uint64 Compiler::SyntaxAnalazys(List<Token>& tokens, uint64 start, ASTNode* curr
 
 		if (t.type == TokenType::Keyword) {
 			if (t.keyword == KeywordType::Typedef) {
-				i = ParseTypedef(tokens, i);
+				i = ParseTypedef(tokens, i + 1, currentNode);
 
-				continue;
+				if (i == ~0)
+					return ~0;
+
 			} else if (t.keyword == KeywordType::Layout) {
 				i = ParseLayout(tokens, i + 1, currentNode);
 
@@ -148,26 +150,27 @@ uint64 Compiler::SyntaxAnalazys(List<Token>& tokens, uint64 start, ASTNode* curr
 	return ~0;
 }
 
-uint64 Compiler::ParseTypedef(List<Token>& tokens, uint64 start) {
-	TypeNode* type  = new TypeNode(nullptr);
-	uint64    index = ParseTypeDeclaration(tokens, start + 1, type);
+uint64 Compiler::ParseTypedef(List<Token>& tokens, uint64 start, ASTNode* currentNode) {
+	TypeNode* type  = new TypeNode(&tokens[start]);
+	uint64    index = ParseTypeDeclaration(tokens, start, type);
 
 	if (index == ~0)
 		return ~0;
 
-	String name = tokens[index].string;
-	Type*  tmp  = GetType(name);
+	Token&      name       = tokens[index++];
+	Token&      semiColon  = tokens[index];
+	ASTNode*    node       = new ASTNode(ASTType::Typedef, &tokens[start - 1]);
+	StringNode* stringNode = new StringNode(name.string, &name);
 
-	if (tmp != nullptr) {
-		Compiler::Log(tokens[index], HC_ERROR_SYNTAX_TYPENAME_ALREADY_EXIST, name.str);
-	}
+	node->AddNode(type);
+	node->AddNode(stringNode);
 
-	//MakeTypeTypeDef(type, name);
-
-	if (tokens[++index].type != TokenType::Semicolon) {
-		Compiler::Log(tokens[index], HC_ERROR_SYNTAX_EXPECTED, ';');
+	if (semiColon.type != TokenType::Semicolon) {
+		Compiler::Log(semiColon, HC_ERROR_SYNTAX_EXPECTED, ";");
 		return ~0;
 	}
+
+	currentNode->AddNode(node);
 
 	return index;
 }
