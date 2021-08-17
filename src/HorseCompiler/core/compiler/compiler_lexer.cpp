@@ -49,10 +49,10 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 
 	uint64 index = 0;
 
-	for (uint64 i = 0; i < lang->syntax.delimiters.length; i++) {
+	for (uint64 i = 0; i < lang->delimiters.length; i++) {
 		index = 0;
 
-		while ((index = file.Find(lang->syntax.delimiters[i], index)) != String::npos) {
+		while ((index = file.Find(lang->delimiters[i], index)) != String::npos) {
 			indices.PushBack(index++);
 		}
 	}
@@ -112,13 +112,13 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 					t.string = c;
 					t.isString = (bool)includeSpaces;
 
-					if (c == lang->syntax.charStart) {
+					if (c == lang->charStart) {
 						if (includeSpaces == 0) {
 							includeSpaces = IN_CHAR;
 						} else if (includeSpaces == IN_CHAR) {
 							includeSpaces = 0;
 						}
-					} else if (c == lang->syntax.charEnd) {
+					} else if (c == lang->charEnd) {
 						if (includeSpaces == IN_CHAR) {
 							includeSpaces = 0;
 						}
@@ -169,8 +169,8 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 
 		if (token.isString) continue;
 
-		for (uint64 j = 0; j < lang->syntax.tokenTypes.GetSize(); j++) {
-			const TokenTypeDef& def = lang->syntax.tokenTypes[j];
+		for (uint64 j = 0; j < lang->tokenTypes.GetSize(); j++) {
+			const TokenTypeDef& def = lang->tokenTypes[j];
 			uint64 len = def.def.length;
 
 			if (len == 1 && token.string[0] == def.def[0]) {
@@ -344,7 +344,7 @@ void Compiler::ParseLiteral(List<Token>& tokens, uint64 index) {
 void Compiler::ParseStrings(List<Token>& tokens) {
 
 	while (true) {
-		auto [indexStart, itemStart] = tokens.FindTuple(lang->syntax.stringStart, Token::CharCmp);
+		auto [indexStart, itemStart] = tokens.FindTuple(lang->stringStart, Token::CharCmp);
 
 		if (indexStart == -1) break;
 
@@ -357,7 +357,7 @@ void Compiler::ParseStrings(List<Token>& tokens) {
 		for (; i < numTokens; i++) {
 			Token tmp = tokens[i];
 
-			if (tmp.string[0] == lang->syntax.stringEnd)
+			if (tmp.string[0] == lang->stringEnd)
 				break;
 
 			ParseEscapeSequences(tmp);
@@ -366,7 +366,7 @@ void Compiler::ParseStrings(List<Token>& tokens) {
 		}
 
 		if (i >= numTokens) {
-			Compiler::Log(itemStart, HC_ERROR_SYNTAX_MISSING_STRING_CLOSE, lang->syntax.stringEnd);
+			Compiler::Log(itemStart, HC_ERROR_SYNTAX_MISSING_STRING_CLOSE, lang->stringEnd);
 		}
 
 		itemStart.type = TokenType::Literal;
@@ -375,11 +375,11 @@ void Compiler::ParseStrings(List<Token>& tokens) {
 	}
 
 	while (true) {
-		auto [indexStart, itemStart] = tokens.FindTuple(lang->syntax.charStart, Token::CharCmp);
+		auto [indexStart, itemStart] = tokens.FindTuple(lang->charStart, Token::CharCmp);
 
 		if (indexStart == -1) break;
 
-		uint64 end = tokens.Find(lang->syntax.charEnd, Token::CharCmp, indexStart+1);
+		uint64 end = tokens.Find(lang->charEnd, Token::CharCmp, indexStart+1);
 		uint64 len = end - (indexStart + 1);
 
 		String tmp("");
@@ -434,8 +434,8 @@ void Compiler::ParseEscapeSequences(Token& token) {
 
 	while ((index = string.Find('\\', index)) != String::npos) {
 		char sig = string[index + 1];
-		for (uint64 i = 0; i < lang->syntax.numSequences; i++) {
-			Syntax::EscapeSequence es = lang->syntax.escSequence[i];
+		for (uint64 i = 0; i < lang->numSequences; i++) {
+			Language::EscapeSequence es = lang->escSequence[i];
 
 			if (sig == es.signature) {
 				if (es.base) {

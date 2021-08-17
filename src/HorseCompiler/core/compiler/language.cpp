@@ -29,17 +29,17 @@ Language* Language::Default() {
 
 	if (lang.initialized) return &lang;
 
-	lang.syntax.delimiters = " #=+-*/<>.,^&|(){}[]%\"'!?:;";
-	lang.syntax.stringStart = '"';
-	lang.syntax.stringEnd = '"';
-	lang.syntax.charStart = '\'';
-	lang.syntax.charEnd = '\'';
-	lang.syntax.numSequences = 2;
-	lang.syntax.escSequence = new Syntax::EscapeSequence[3];
-	lang.syntax.escSequence[0].signature = 'n';
-	lang.syntax.escSequence[0].value = '\n';
-	lang.syntax.escSequence[1].signature = 'x';
-	lang.syntax.escSequence[1].base = 16;
+	lang.delimiters = " #=+-*/<>.,^&|(){}[]%\"'!?:;";
+	lang.stringStart = '"';
+	lang.stringEnd = '"';
+	lang.charStart = '\'';
+	lang.charEnd = '\'';
+	lang.numSequences = 2;
+	lang.escSequence = new EscapeSequence[3];
+	lang.escSequence[0].signature = 'n';
+	lang.escSequence[0].value = '\n';
+	lang.escSequence[1].signature = 'x';
+	lang.escSequence[1].base = 16;
 
 	auto& operators = lang.operators;
 
@@ -87,7 +87,7 @@ Language* Language::Default() {
 	operators.PushBack({ OperatorType::OpCompoundMul, "*=", OperatorAssociativity::RTL, 14, OperandType::Any });
 	operators.PushBack({ OperatorType::OpCompoundDiv, "/=", OperatorAssociativity::RTL, 14, OperandType::Any });
 
-	List< TokenTypeDef >& type = lang.syntax.tokenTypes;
+	List< TokenTypeDef >& type = lang.tokenTypes;
 
 	type.PushBack({ TokenType::Comma, "," });
 	type.PushBack({ TokenType::Semicolon, ";" });

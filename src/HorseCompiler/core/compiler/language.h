@@ -182,7 +182,10 @@ struct PrimitiveTypeDef {
 	String        def;
 };
 
-struct Syntax {
+class Language {
+private:
+	bool initialized = false;
+public:
 	String delimiters;
 	char   stringStart;
 	char   stringEnd;
@@ -204,18 +207,12 @@ struct Syntax {
 
 	struct EscapeSequence {
 		char  signature;
-		uint8 base  = 0;
+		uint8 base = 0;
 		uint8 value = 0;
-	} * escSequence;
+	} *escSequence;
 
 	List<TokenTypeDef> tokenTypes;
-};
 
-class Language {
-private:
-	bool initialized = false;
-public:
-	Syntax                 syntax;
 	List<KeywordDef>       keywords;
 	List<PrimitiveTypeDef> primitiveTypes;
 	List<OperatorTypeDef>  operators;
