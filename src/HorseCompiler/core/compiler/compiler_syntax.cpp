@@ -39,6 +39,11 @@ uint64 Compiler::SyntaxAnalazys(List<Token>& tokens, uint64 start, ASTNode* curr
 
 				continue;
 			} else if (t.keyword == KeywordType::Layout) {
+				i = ParseLayout(tokens, i + 1, currentNode);
+
+				if (i == ~0)
+					return ~0;
+
 			} else if (t.keyword == KeywordType::Struct) {
 			} else if (t.keyword == KeywordType::If) {
 			} else if (t.keyword == KeywordType::For) {
@@ -145,8 +150,8 @@ uint64 Compiler::SyntaxAnalazys(List<Token>& tokens, uint64 start, ASTNode* curr
 }
 
 uint64 Compiler::ParseTypedef(List<Token>& tokens, uint64 start) {
-	TypeNode*  type  = new TypeNode(nullptr);
-	uint64 index = ParseTypeDeclaration(tokens, start + 1, type);
+	TypeNode* type  = new TypeNode(nullptr);
+	uint64    index = ParseTypeDeclaration(tokens, start + 1, type);
 
 	if (index == ~0)
 		return ~0;
@@ -170,19 +175,22 @@ uint64 Compiler::ParseTypedef(List<Token>& tokens, uint64 start) {
 }
 
 uint64 Compiler::ParseTypeDeclaration(List<Token>& tokens, uint64 start, TypeNode* typeNode) {
+	bool identifierAdded = false;
+
 	while (true) {
 		Token& token = tokens[start];
 
-		if (token.type == TokenType::Identifier || token.type == TokenType::PrimitiveType) {
+		if ((token.type == TokenType::Identifier || token.type == TokenType::PrimitiveType) && !identifierAdded) {
 			typeNode->AddToken(&token);
-		} else if (token.type == TokenType::Semicolon || (token.type == TokenType::Operator && token.operatorType == OperatorType::OpAssign) || token.type == TokenType::ParenthesisOpen || token.type == TokenType::ParenthesisClose || token.type == TokenType::Comma) {
-			if (typeNode->tokens.GetSize() > 1) {
-				typeNode->tokens.PopBack();
-			} else {
-				return ~0;
-			}
 
-			start -= 1;
+			if (token.type == TokenType::Identifier) {
+				identifierAdded = true;
+			}
+		} else if (token.type == TokenType::Semicolon || (token.type == TokenType::Operator && token.operatorType == OperatorType::OpAssign) || token.type == TokenType::ParenthesisOpen || token.type == TokenType::ParenthesisClose || token.type == TokenType::Comma) {
+			if (typeNode->tokens.GetSize() > 1 && identifierAdded) {
+				typeNode->tokens.PopBack();
+				start -= 1;
+			}
 
 			break;
 		} else {
@@ -267,7 +275,7 @@ uint64 Compiler::ParseExpression(List<Token>& tokens, uint64 start, ASTNode* cur
 
 			nodes.PushBack(tmp.branches[0]);
 		} else if (token.type == TokenType::ParenthesisClose) {
-			if (parenthesesCount == 0 && currentNode->nodeType != ASTType::Function) {
+			if (parenthesesCount == 0 && !(currentNode->nodeType == ASTType::Function || currentNode->nodeType == ASTType::Layout)) {
 				Compiler::Log(token, HC_ERROR_SYNTAX_ERROR);
 				return ~0;
 			}
@@ -539,6 +547,67 @@ uint64 Compiler::ParseExpression(List<Token>& tokens, uint64 start, ASTNode* cur
 	return ~0;
 }
 
+uint64 Compiler::ParseLayout(List<Token>& tokens, uint64 start, ASTNode* currentNode) {
+	Token& parenthesisOpen = tokens[start];
+
+	if (parenthesisOpen.type != TokenType::ParenthesisOpen) {
+		Compiler::Log(parenthesisOpen, HC_ERROR_SYNTAX_EXPECTED, "(");
+		return ~0;
+	}
+
+	LayoutNode* layout = new LayoutNode(&tokens[start - 1]);
+
+	start = ParseExpression(tokens, start + 1, layout);
+
+	if (start == ~0)
+		return ~0;
+
+	Token& layoutType = tokens[++start];
+
+	switch (layoutType.keyword) {
+		case KeywordType::In:
+			layout->type = LayoutType::In;
+			break;
+		case KeywordType::Out:
+			layout->type = LayoutType::Out;
+			break;
+		case KeywordType::Uniform:
+			layout->type = LayoutType::Uniform;
+			break;
+		default:
+			Compiler::Log(layoutType, HC_ERROR_SYNTAX_EXPECTED, "in/out/uniform");
+			return ~0;
+	}
+
+	if (layout->type == LayoutType::In || layout->type == LayoutType::Out) {
+		TypeNode* typeNode = new TypeNode(&tokens[++start]);
+
+		start = ParseTypeDeclaration(tokens, start, typeNode);
+
+		if (start == ~0)
+			return ~0;
+
+		Token&      name       = tokens[start++];
+		Token&      semiColon  = tokens[start];
+		StringNode* stringNode = new StringNode(name.string, &name);
+
+		layout->AddNode(typeNode);
+		layout->AddNode(stringNode);
+
+		if (semiColon.type != TokenType::Semicolon) {
+			Compiler::Log(semiColon, HC_ERROR_SYNTAX_EXPECTED, ";");
+			return ~0;
+		}
+
+	} else if (layout->type == LayoutType::Uniform) {
+		return ~0;
+	}
+
+	currentNode->AddNode(layout);
+
+	return start;
+}
+
 void Compiler::BacktrackNodes(List<ASTNode*>& nodes) {
 	for (int64 i = nodes.GetSize() - 1; i >= 0; i--) {
 		ASTNode* node = nodes[i];
@@ -559,8 +628,6 @@ void Compiler::BacktrackNodes(List<ASTNode*>& nodes) {
 		}
 	}
 }
-
-
 
 /*oken signToken;
 	Token constToken;

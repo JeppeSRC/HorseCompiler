@@ -32,7 +32,6 @@ SOFTWARE
 enum class ASTType {
 	Unknown,
 	Root,
-	StatementSequence,
 	VariableDeclaration,
 	VariableDefinition,
 	Parameter,
@@ -45,11 +44,13 @@ enum class ASTType {
 	Return,
 	Constant,
 	Variable,
+	Layout,
 	Function,
 	Operator,
 	Assign,
 	String,
 	Type,
+	Typedef
 };
 
 /** NodeLayout
@@ -57,7 +58,10 @@ enum class ASTType {
 *
 * Root: Is the root of the ast
 *
-* StatementSequence: Branches makes up a sequence of statements
+* Typedef: Defines a type
+*	Branches:
+*		* Type
+*		* Name
 *
 * VariableDeclaration: Declares a variable
 *   Branches:
@@ -106,6 +110,20 @@ enum class ASTType {
 *   Branches:
 *       * Return value (optional)
 *
+* Layout: Represents a layout thing
+*	Branches (In/Out):
+*		* Parameters
+*		* Type
+*		* Name
+*	Branches (Uniform Implicit Type):
+*		* Parameters
+*		* Type
+*		* Name
+*	Branches (Uniform Explicit Type):
+*		* Parameters
+*		* Name
+*		* Struct
+*
 */
 
 struct Token;
@@ -131,7 +149,7 @@ class StringNode : public ASTNode {
 public:
 	String string;
 
-	StringNode(const String& string) : ASTNode(ASTType::String), string(string) { }
+	StringNode(const String& string, const Token* token) : ASTNode(ASTType::String, token), string(string) { }
 };
 
 class TypeNode : public ASTNode {
@@ -163,22 +181,36 @@ public:
 	OperatorNode(OperatorType type, const Token* token) : ASTNode(ASTType::Operator, token), type(type) { }
 };
 
+enum class LayoutType {
+	Unknown,
+	In,
+	Out,
+	Uniform
+};
+
+class LayoutNode : public ASTNode {
+public:
+	LayoutType type;
+
+	LayoutNode(const Token* token) : ASTNode(ASTType::Layout, token), type(LayoutType::Unknown) { }
+};
+
 /*
 class RootNode : public ASTNode {
 public:
-    RootNode() : ASTNode(ASTType::Root, nullptr) { }
+	RootNode() : ASTNode(ASTType::Root, nullptr) { }
 };
 
 class StatementSequencenNode : public ASTNode {
 public:
-    StatementSequencenNode(ASTNode* parent) : ASTNode(ASTType::StatementSequence, parent) {}
+	StatementSequencenNode(ASTNode* parent) : ASTNode(ASTType::StatementSequence, parent) {}
 
 };
 
 class VariableDefinition : public ASTNode {
 public:
-    Type* type;
-    String name;
+	Type* type;
+	String name;
 
-    VariableDefinition(Variable* variable, ASTNode* parent) : ASTNode(ASTType::VariableDefinition, parent), variable(variable) {}
+	VariableDefinition(Variable* variable, ASTNode* parent) : ASTNode(ASTType::VariableDefinition, parent), variable(variable) {}
 };*/

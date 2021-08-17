@@ -138,6 +138,7 @@ enum class KeywordType {
 	If,
 	Else,
 	For,
+	Return,
 	While,
 	Switch,
 	Struct,
@@ -145,7 +146,7 @@ enum class KeywordType {
 	Layout,
 	In,
 	Out,
-	Return
+	Uniform
 };
 
 struct KeywordDef {
