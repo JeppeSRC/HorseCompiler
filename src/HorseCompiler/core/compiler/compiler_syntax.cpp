@@ -82,6 +82,9 @@ uint64 Compiler::SyntaxAnalazys(List<Token>& tokens, uint64 start, ASTNode* curr
 			TypeNode* typeNode = new TypeNode(&t);
 			uint64    index    = ParseTypeDeclaration(tokens, i, typeNode);
 
+			if (index == ~0)
+				return ~0;
+
 			const Token& nameToken = tokens[index];
 
 			if (nameToken.type == TokenType::Operator) {
