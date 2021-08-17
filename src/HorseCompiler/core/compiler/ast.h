@@ -50,6 +50,7 @@ enum class ASTType {
 	Assign,
 	String,
 	Type,
+	Struct,
 	Typedef
 };
 
@@ -123,6 +124,14 @@ enum class ASTType {
 *		* Parameters
 *		* Name
 *		* Struct
+*
+* Struct: Struct definition
+*	Branches:
+*		* Name
+*		* Members {
+*			* Type
+*			* Name
+*		  }
 *
 */
 

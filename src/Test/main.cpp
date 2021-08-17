@@ -126,6 +126,7 @@ int main(int argc, char** argv) {
 	keywords.PushBack({ KeywordType::Layout, "layout" });
 	keywords.PushBack({ KeywordType::In, "in" });
 	keywords.PushBack({ KeywordType::Out, "out" });
+	keywords.PushBack({ KeywordType::Uniform, "uniform" });
 
 	auto res = compiler.LexicalAnalazys("test.c");
 

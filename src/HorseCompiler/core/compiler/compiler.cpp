@@ -199,14 +199,6 @@ bool Compiler::CheckName(const Token& token) {
 		}
 	}
 
-	for (uint64 i = 0; i < types.GetSize(); i++) {
-		auto& t = types[i];
-
-		if (t->name == name) {
-			return false;
-		}
-	}
-
 	return true;
 }
 
@@ -403,6 +395,9 @@ void Compiler::Log(const Token& item, uint64 code, ...) {
 			break;
 		case HC_ERROR_SYNTAX_INVALID_OPERANDS:
 			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: unexpected end of file", item.string.str);
+			break;
+		case HC_ERROR_SYNTAX_ILLEGAL_TYPENAME:
+			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: illegal name '%s', must start with '_', 'a-z' or 'A-Z'. And must not be a keyword or type", item.string.str);
 			break;
 	}
 }

@@ -47,6 +47,11 @@ uint64 Compiler::SyntaxAnalazys(List<Token>& tokens, uint64 start, ASTNode* curr
 					return ~0;
 
 			} else if (t.keyword == KeywordType::Struct) {
+				i = ParseStruct(tokens, i + 1, currentNode);
+
+				if (i == ~0)
+					return ~0;
+
 			} else if (t.keyword == KeywordType::If) {
 			} else if (t.keyword == KeywordType::For) {
 			} else if (t.keyword == KeywordType::While) {
@@ -147,7 +152,7 @@ uint64 Compiler::SyntaxAnalazys(List<Token>& tokens, uint64 start, ASTNode* curr
 		}
 	}
 
-	return ~0;
+	return 0;
 }
 
 uint64 Compiler::ParseTypedef(List<Token>& tokens, uint64 start, ASTNode* currentNode) {
@@ -201,6 +206,69 @@ uint64 Compiler::ParseTypeDeclaration(List<Token>& tokens, uint64 start, TypeNod
 
 		start += 1;
 	}
+
+	return start;
+}
+
+uint64 Compiler::ParseStruct(List<Token>& tokens, uint64 start, ASTNode* currentNode) {
+	ASTNode* strct  = new ASTNode(ASTType::Struct, &tokens[start - 1]);
+	Token&   stName = tokens[start++];
+
+	if (!CheckName(stName)) {
+		Compiler::Log(stName, HC_ERROR_SYNTAX_ILLEGAL_TYPENAME);
+		return ~0;
+	}
+
+	strct->AddNode(new StringNode(stName.string, &stName));
+
+	Token& bracket = tokens[start++];
+
+	if (bracket.type != TokenType::BracketOpen) {
+		Compiler::Log(bracket, HC_ERROR_SYNTAX_EXPECTED, "{");
+		return ~0;
+	}
+
+	while (true) {
+		TypeNode* type = new TypeNode(&tokens[start]);
+
+		start = ParseTypeDeclaration(tokens, start, type);
+
+		if (start == ~0)
+			return ~0;
+
+		Token&      name       = tokens[start++];
+		StringNode* stringNode = new StringNode(name.string, &name);
+
+		if (!CheckName(name)) {
+			Compiler::Log(stName, HC_ERROR_SYNTAX_ILLEGAL_VARIABLE_NAME);
+			return ~0;
+		}
+
+		Token& semiColon = tokens[start++];
+
+		if (semiColon.type != TokenType::Semicolon) {
+			Compiler::Log(semiColon, HC_ERROR_SYNTAX_EXPECTED, ";");
+			return ~0;
+		}
+
+		strct->AddNode(type);
+		strct->AddNode(stringNode);
+
+		Token& closeBracket = tokens[start];
+
+		if (closeBracket.type == TokenType::BracketClose) {
+			Token& semi = tokens[++start];
+
+			if (semi.type != TokenType::Semicolon) {
+				Compiler::Log(semi, HC_ERROR_SYNTAX_EXPECTED, ";");
+				return ~0;
+			}
+
+			break;
+		}
+	}
+
+	currentNode->AddNode(strct);
 
 	return start;
 }
@@ -580,8 +648,10 @@ uint64 Compiler::ParseLayout(List<Token>& tokens, uint64 start, ASTNode* current
 			return ~0;
 	}
 
+	start += 1;
+
 	if (layout->type == LayoutType::In || layout->type == LayoutType::Out) {
-		TypeNode* typeNode = new TypeNode(&tokens[++start]);
+		TypeNode* typeNode = new TypeNode(&tokens[start]);
 
 		start = ParseTypeDeclaration(tokens, start, typeNode);
 
@@ -601,7 +671,46 @@ uint64 Compiler::ParseLayout(List<Token>& tokens, uint64 start, ASTNode* current
 		}
 
 	} else if (layout->type == LayoutType::Uniform) {
-		return ~0;
+		Token& bracketOpen = tokens[start + 1];
+
+		if (bracketOpen.type == TokenType::BracketOpen) { // Explicit type
+			Token&  name = tokens[start];
+			ASTNode tmp(ASTType::Root);
+
+			start = ParseStruct(tokens, start, &tmp);
+
+			if (start == ~0)
+				return ~0;
+
+			ASTNode*    strct     = tmp.branches.Back();
+			StringNode* strctName = (StringNode*)strct->branches[0];
+
+			strctName->string += "_uniform_qwerty";
+
+			layout->AddNode(new StringNode(name.string, &name));
+			layout->AddNode(strct);
+
+		} else {
+			TypeNode*   type       = new TypeNode(&tokens[start++]);
+			Token&      name       = tokens[start++];
+			Token&      semiColon  = tokens[start];
+			StringNode* stringNode = new StringNode(name.string, &name);
+
+			if (!CheckName(name)) {
+				Compiler::Log(name, HC_ERROR_SYNTAX_ILLEGAL_VARIABLE_NAME);
+				return ~0;
+			}
+
+			if (semiColon.type != TokenType::Semicolon) {
+				Compiler::Log(semiColon, HC_ERROR_SYNTAX_EXPECTED, ";");
+				return ~0;
+			}
+
+			type->AddToken((Token*)type->token);
+
+			layout->AddNode(type);
+			layout->AddNode(stringNode);
+		}
 	}
 
 	currentNode->AddNode(layout);

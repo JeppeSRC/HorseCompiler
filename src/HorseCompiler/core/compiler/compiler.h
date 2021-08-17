@@ -60,6 +60,7 @@ private: // Internal functions
 
 	uint64 ParseTypedef(List<Token>& tokens, uint64 start, ASTNode* currentNode);
 	uint64 ParseTypeDeclaration(List<Token>& tokens, uint64 start, TypeNode* typeNode);
+	uint64 ParseStruct(List<Token>& tokens, uint64 start, ASTNode* currentNode);
 	uint64 ParseFunctionParameters(List<Token>& tokens, uint64 start, ASTNode* functionNode);
 	uint64 ParseExpression(List<Token>& tokens, uint64 start, ASTNode* currentNode);
 	uint64 ParseLayout(List<Token>& tokens, uint64 start, ASTNode* currentNode);
