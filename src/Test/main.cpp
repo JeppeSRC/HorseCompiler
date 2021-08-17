@@ -134,9 +134,9 @@ int main(int argc, char** argv) {
 
 	PreProcessor pp(includes, &compiler);
 
-	String s = pp.Run(res);
-
-	printf("%s\n", s.str);
+	if (!pp.Run(res)) {
+		return 1;
+	}
 
 	ASTNode* rootNode = new ASTNode(ASTType::Root);
 

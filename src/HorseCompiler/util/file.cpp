@@ -42,7 +42,9 @@ byte* FileUtils::LoadFile(const String& filename, uint64* size) {
 	*size = (uint64)ftell(file);
 	fseek(file, 0, SEEK_SET);
 
-	byte* data = new byte[*size];
+	byte* data = new byte[*size + 1];
+
+	data[*size] = 0;
 
 	fread(data, *size, 1, file);
 	fclose(file);
@@ -55,7 +57,7 @@ bool FileUtils::FileExist(const String& filename) {
 
 	bool res = file != nullptr;
 
-	fclose(file);
+	if (res) fclose(file);
 
 	return res;
 }

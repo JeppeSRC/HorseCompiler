@@ -44,14 +44,14 @@ private:
 public:
 	PreProcessor(List<String>& includeDir, Compiler* compiler);
 
-	String Run(List<Token>& result);
+	bool Run(List<Token>& result);
 
 private:
-	void ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir, FileNode* nodes);
-	void ProcessPragma(List<Token>& tokens, uint64 index);
-	void ProcessDefine(List<Token>& tokens, uint64 index);
-	void ProcessIf(List<Token>& tokens, uint64 index);
-	void ProcessError(List<Token>& tokens, uint64 index);
+	bool ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir, FileNode* nodes);
+	bool ProcessPragma(List<Token>& tokens, uint64 index);
+	bool ProcessDefine(List<Token>& tokens, uint64 index);
+	bool ProcessIf(List<Token>& tokens, uint64 index);
+	bool ProcessError(List<Token>& tokens, uint64 index);
 
 	void   ReplaceDefine(List<Token>& tokens, uint64 index);
 	uint64 EvaluateExpression(List<Token>& tokens, uint64 start, uint64 end);

@@ -219,7 +219,7 @@ PreProcessor::PreProcessor(List<String>& includeDir, Compiler* compiler) {
 	this->compiler   = compiler;
 }
 
-String PreProcessor::Run(List<Token>& tokens) {
+bool PreProcessor::Run(List<Token>& tokens) {
 	CorrectIncludeDir(*includeDir);
 	RemoveComments(tokens);
 
@@ -245,24 +245,29 @@ String PreProcessor::Run(List<Token>& tokens) {
 		Token& directive = tokens[i + 1];
 
 		if (directive.string == "include") {
-			ProcessInclude(tokens, i-- + 2, *includeDir, &root);
+			if (!ProcessInclude(tokens, i-- + 2, *includeDir, &root))
+				return false;
 		} else if (directive.string == "pragma") {
-			ProcessPragma(tokens, i-- + 2);
+			if (!ProcessPragma(tokens, i-- + 2))
+				return false;
 		} else if (directive.string == "define") {
-			ProcessDefine(tokens, i-- + 2);
+			if (!ProcessDefine(tokens, i-- + 2))
+				return false;
 		} else if (directive.string.StartsWith("if")) {
-			ProcessIf(tokens, i-- + 2);
+			if (!ProcessIf(tokens, i-- + 2))
+				return false;
 		} else if (directive.string.StartsWith("error")) {
-			ProcessError(tokens, i-- + 2);
+			if (!ProcessError(tokens, i-- + 2))
+				return false;
 		} else {
 			Compiler::Log(t, HC_ERROR_PREPROCESSOR_UNKNOWN_DIRECTIVE, directive.string.str);
 		}
 	}
 
-	return std::move(MergeList(tokens, 0, tokens.GetSize() - 1));
+	return true;
 }
 
-void PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir, FileNode* nodes) {
+bool PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir, FileNode* nodes) {
 	Token& t = tokens[index];
 
 	bool local     = false;
@@ -271,13 +276,14 @@ void PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<
 	uint64 end     = 0;
 	uint64 newLine = FindNextNewline(tokens, index);
 
-	if (startChar == '"') {
+	if (t.isString) {
 		local = true;
-		end   = tokens.Find('"', Token::CharCmp, index + 1);
+		end   = index;
 	} else if (startChar == '<') {
 		end = tokens.Find('>', Token::CharCmp, index + 1);
 	} else {
 		Compiler::Log(t, HC_ERROR_PREPROCESSOR_INCLUDE_UNKNOWN_SYMBOL1, startChar);
+		return false;
 	}
 
 	if (newLine == ~0)
@@ -286,10 +292,16 @@ void PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<
 	if (end == ~0 || end > newLine) {
 		Token& n = tokens[newLine];
 		Compiler::Log(n, HC_ERROR_PREPROCESSOR_INCLUDE_UNKNOWN_SYMBOL2, n.string[n.string.length - 1], startChar == '<' ? '>' : '"');
+		return false;
 	}
 
-	String includeFile = MergeList(tokens, index + 1, end - 1);
-	String localPath   = StringUtils::GetPathFromFilename(t.filename);
+	String includeFile = t.string;
+
+	if (!local) {
+		MergeList(tokens, index + 1, end - 1);
+	}
+
+	String localPath = StringUtils::GetPathFromFilename(t.filename);
 	String finalFile;
 
 	if (local) {
@@ -309,8 +321,9 @@ void PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<
 		}
 	}
 
-	if (finalFile.length == 0) {
+	if (finalFile.length == 0 || finalFile.str == nullptr) {
 		Compiler::Log(t, HC_ERROR_PREPROCESSOR_INCLUDE_FILE_NOT_FOUND, includeFile.str);
+		return false;
 	}
 
 	FileNode* current = FindCurrentNode(nodes, t.filename);
@@ -318,6 +331,7 @@ void PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<
 
 	if (rec) {
 		Compiler::Log(t, HC_ERROR_PREPROCESSOR_INCLUDE_RECURSION, finalFile.str);
+		return false;
 	}
 
 	index -= 2;
@@ -336,9 +350,11 @@ void PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<
 	} else {
 		Log::Debug("Ignoring \"%s\" already included", finalFile.str);
 	}
+
+	return true;
 }
 
-void PreProcessor::ProcessPragma(List<Token>& tokens, uint64 index) {
+bool PreProcessor::ProcessPragma(List<Token>& tokens, uint64 index) {
 	Token& pragmaDirective = tokens[index];
 
 	uint64 end = FindNextNewline(tokens, index);
@@ -350,9 +366,11 @@ void PreProcessor::ProcessPragma(List<Token>& tokens, uint64 index) {
 	}
 
 	tokens.Remove(index - 2, end);
+
+	return true;
 }
 
-void PreProcessor::ProcessDefine(List<Token>& tokens, uint64 index) {
+bool PreProcessor::ProcessDefine(List<Token>& tokens, uint64 index) {
 	uint64 newLine = FindNextNewline(tokens, index);
 
 	Token       name = tokens[index];
@@ -374,9 +392,11 @@ void PreProcessor::ProcessDefine(List<Token>& tokens, uint64 index) {
 	tokens.Remove(index - 2, newLine);
 
 	Log::Debug("Define: %s -> %s", name.string.str, def.GetSize() > 0 ? MergeList(def, 0, def.GetSize() - 1).str : "");
+
+	return true;
 }
 
-void PreProcessor::ProcessIf(List<Token>& tokens, uint64 index) {
+bool PreProcessor::ProcessIf(List<Token>& tokens, uint64 index) {
 	uint64       newLine = FindNextNewline(tokens, index);
 	uint64       end     = FindEndif(tokens, newLine);
 	uint64       els     = FindElse(tokens, newLine, end);
@@ -425,9 +445,11 @@ void PreProcessor::ProcessIf(List<Token>& tokens, uint64 index) {
 			}
 		}
 	}
+
+	return true;
 }
 
-void PreProcessor::ProcessError(List<Token>& tokens, uint64 index) {
+bool PreProcessor::ProcessError(List<Token>& tokens, uint64 index) {
 	uint64 end = FindNextNewline(tokens, index);
 
 	if (end == ~0) {
@@ -437,6 +459,8 @@ void PreProcessor::ProcessError(List<Token>& tokens, uint64 index) {
 	String message = MergeList(tokens, index, end);
 
 	Compiler::Log(tokens[index - 1], HC_ERROR_PREPROCESSOR_ERROR_DIRECTIVE, message.str);
+
+	return false;
 }
 
 void PreProcessor::ReplaceDefine(List<Token>& tokens, uint64 index) {
