@@ -648,11 +648,20 @@ uint64 Compiler::ParseLayout(List<Token>& tokens, uint64 start, ASTNode* current
 		case KeywordType::Out:
 			layout->type = LayoutType::Out;
 			break;
-		case KeywordType::Uniform:
-			layout->type = LayoutType::Uniform;
+		case KeywordType::UniformBuffer:
+			layout->type = LayoutType::UniformBuffer;
+			break;
+		case KeywordType::Sampler1D:
+			layout->type = LayoutType::Sampler1D;
+			break;
+		case KeywordType::Sampler2D:
+			layout->type = LayoutType::Sampler2D;
+			break;
+		case KeywordType::Sampler3D:
+			layout->type = LayoutType::Sampler3D;
 			break;
 		default:
-			Compiler::Log(layoutType, HC_ERROR_SYNTAX_EXPECTED, "in/out/uniform");
+			Compiler::Log(layoutType, HC_ERROR_SYNTAX_EXPECTED, "<layout_type>");
 			return ~0;
 	}
 
@@ -678,7 +687,7 @@ uint64 Compiler::ParseLayout(List<Token>& tokens, uint64 start, ASTNode* current
 			return ~0;
 		}
 
-	} else if (layout->type == LayoutType::Uniform) {
+	} else {
 		Token& bracketOpen = tokens[start + 1];
 
 		if (bracketOpen.type == TokenType::BracketOpen) { // Explicit type

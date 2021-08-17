@@ -137,7 +137,11 @@ Language* Language::Default() {
 	keywords.PushBack({ KeywordType::Layout, "layout" });
 	keywords.PushBack({ KeywordType::In, "in" });
 	keywords.PushBack({ KeywordType::Out, "out" });
-	keywords.PushBack({ KeywordType::Uniform, "uniform" });
+	keywords.PushBack({ KeywordType::UniformBuffer, "UniformBuffer" });
+	keywords.PushBack({ KeywordType::Sampler1D, "Sampler1D" });
+	keywords.PushBack({ KeywordType::Sampler2D, "Sampler2D" });
+	keywords.PushBack({ KeywordType::Sampler3D, "Sampler3D" });
+
 
 	lang.initialized = true;
 

@@ -194,7 +194,10 @@ enum class LayoutType {
 	Unknown,
 	In,
 	Out,
-	Uniform
+	UniformBuffer,
+	Sampler1D,
+	Sampler2D,
+	Sampler3D
 };
 
 class LayoutNode : public ASTNode {

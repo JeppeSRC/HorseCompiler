@@ -146,7 +146,10 @@ enum class KeywordType {
 	Layout,
 	In,
 	Out,
-	Uniform
+	UniformBuffer,
+	Sampler1D,
+	Sampler2D,
+	Sampler3D
 };
 
 struct KeywordDef {

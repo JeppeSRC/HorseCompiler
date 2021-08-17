@@ -57,6 +57,14 @@ Vector and Matrix types prefixed with `d` are 64 bit floats and those without th
 
 For a shader stage to function you need to define variables and associate those variables to the input data.
 
+##### Layout Types:
+- in
+- out
+- UniformBuffer
+- Sampler1D
+- Sampler2D
+- Sampler3D
+
 #### Input And Output Layout:
 
 ```
