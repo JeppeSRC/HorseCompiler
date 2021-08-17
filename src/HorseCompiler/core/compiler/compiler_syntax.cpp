@@ -23,7 +23,6 @@ SOFTWARE
 */
 
 #include "compiler.h"
-#include <util/util.h>
 
 uint64 Compiler::SyntaxAnalazys(List<Token>& tokens, uint64 start, ASTNode* currentNode) {
 	HC_ASSERT(currentNode != nullptr);
