@@ -316,13 +316,13 @@ ASTNode* Compiler::CreateOperandNode(List<Token>& tokens, uint64* index) {
 
 			node = new ASTNode(ASTType::Function, &token);
 
-			node->AddNode(new StringNode(token.string));
+			node->AddNode(new StringNode(token.string, &token));
 
 			*index = ParseExpression(tokens, *index + 1, node);
 
 		} else {
 			node = new ASTNode(ASTType::Variable, &token);
-			node->AddNode(new StringNode(token.string));
+			node->AddNode(new StringNode(token.string, &token));
 		}
 	}
 

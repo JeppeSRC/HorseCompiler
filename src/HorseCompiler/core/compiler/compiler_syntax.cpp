@@ -76,14 +76,13 @@ uint64 Compiler::SyntaxAnalazys(List<Token>& tokens, uint64 start, ASTNode* curr
 			}
 
 			const Token& nameToken = tokens[index];
-			String       name      = nameToken.string;
 
 			if (!CheckName(nameToken)) {
 				Compiler::Log(nameToken, HC_ERROR_SYNTAX_ILLEGAL_VARIABLE_NAME);
 				return ~0;
 			}
 
-			StringNode* stringNode = new StringNode(name);
+			StringNode* stringNode = new StringNode(nameToken.string, &nameToken);
 
 			const Token& next = tokens[++index];
 
@@ -211,7 +210,7 @@ uint64 Compiler::ParseFunctionParameters(List<Token>& tokens, uint64 start, ASTN
 		if (i == ~0)
 			return ~0;
 
-		ASTNode* param = new ASTNode(ASTType::Parameter);
+		ASTNode* param = new ASTNode(ASTType::Parameter, &token);
 
 		param->AddNode(paramType);
 
@@ -231,7 +230,7 @@ uint64 Compiler::ParseFunctionParameters(List<Token>& tokens, uint64 start, ASTN
 				return ~0;
 			}
 
-			param->AddNode(new StringNode(nameToken.string));
+			param->AddNode(new StringNode(nameToken.string, &nameToken));
 			param->token = &nameToken;
 		}
 
