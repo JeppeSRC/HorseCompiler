@@ -209,9 +209,13 @@ struct Syntax {
 };
 
 class Language {
+private:
+	bool initialized = false;
 public:
 	Syntax                 syntax;
 	List<KeywordDef>       keywords;
 	List<PrimitiveTypeDef> primitiveTypes;
 	List<OperatorTypeDef>  operators;
+
+	static Language* Default();
 };
