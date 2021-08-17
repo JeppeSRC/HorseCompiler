@@ -67,8 +67,9 @@ uint64 Compiler::SyntaxAnalazys(List<Token>& tokens, uint64 start, ASTNode* curr
 		} else if (t.type == TokenType::BracketClose) {
 			return i;
 		} else {
-			Type*  type  = nullptr;
-			uint64 index = ParseTypeDeclaration(tokens, i, &type);
+			TypeNode* typeNode = new TypeNode(&t);
+
+			uint64 index = ParseTypeDeclaration(tokens, i, typeNode);
 
 			if (index == ~0) {
 				index = ParseExpression(tokens, i, currentNode);
@@ -82,7 +83,6 @@ uint64 Compiler::SyntaxAnalazys(List<Token>& tokens, uint64 start, ASTNode* curr
 				return ~0;
 			}
 
-			TypeNode*   typeNode   = new TypeNode(type);
 			StringNode* stringNode = new StringNode(name);
 
 			const Token& next = tokens[++index];
@@ -146,8 +146,8 @@ uint64 Compiler::SyntaxAnalazys(List<Token>& tokens, uint64 start, ASTNode* curr
 }
 
 uint64 Compiler::ParseTypedef(List<Token>& tokens, uint64 start) {
-	Type*  type  = nullptr;
-	uint64 index = ParseTypeDeclaration(tokens, start + 1, &type);
+	TypeNode*  type  = new TypeNode(nullptr);
+	uint64 index = ParseTypeDeclaration(tokens, start + 1, type);
 
 	if (index == ~0)
 		return ~0;
@@ -160,7 +160,7 @@ uint64 Compiler::ParseTypedef(List<Token>& tokens, uint64 start) {
 		Compiler::Log(tokens[index], HC_ERROR_SYNTAX_TYPENAME_ALREADY_EXIST, name.str);
 	}
 
-	MakeTypeTypeDef(type, name);
+	//MakeTypeTypeDef(type, name);
 
 	if (tokens[++index].type != TokenType::Semicolon) {
 		Compiler::Log(tokens[index], HC_ERROR_SYNTAX_EXPECTED, ';');
@@ -170,138 +170,31 @@ uint64 Compiler::ParseTypedef(List<Token>& tokens, uint64 start) {
 	return index;
 }
 
-uint64 Compiler::ParseTypeDeclaration(List<Token>& tokens, uint64 start, Type** retType) {
-	Token signToken;
-	Token constToken;
-	uint8 sign      = 2;
-	uint8 constness = 0;
+uint64 Compiler::ParseTypeDeclaration(List<Token>& tokens, uint64 start, TypeNode* typeNode) {
+	while (true) {
+		Token& token = tokens[start];
 
-	Type*         tmp  = nullptr;
-	PrimitiveType type = PrimitiveType::Unknown;
-
-	uint64 i = 0;
-
-	for (i = start; i < tokens.GetSize(); i++) {
-		const Token& token = tokens[i];
-
-		if (token.type != TokenType::PrimitiveType) {
-			if (token.type == TokenType::Identifier) {
-				Type* tmptmp = GetType(token.string);
-
-				if (tmptmp == nullptr) {
-					break;
-				} else if (type != PrimitiveType::Unknown) {
-					Compiler::Log(token, HC_ERROR_SYNTAX_TYPE_FOLLOWED_BY_TYPE, GetPrimitiveTypeString(type).str, tmp->name.str);
-					return ~0;
-				}
-
-				if (tmp != nullptr) {
-					Compiler::Log(token, HC_ERROR_SYNTAX_TYPE_FOLLOWED_BY_TYPE, tmp->name, tmptmp->name);
-					return ~0;
-				}
-
-				tmp = tmptmp;
+		if (token.type == TokenType::Identifier || token.type == TokenType::PrimitiveType) {
+			typeNode->AddToken(&token);
+		} else if (token.type == TokenType::Semicolon || (token.type == TokenType::Operator && token.operatorType == OperatorType::OpAssign) || token.type == TokenType::ParenthesisOpen || token.type == TokenType::ParenthesisClose || token.type == TokenType::Comma) {
+			if (typeNode->tokens.GetSize() > 1) {
+				typeNode->tokens.PopBack();
 			} else {
-				break;
-			}
-		} else {
-			switch (token.primitiveType) {
-				case PrimitiveType::Const:
-					if (constness) {
-						Compiler::Log(token, HC_WARN_SYNTAX_SAME_TYPE_QUALIFIER);
-					}
-
-					constness  = 1;
-					constToken = token;
-					break;
-				case PrimitiveType::Unsigned:
-					if (sign == 0) {
-						Compiler::Log(token, HC_WARN_SYNTAX_SAME_TYPE_QUALIFIER);
-						return ~0;
-					} else if (sign == 1) {
-						Compiler::Log(token, HC_ERROR_SYNTAX_SIGNED_UNSIGNED_EXCLUSIVE);
-						return ~0;
-					}
-
-					sign      = 0;
-					signToken = token;
-					break;
-				case PrimitiveType::Signed:
-					if (sign == 1) {
-						Compiler::Log(token, HC_WARN_SYNTAX_SAME_TYPE_QUALIFIER);
-						return ~0;
-					} else if (sign == 0) {
-						Compiler::Log(token, HC_ERROR_SYNTAX_SIGNED_UNSIGNED_EXCLUSIVE);
-						return ~0;
-					}
-
-					sign      = 1;
-					signToken = token;
-					break;
-				case PrimitiveType::Byte:
-				case PrimitiveType::Short:
-				case PrimitiveType::Int:
-				case PrimitiveType::Float:
-				case PrimitiveType::Vec2:
-				case PrimitiveType::Vec3:
-				case PrimitiveType::Vec4:
-				case PrimitiveType::Mat4:
-					if (type != PrimitiveType::Unknown && tmp != nullptr) {
-						Compiler::Log(token, HC_ERROR_SYNTAX_TYPE_FOLLOWED_BY_TYPE, GetPrimitiveTypeString(type).str, GetPrimitiveTypeString(token.primitiveType).str);
-						return ~0;
-					}
-
-					type = token.primitiveType;
-			}
-		}
-	}
-
-	if (type != PrimitiveType::Unknown) {
-		if (type != PrimitiveType::Byte && type != PrimitiveType::Short && type != PrimitiveType::Int) {
-			if (sign != 2) {
-				Compiler::Log(signToken, HC_ERROR_SYNTAX_SIGNED_UNSIGNED_NOT_ALLOWED_ON_TYPE, sign == 0 ? "unsigned" : "signed", GetPrimitiveTypeString(type).str);
 				return ~0;
 			}
-		}
 
-		switch (type) {
-			case PrimitiveType::Byte:
-			case PrimitiveType::Short:
-			case PrimitiveType::Int:
-			case PrimitiveType::Float:
-				*retType = MakeTypeScalar(type, sign, constness);
-				break;
-			case PrimitiveType::Vec2:
-			case PrimitiveType::Vec4:
-			case PrimitiveType::Vec3:
-				*retType = MakeTypeVec(type, constness);
-				break;
-			case PrimitiveType::Mat4:
-				*retType = MakeTypeMat(type, constness);
-		}
-	} else if (tmp) {
-		TypeTypeDef* def = (TypeTypeDef*)tmp;
+			start -= 1;
 
-		if (constness == 1) {
-			if (def->actualType->constness == 1) {
-				Compiler::Log(constToken, HC_WARN_SYNTAX_SAME_TYPE_QUALIFIER);
-			}
-		}
-
-		if (sign != 2) {
-			Compiler::Log(signToken, HC_ERROR_SYNTAX_SIGNED_UNSIGNED_NOT_ALLOWED_ON_TYPE, def->name.str, sign == 0 ? "unsigned" : "signed");
+			break;
+		} else {
+			Compiler::Log(token, HC_ERROR_SYNTAX_ERROR);
 			return ~0;
 		}
 
-		*retType = def;
-
-		return i;
-	} else {
-		Compiler::Log(tokens[i], HC_ERROR_SYNTAX_ERROR);
-		return ~0;
+		start += 1;
 	}
 
-	return i;
+	return start;
 }
 
 uint64 Compiler::ParseFunctionParameters(List<Token>& tokens, uint64 start, ASTNode* functionNode) {
@@ -311,16 +204,16 @@ uint64 Compiler::ParseFunctionParameters(List<Token>& tokens, uint64 start, ASTN
 		if (token.type == TokenType::ParenthesisClose)
 			return i + 1;
 
-		Type* paramType = nullptr;
+		TypeNode* paramType = new TypeNode(&token);
 
-		i = ParseTypeDeclaration(tokens, i, &paramType);
+		i = ParseTypeDeclaration(tokens, i, paramType);
 
 		if (i == ~0)
 			return ~0;
 
 		ASTNode* param = new ASTNode(ASTType::Parameter);
 
-		param->AddNode(new TypeNode(paramType));
+		param->AddNode(paramType);
 
 		Token& nameToken = tokens[i];
 
@@ -667,3 +560,137 @@ void Compiler::BacktrackNodes(List<ASTNode*>& nodes) {
 		}
 	}
 }
+
+
+
+/*oken signToken;
+	Token constToken;
+	uint8 sign      = 2;
+	uint8 constness = 0;
+
+	Type*         tmp  = nullptr;
+	PrimitiveType type = PrimitiveType::Unknown;
+
+	uint64 i = 0;
+
+	for (i = start; i < tokens.GetSize(); i++) {
+		const Token& token = tokens[i];
+
+		if (token.type != TokenType::PrimitiveType) {
+			if (token.type == TokenType::Identifier) {
+				Type* tmptmp = GetType(token.string);
+
+				if (tmptmp == nullptr) {
+					break;
+				} else if (type != PrimitiveType::Unknown) {
+					Compiler::Log(token, HC_ERROR_SYNTAX_TYPE_FOLLOWED_BY_TYPE, GetPrimitiveTypeString(type).str, tmp->name.str);
+					return ~0;
+				}
+
+				if (tmp != nullptr) {
+					Compiler::Log(token, HC_ERROR_SYNTAX_TYPE_FOLLOWED_BY_TYPE, tmp->name, tmptmp->name);
+					return ~0;
+				}
+
+				tmp = tmptmp;
+			} else {
+				break;
+			}
+		} else {
+			switch (token.primitiveType) {
+				case PrimitiveType::Const:
+					if (constness) {
+						Compiler::Log(token, HC_WARN_SYNTAX_SAME_TYPE_QUALIFIER);
+					}
+
+					constness  = 1;
+					constToken = token;
+					break;
+				case PrimitiveType::Unsigned:
+					if (sign == 0) {
+						Compiler::Log(token, HC_WARN_SYNTAX_SAME_TYPE_QUALIFIER);
+						return ~0;
+					} else if (sign == 1) {
+						Compiler::Log(token, HC_ERROR_SYNTAX_SIGNED_UNSIGNED_EXCLUSIVE);
+						return ~0;
+					}
+
+					sign      = 0;
+					signToken = token;
+					break;
+				case PrimitiveType::Signed:
+					if (sign == 1) {
+						Compiler::Log(token, HC_WARN_SYNTAX_SAME_TYPE_QUALIFIER);
+						return ~0;
+					} else if (sign == 0) {
+						Compiler::Log(token, HC_ERROR_SYNTAX_SIGNED_UNSIGNED_EXCLUSIVE);
+						return ~0;
+					}
+
+					sign      = 1;
+					signToken = token;
+					break;
+				case PrimitiveType::Byte:
+				case PrimitiveType::Short:
+				case PrimitiveType::Int:
+				case PrimitiveType::Float:
+				case PrimitiveType::Vec2:
+				case PrimitiveType::Vec3:
+				case PrimitiveType::Vec4:
+				case PrimitiveType::Mat4:
+					if (type != PrimitiveType::Unknown && tmp != nullptr) {
+						Compiler::Log(token, HC_ERROR_SYNTAX_TYPE_FOLLOWED_BY_TYPE, GetPrimitiveTypeString(type).str, GetPrimitiveTypeString(token.primitiveType).str);
+						return ~0;
+					}
+
+					type = token.primitiveType;
+			}
+		}
+	}
+
+	if (type != PrimitiveType::Unknown) {
+		if (type != PrimitiveType::Byte && type != PrimitiveType::Short && type != PrimitiveType::Int) {
+			if (sign != 2) {
+				Compiler::Log(signToken, HC_ERROR_SYNTAX_SIGNED_UNSIGNED_NOT_ALLOWED_ON_TYPE, sign == 0 ? "unsigned" : "signed", GetPrimitiveTypeString(type).str);
+				return ~0;
+			}
+		}
+
+		switch (type) {
+			case PrimitiveType::Byte:
+			case PrimitiveType::Short:
+			case PrimitiveType::Int:
+			case PrimitiveType::Float:
+				*retType = MakeTypeScalar(type, sign, constness);
+				break;
+			case PrimitiveType::Vec2:
+			case PrimitiveType::Vec4:
+			case PrimitiveType::Vec3:
+				*retType = MakeTypeVec(type, constness);
+				break;
+			case PrimitiveType::Mat4:
+				*retType = MakeTypeMat(type, constness);
+		}
+	} else if (tmp) {
+		TypeTypeDef* def = (TypeTypeDef*)tmp;
+
+		if (constness == 1) {
+			if (def->actualType->constness == 1) {
+				Compiler::Log(constToken, HC_WARN_SYNTAX_SAME_TYPE_QUALIFIER);
+			}
+		}
+
+		if (sign != 2) {
+			Compiler::Log(signToken, HC_ERROR_SYNTAX_SIGNED_UNSIGNED_NOT_ALLOWED_ON_TYPE, def->name.str, sign == 0 ? "unsigned" : "signed");
+			return ~0;
+		}
+
+		*retType = def;
+
+		return i;
+	} else {
+		Compiler::Log(tokens[i], HC_ERROR_SYNTAX_ERROR);
+		return ~0;
+	}
+
+	return i;*/

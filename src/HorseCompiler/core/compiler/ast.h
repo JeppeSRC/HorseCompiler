@@ -136,9 +136,11 @@ public:
 
 class TypeNode : public ASTNode {
 public:
-	Type* type;
+	List<Token*> tokens;
 
-	TypeNode(Type* type) : ASTNode(ASTType::Type), type(type) { }
+	TypeNode(const Token* token) : ASTNode(ASTType::Type, token) { }
+
+	void AddToken(Token* token) { tokens.PushBack(token); }
 };
 
 class ConstantNode : public ASTNode {
