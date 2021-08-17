@@ -19,12 +19,12 @@ Currently supported stages are [Vertex](https://www.khronos.org/registry/vulkan/
 ## Data Types
 
 #### Integers:
-- char  (8 bit)
+- byte  (8 bit)
 - short (16 bit)
 - int   (32 bit)
 - long  (64 bit)
 
-All integers are signed by default but can be explicitly be set as signed or unsigned.
+All integers are signed by default but can be set explicitly as signed or unsigned.
 ```
 signed int var;
 unsigned long var2;
@@ -118,7 +118,7 @@ More info in [SPIR-V Documentation](https://www.khronos.org/registry/spir-v/spec
 
 ## Example
 
-Simple example with a vertex and fragment stage that renders a teextured model.
+Simple example with a vertex and fragment stage that renders a textured model.
 
 ### Vertex Shader:
 ```
@@ -135,7 +135,7 @@ layout (binding = 0) UniformBuffer data {
     mat4 proj;
 };
 
-out vec4 pos = Position;
+layout (Position) out vec4 pos;
 
 void main() {
     pos = data.proj * data.view * data.model * vec4(position, 1);
