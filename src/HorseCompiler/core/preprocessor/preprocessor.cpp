@@ -37,7 +37,7 @@ void CorrectIncludeDir(List<String>& includeDir) {
 	}
 }
 
-uint64 FindNextNewline(const List<Token>& tokens, uint64 index) {
+uint64 FindNextNewline(const Tokens& tokens, uint64 index) {
 	uint64        line = tokens[index].line;
 	const String& file = tokens[index].filename;
 
@@ -51,7 +51,7 @@ uint64 FindNextNewline(const List<Token>& tokens, uint64 index) {
 	return ~0;
 }
 
-uint64 FindEndif(const List<Token>& tokens, uint64 index) {
+uint64 FindEndif(const Tokens& tokens, uint64 index) {
 	uint64 count = 0;
 
 	for (uint64 i = index; i < tokens.GetSize(); i++) {
@@ -80,7 +80,7 @@ uint64 FindEndif(const List<Token>& tokens, uint64 index) {
 	return ~0;
 }
 
-uint64 FindElse(const List<Token>& tokens, uint64 start, uint64 end) {
+uint64 FindElse(const Tokens& tokens, uint64 start, uint64 end) {
 	uint64 count = 0;
 
 	for (uint64 i = end - 1; i >= start; i--) {
@@ -105,7 +105,7 @@ uint64 FindElse(const List<Token>& tokens, uint64 start, uint64 end) {
 	return ~0;
 }
 
-List<uint64> FindElifs(const List<Token>& tokens, uint64 start, uint64 end) {
+List<uint64> FindElifs(const Tokens& tokens, uint64 start, uint64 end) {
 	List<uint64> elifs;
 
 	uint64 count = 0;
@@ -132,7 +132,7 @@ List<uint64> FindElifs(const List<Token>& tokens, uint64 start, uint64 end) {
 	return std::move(elifs);
 }
 
-void RemoveComments(List<Token>& tokens) {
+void RemoveComments(Tokens& tokens) {
 	uint64 index = -1;
 
 	while ((index = tokens.Find('/', Token::CharCmp, index + 1)) != ~0) {
@@ -163,7 +163,7 @@ void RemoveComments(List<Token>& tokens) {
 	}
 }
 
-String MergeList(const List<Token>& tokens, uint64 start, uint64 end) {
+String MergeList(const Tokens& tokens, uint64 start, uint64 end) {
 	String res("");
 
 	int64  currentLine = tokens[start].line;
@@ -221,7 +221,7 @@ PreProcessor::PreProcessor(List<String>& includeDir, Compiler* compiler) {
 	this->compiler   = compiler;
 }
 
-bool PreProcessor::Run(List<Token>& tokens) {
+bool PreProcessor::Run(Tokens& tokens) {
 	CorrectIncludeDir(*includeDir);
 	RemoveComments(tokens);
 
@@ -269,7 +269,7 @@ bool PreProcessor::Run(List<Token>& tokens) {
 	return true;
 }
 
-bool PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir, FileNode* nodes) {
+bool PreProcessor::ProcessInclude(Tokens& tokens, uint64 index, const List<String>& includeDir, FileNode* nodes) {
 	Token& t = tokens[index];
 
 	bool local     = false;
@@ -346,7 +346,7 @@ bool PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<
 		node->name   = finalFile;
 		current->files.PushBack(node);
 
-		List<Token> res = compiler->LexicalAnalazys(finalFile);
+		Tokens res = compiler->LexicalAnalazys(finalFile);
 		tokens.Insert(res, index);
 
 	} else {
@@ -356,7 +356,7 @@ bool PreProcessor::ProcessInclude(List<Token>& tokens, uint64 index, const List<
 	return true;
 }
 
-bool PreProcessor::ProcessPragma(List<Token>& tokens, uint64 index) {
+bool PreProcessor::ProcessPragma(Tokens& tokens, uint64 index) {
 	Token& pragmaDirective = tokens[index];
 
 	uint64 end = FindNextNewline(tokens, index);
@@ -372,11 +372,11 @@ bool PreProcessor::ProcessPragma(List<Token>& tokens, uint64 index) {
 	return true;
 }
 
-bool PreProcessor::ProcessDefine(List<Token>& tokens, uint64 index) {
+bool PreProcessor::ProcessDefine(Tokens& tokens, uint64 index) {
 	uint64 newLine = FindNextNewline(tokens, index);
 
 	Token       name = tokens[index];
-	List<Token> def;
+	Tokens def;
 
 	for (uint64 i = index + 1; i <= newLine; i++) {
 		def.PushBack(tokens[i]);
@@ -398,7 +398,7 @@ bool PreProcessor::ProcessDefine(List<Token>& tokens, uint64 index) {
 	return true;
 }
 
-bool PreProcessor::ProcessIf(List<Token>& tokens, uint64 index) {
+bool PreProcessor::ProcessIf(Tokens& tokens, uint64 index) {
 	uint64       newLine = FindNextNewline(tokens, index);
 	uint64       end     = FindEndif(tokens, newLine);
 	uint64       els     = FindElse(tokens, newLine, end);
@@ -451,7 +451,7 @@ bool PreProcessor::ProcessIf(List<Token>& tokens, uint64 index) {
 	return true;
 }
 
-bool PreProcessor::ProcessError(List<Token>& tokens, uint64 index) {
+bool PreProcessor::ProcessError(Tokens& tokens, uint64 index) {
 	uint64 end = FindNextNewline(tokens, index);
 
 	if (end == ~0) {
@@ -465,7 +465,7 @@ bool PreProcessor::ProcessError(List<Token>& tokens, uint64 index) {
 	return false;
 }
 
-void PreProcessor::ReplaceDefine(List<Token>& tokens, uint64 index) {
+void PreProcessor::ReplaceDefine(Tokens& tokens, uint64 index) {
 	const String& name = tokens[index].string;
 
 	auto [def, items] = defines.FindTuple(name, FindDefineCmp, 0);
@@ -477,11 +477,11 @@ void PreProcessor::ReplaceDefine(List<Token>& tokens, uint64 index) {
 	tokens.Insert(items.second, index);
 }
 
-uint64 PreProcessor::EvaluateExpression(List<Token>& tokens, uint64 start, uint64 end) {
+uint64 PreProcessor::EvaluateExpression(Tokens& tokens, uint64 start, uint64 end) {
 	//TODO: implement later
 	return false;
 }
 
-bool PreProcessor::FindDefineCmp(const std::pair<String, List<Token>>& item, const String& name) {
+bool PreProcessor::FindDefineCmp(const std::pair<String, Tokens>& item, const String& name) {
 	return item.first == name;
 }

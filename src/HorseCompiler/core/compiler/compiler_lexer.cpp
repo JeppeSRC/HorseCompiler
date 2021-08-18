@@ -34,8 +34,8 @@ SOFTWARE
 #define IN_INCLUDE 0x02
 #define IN_CHAR 0x03
 
-List<Token> Compiler::LexicalAnalazys(const String& filename) {
-	List<Token> result;
+Tokens Compiler::LexicalAnalazys(const String& filename) {
+	Tokens result;
 	List<uint64> indices;
 	List<uint64> newLines;
 
@@ -63,6 +63,9 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 		indices.PushBack(index);
 		newLines.PushBack(index++);
 	}
+
+	newLines.PushBack(-1);
+	indices.PushBack(-1);
 
 	std::sort(indices.begin(), indices.end());
 
@@ -309,7 +312,7 @@ List<Token> Compiler::LexicalAnalazys(const String& filename) {
 }
 
 
-void Compiler::ParseLiteral(List<Token>& tokens, uint64 index) {
+void Compiler::ParseLiteral(Tokens& tokens, uint64 index) {
 	Token& token = tokens[index++];
 
 	if (index >= tokens.GetSize() - 1) {
@@ -341,7 +344,7 @@ void Compiler::ParseLiteral(List<Token>& tokens, uint64 index) {
 	}
 }
 
-void Compiler::ParseStrings(List<Token>& tokens) {
+void Compiler::ParseStrings(Tokens& tokens) {
 
 	while (true) {
 		auto [indexStart, itemStart] = tokens.FindTuple(lang->stringStart, Token::CharCmp);

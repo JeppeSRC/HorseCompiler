@@ -24,7 +24,7 @@ SOFTWARE
 
 #include "compiler.h"
 
-uint64 Compiler::SyntaxAnalazys(List<Token>& tokens, uint64 start, ASTNode* currentNode) {
+uint64 Compiler::SyntaxAnalazys(Tokens& tokens, uint64 start, ASTNode* currentNode) {
 	HC_ASSERT(currentNode != nullptr);
 
 	static uint64 currentScope = 0;
@@ -162,7 +162,7 @@ uint64 Compiler::SyntaxAnalazys(List<Token>& tokens, uint64 start, ASTNode* curr
 	return 0;
 }
 
-uint64 Compiler::ParseTypedef(List<Token>& tokens, uint64 start, ASTNode* currentNode) {
+uint64 Compiler::ParseTypedef(Tokens& tokens, uint64 start, ASTNode* currentNode) {
 	TypeNode* type  = new TypeNode(&tokens[start]);
 	uint64    index = ParseTypeDeclaration(tokens, start, type);
 
@@ -187,7 +187,7 @@ uint64 Compiler::ParseTypedef(List<Token>& tokens, uint64 start, ASTNode* curren
 	return index;
 }
 
-uint64 Compiler::ParseTypeDeclaration(List<Token>& tokens, uint64 start, TypeNode* typeNode) {
+uint64 Compiler::ParseTypeDeclaration(Tokens& tokens, uint64 start, TypeNode* typeNode) {
 	bool identifierAdded = false;
 
 	while (true) {
@@ -217,7 +217,7 @@ uint64 Compiler::ParseTypeDeclaration(List<Token>& tokens, uint64 start, TypeNod
 	return start;
 }
 
-uint64 Compiler::ParseStruct(List<Token>& tokens, uint64 start, ASTNode* currentNode) {
+uint64 Compiler::ParseStruct(Tokens& tokens, uint64 start, ASTNode* currentNode) {
 	ASTNode* strct  = new ASTNode(ASTType::Struct, &tokens[start - 1]);
 	Token&   stName = tokens[start++];
 
@@ -280,7 +280,7 @@ uint64 Compiler::ParseStruct(List<Token>& tokens, uint64 start, ASTNode* current
 	return start;
 }
 
-uint64 Compiler::ParseFunctionParameters(List<Token>& tokens, uint64 start, ASTNode* functionNode) {
+uint64 Compiler::ParseFunctionParameters(Tokens& tokens, uint64 start, ASTNode* functionNode) {
 	for (uint64 i = start + 1; i < tokens.GetSize(); i++) {
 		Token& token = tokens[i];
 
@@ -335,7 +335,7 @@ uint64 Compiler::ParseFunctionParameters(List<Token>& tokens, uint64 start, ASTN
 	return ~0;
 }
 
-uint64 Compiler::ParseExpression(List<Token>& tokens, uint64 start, ASTNode* currentNode) {
+uint64 Compiler::ParseExpression(Tokens& tokens, uint64 start, ASTNode* currentNode) {
 	List<ASTNode*> nodes;
 
 	static uint32 parenthesesCount = 0;
@@ -388,11 +388,6 @@ uint64 Compiler::ParseExpression(List<Token>& tokens, uint64 start, ASTNode* cur
 					Compiler::Log(err, HC_ERROR_SYNTAX_ERROR);
 					return ~0;
 				}
-			}
-
-			if (i + 2 == tokens.GetSize()) {
-				Compiler::Log(token, HC_ERROR_SYNTAX_EOL);
-				return ~0;
 			}
 
 			ASTNode* rightNode = nullptr;
@@ -454,11 +449,6 @@ uint64 Compiler::ParseExpression(List<Token>& tokens, uint64 start, ASTNode* cur
 
 				if (op.type == OperatorType::OpInc || op.type == OperatorType::OpDec) {
 					//Post inc/dec
-
-					if (i + 2 >= tokens.GetSize()) {
-						Compiler::Log(token, HC_ERROR_SYNTAX_EOL);
-						return ~0;
-					}
 
 					Token& nextOpToken = tokens[i];
 
@@ -552,11 +542,6 @@ uint64 Compiler::ParseExpression(List<Token>& tokens, uint64 start, ASTNode* cur
 				if (op.type == OperatorType::OpInc || op.type == OperatorType::OpDec) {
 					//Pre inc/dec
 
-					if (i + 2 >= tokens.GetSize()) {
-						Compiler::Log(token, HC_ERROR_SYNTAX_EOL);
-						return ~0;
-					}
-
 					Token& nextOpToken = tokens[i + 1];
 
 					if (nextOpToken.type != TokenType::Operator) {
@@ -623,7 +608,7 @@ uint64 Compiler::ParseExpression(List<Token>& tokens, uint64 start, ASTNode* cur
 	return ~0;
 }
 
-uint64 Compiler::ParseLayout(List<Token>& tokens, uint64 start, ASTNode* currentNode) {
+uint64 Compiler::ParseLayout(Tokens& tokens, uint64 start, ASTNode* currentNode) {
 	Token& parenthesisOpen = tokens[start];
 
 	if (parenthesisOpen.type != TokenType::ParenthesisOpen) {

@@ -239,7 +239,7 @@ OperatorTypeDef Compiler::GetOperator(OperatorType type, OperandType left, Opera
 	return tmp;
 }
 
-OperatorTypeDef Compiler::GetOperator(List<Token>& tokens, List<ASTNode*>& nodes, uint64 index) {
+OperatorTypeDef Compiler::GetOperator(Tokens& tokens, List<ASTNode*>& nodes, uint64 index) {
 	Token&      token = tokens[index];
 	OperandType left  = OperandType::None;
 	OperandType right = OperandType::None;
@@ -258,10 +258,6 @@ OperatorTypeDef Compiler::GetOperator(List<Token>& tokens, List<ASTNode*>& nodes
 		}
 	}
 
-	if (index + 1 == tokens.GetSize()) {
-		Compiler::Log(token, HC_ERROR_SYNTAX_EOL);
-	}
-
 	Token& r = tokens[index + 1];
 
 	if (r.type == TokenType::Operator) {
@@ -277,7 +273,7 @@ OperatorTypeDef Compiler::GetOperator(List<Token>& tokens, List<ASTNode*>& nodes
 	return GetOperator(token.operatorType, left, right, false);
 }
 
-ASTNode* Compiler::CreateOperandNode(List<Token>& tokens, uint64* index) {
+ASTNode* Compiler::CreateOperandNode(Tokens& tokens, uint64* index) {
 	Token&   token = tokens[*index];
 	ASTNode* node  = nullptr;
 

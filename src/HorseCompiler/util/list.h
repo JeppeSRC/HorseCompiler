@@ -31,7 +31,7 @@ SOFTWARE
 
 template <typename T>
 class List {
-private:
+protected:
 	std::vector<T> items;
 
 public:
@@ -50,11 +50,12 @@ public:
 	List& operator=(const List& other) = default;
 	List& operator=(List&& other) = default;
 
-	T& operator[](uint64 index) {
+	virtual T& operator[](uint64 index) {
 		HC_ASSERT(index >= 0 && index < GetSize());
 		return items[index];
 	}
-	const T& operator[](uint64 index) const {
+
+	virtual const T& operator[](uint64 index) const {
 		HC_ASSERT(index >= 0 && index < GetSize());
 		return items[index];
 	}
@@ -76,7 +77,8 @@ public:
 		HC_ASSERT(offset >= 0 && offset <= GetSize());
 		for (uint64 i = offset; i < items.size(); i++) {
 			T& curr = items[i];
-			if (curr == item) return i;
+			if (curr == item)
+				return i;
 		}
 
 		return (uint64)~0;
@@ -86,7 +88,8 @@ public:
 		HC_ASSERT(offset >= 0 && offset <= GetSize());
 		for (uint64 i = offset; i < items.size(); i++) {
 			T& curr = items[i];
-			if (curr == item) return i;
+			if (curr == item)
+				return i;
 		}
 
 		return (uint64)~0;
@@ -97,7 +100,8 @@ public:
 		HC_ASSERT(offset >= 0 && offset <= GetSize());
 		for (uint64 i = offset; i < items.size(); i++) {
 			T& curr = items[i];
-			if (CmpFunc(curr, item)) return i;
+			if (CmpFunc(curr, item))
+				return i;
 		}
 
 		return (uint64)~0;
@@ -108,7 +112,8 @@ public:
 		HC_ASSERT(offset >= 0 && offset <= GetSize());
 		for (uint64 i = offset; i < items.size(); i++) {
 			const T& curr = items[i];
-			if (CmpFunc(curr, item)) return i;
+			if (CmpFunc(curr, item))
+				return i;
 		}
 
 		return (uint64)~0;
@@ -118,7 +123,8 @@ public:
 		HC_ASSERT(offset >= 0 && offset <= GetSize());
 		for (uint64 i = offset; i < items.size(); i++) {
 			T& curr = items[i];
-			if (curr == item) return { i, curr };
+			if (curr == item)
+				return { i, curr };
 		}
 
 		return { (uint64)~0, T() };
@@ -128,7 +134,8 @@ public:
 		HC_ASSERT(offset >= 0 && offset <= GetSize());
 		for (uint64 i = offset; i < items.size(); i++) {
 			const T& curr = items[i];
-			if (curr == item) return { i, curr };
+			if (curr == item)
+				return { i, curr };
 		}
 
 		return { (uint64)~0, T() };
@@ -139,7 +146,8 @@ public:
 		HC_ASSERT(offset >= 0 && offset <= GetSize());
 		for (uint64 i = offset; i < items.size(); i++) {
 			T& curr = items[i];
-			if (CmpFunc(curr, item)) return { i, curr };
+			if (CmpFunc(curr, item))
+				return { i, curr };
 		}
 
 		return { (uint64)~0, T() };
@@ -150,7 +158,8 @@ public:
 		HC_ASSERT(offset >= 0 && offset <= GetSize());
 		for (uint64 i = offset; i < items.size(); i++) {
 			const T& curr = items[i];
-			if (CmpFunc(curr, item)) return { i, curr };
+			if (CmpFunc(curr, item))
+				return { i, curr };
 		}
 
 		return { (uint64)~0, T() };

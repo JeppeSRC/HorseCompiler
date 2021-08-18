@@ -22,33 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 */
 
-#pragma once
+#include "compiler.h"
 
-#include <util/string.h>
-#include "language.h"
+void Compiler::SemanticAnalazys(ASTNode* root) {
 
-struct Token {
-	String string;
-	String filename;
-	int64  line;
-	int64  column;
-
-	bool trailingSpace = false; //Set to true if there's a space after this token
-	bool isString      = false;
-
-	TokenType     type          = TokenType::Unknown;
-	KeywordType   keyword       = KeywordType::Unknown;
-	PrimitiveType primitiveType = PrimitiveType::Unknown;
-	OperatorType  operatorType  = OperatorType::Unknown;
-
-	bool operator==(const Token& other) const;
-
-	// List comp functions
-	static bool CharCmp(const Token& item, const char& other) {
-		return item.string[0] == other && item.string.length == 1;
-	}
-
-	static bool StringCmp(const Token& item, const String& other) {
-		return item.string == other;
-	}
-};
+}

@@ -28,6 +28,32 @@ SOFTWARE
 #include "language.h"
 #include "ast.h"
 
+class Tokens : public List<Token> {
+private:
+
+public:
+	Tokens() : List<Token>() {}
+	Tokens(uint64 reserve) : List<Token>(reserve) {}
+
+	Token& operator[](uint64 index) {
+		if (index >= GetSize()) {
+			Log::Error("unexpected end of file");
+			exit(1);
+		}
+
+		return items[index];
+	}
+
+	const Token& operator[](uint64 index) const {
+		if (index >= GetSize()) {
+			Log::Error("unexpected end of file");
+			exit(1);
+		}
+
+		return items[index];
+	}
+};
+
 class Compiler {
 private:
 	String    currentDir;
@@ -38,32 +64,33 @@ private:
 public:
 	Compiler(const String& currentDir, Language* lang);
 
-	List<Token> LexicalAnalazys(const String& filename);
-	uint64      SyntaxAnalazys(List<Token>& lexerResult, uint64 start, ASTNode* currentNode);
+	Tokens LexicalAnalazys(const String& filename);
+	uint64      SyntaxAnalazys(Tokens& lexerResult, uint64 start, ASTNode* currentNode);
+	void        SemanticAnalazys(ASTNode* root);
 
 private: // Internal functions
-	void ParseLiteral(List<Token>& tokens, uint64 i);
-	void ParseStrings(List<Token>& lexerResult);
+	void ParseLiteral(Tokens& tokens, uint64 i);
+	void ParseStrings(Tokens& lexerResult);
 	void ParseEscapeSequences(Token& token);
 
 	String GetPrimitiveTypeString(const PrimitiveType& type);
 
-	Type*        GetType(const String& name);
-	TypeScalar*  MakeTypeScalar(PrimitiveType type, uint8 sign, uint8 constness);
-	TypeVec*     MakeTypeVec(PrimitiveType type, uint8 constness);
-	TypeMat*     MakeTypeMat(PrimitiveType type, uint8 constness);
+	Type*       GetType(const String& name);
+	TypeScalar* MakeTypeScalar(PrimitiveType type, uint8 sign, uint8 constness);
+	TypeVec*    MakeTypeVec(PrimitiveType type, uint8 constness);
+	TypeMat*    MakeTypeMat(PrimitiveType type, uint8 constness);
 
 	bool            CheckName(const Token& token);
 	OperatorTypeDef GetOperator(OperatorType type, OperandType left, OperandType right, bool ignoreOperands);
-	OperatorTypeDef GetOperator(List<Token>& tokens, List<ASTNode*>& nodes, uint64 index);
-	ASTNode*        CreateOperandNode(List<Token>& tokens, uint64* index);
+	OperatorTypeDef GetOperator(Tokens& tokens, List<ASTNode*>& nodes, uint64 index);
+	ASTNode*        CreateOperandNode(Tokens& tokens, uint64* index);
 
-	uint64 ParseTypedef(List<Token>& tokens, uint64 start, ASTNode* currentNode);
-	uint64 ParseTypeDeclaration(List<Token>& tokens, uint64 start, TypeNode* typeNode);
-	uint64 ParseStruct(List<Token>& tokens, uint64 start, ASTNode* currentNode);
-	uint64 ParseFunctionParameters(List<Token>& tokens, uint64 start, ASTNode* functionNode);
-	uint64 ParseExpression(List<Token>& tokens, uint64 start, ASTNode* currentNode);
-	uint64 ParseLayout(List<Token>& tokens, uint64 start, ASTNode* currentNode);
+	uint64 ParseTypedef(Tokens& tokens, uint64 start, ASTNode* currentNode);
+	uint64 ParseTypeDeclaration(Tokens& tokens, uint64 start, TypeNode* typeNode);
+	uint64 ParseStruct(Tokens& tokens, uint64 start, ASTNode* currentNode);
+	uint64 ParseFunctionParameters(Tokens& tokens, uint64 start, ASTNode* functionNode);
+	uint64 ParseExpression(Tokens& tokens, uint64 start, ASTNode* currentNode);
+	uint64 ParseLayout(Tokens& tokens, uint64 start, ASTNode* currentNode);
 
 	void BacktrackNodes(List<ASTNode*>& nodes);
 

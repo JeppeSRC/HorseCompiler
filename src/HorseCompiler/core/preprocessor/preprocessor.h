@@ -38,24 +38,24 @@ class PreProcessor {
 private:
 	List<String>*                        includeDir;
 	List<String>                         includedFiles; // Files to be ignore if included again
-	List<std::pair<String, List<Token>>> defines;
+	List<std::pair<String, Tokens>> defines;
 	Compiler*                            compiler;
 
 public:
 	PreProcessor(List<String>& includeDir, Compiler* compiler);
 
-	bool Run(List<Token>& result);
+	bool Run(Tokens& result);
 
 private:
-	bool ProcessInclude(List<Token>& tokens, uint64 index, const List<String>& includeDir, FileNode* nodes);
-	bool ProcessPragma(List<Token>& tokens, uint64 index);
-	bool ProcessDefine(List<Token>& tokens, uint64 index);
-	bool ProcessIf(List<Token>& tokens, uint64 index);
-	bool ProcessError(List<Token>& tokens, uint64 index);
+	bool ProcessInclude(Tokens& tokens, uint64 index, const List<String>& includeDir, FileNode* nodes);
+	bool ProcessPragma(Tokens& tokens, uint64 index);
+	bool ProcessDefine(Tokens& tokens, uint64 index);
+	bool ProcessIf(Tokens& tokens, uint64 index);
+	bool ProcessError(Tokens& tokens, uint64 index);
 
-	void   ReplaceDefine(List<Token>& tokens, uint64 index);
-	uint64 EvaluateExpression(List<Token>& tokens, uint64 start, uint64 end);
+	void   ReplaceDefine(Tokens& tokens, uint64 index);
+	uint64 EvaluateExpression(Tokens& tokens, uint64 start, uint64 end);
 
 private:
-	static bool FindDefineCmp(const std::pair<String, List<Token>>& item, const String& name);
+	static bool FindDefineCmp(const std::pair<String, Tokens>& item, const String& name);
 };
