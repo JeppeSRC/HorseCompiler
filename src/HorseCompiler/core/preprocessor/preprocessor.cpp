@@ -157,6 +157,8 @@ void RemoveComments(List<Token>& tokens) {
 				end = tokens.GetSize() - 1;
 
 			tokens.Remove(index, end);
+
+			if (index == tokens.GetSize()) break;
 		}
 	}
 }
