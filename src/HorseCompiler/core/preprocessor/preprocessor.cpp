@@ -346,7 +346,7 @@ bool PreProcessor::ProcessInclude(Tokens& tokens, uint64 index, const List<Strin
 		node->name   = finalFile;
 		current->files.PushBack(node);
 
-		Tokens res = compiler->LexicalAnalazys(finalFile);
+		Tokens res = Lexer::Analyze(finalFile, Language::Default());
 		tokens.Insert(res, index);
 
 	} else {

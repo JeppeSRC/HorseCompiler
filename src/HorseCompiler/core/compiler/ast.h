@@ -26,8 +26,8 @@ SOFTWARE
 
 #include <util/string.h>
 #include <util/list.h>
-#include "variable.h"
 #include "language.h"
+#include "token.h"
 
 enum class ASTType {
 	Unknown,
@@ -172,15 +172,15 @@ public:
 
 class ConstantNode : public ASTNode {
 public:
-	Type* type;
+	PrimitiveType type;
 
 	union {
 		uint32 iValue;
 		float  fValue;
 	};
 
-	ConstantNode(Type* type, uint32 value, const Token* token) : ASTNode(ASTType::Constant, token), type(type), iValue(value) { }
-	ConstantNode(Type* type, float value, const Token* token) : ASTNode(ASTType::Constant, token), type(type), fValue(value) { }
+	ConstantNode(PrimitiveType type, uint32 value, const Token* token) : ASTNode(ASTType::Constant, token), type(type), iValue(value) { }
+	ConstantNode(PrimitiveType type, float value, const Token* token) : ASTNode(ASTType::Constant, token), type(type), fValue(value) { }
 };
 
 class OperatorNode : public ASTNode {

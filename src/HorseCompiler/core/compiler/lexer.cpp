@@ -23,6 +23,7 @@ SOFTWARE
 */
 
 
+#include "lexer.h"
 #include "compiler.h"
 
 #include <util/file.h>
@@ -34,7 +35,13 @@ SOFTWARE
 #define IN_INCLUDE 0x02
 #define IN_CHAR 0x03
 
-Tokens Compiler::LexicalAnalazys(const String& filename) {
+Tokens Lexer::Analyze(const String& filename, Language* lang) {
+	Lexer lex(lang);
+
+	return lex.Analyze(filename);
+}
+
+Tokens Lexer::Analyze(const String& filename) {
 	Tokens result;
 	List<uint64> indices;
 	List<uint64> newLines;
@@ -312,7 +319,7 @@ Tokens Compiler::LexicalAnalazys(const String& filename) {
 }
 
 
-void Compiler::ParseLiteral(Tokens& tokens, uint64 index) {
+void Lexer::ParseLiteral(Tokens& tokens, uint64 index) {
 	Token& token = tokens[index++];
 
 	if (index >= tokens.GetSize() - 1) {
@@ -344,7 +351,7 @@ void Compiler::ParseLiteral(Tokens& tokens, uint64 index) {
 	}
 }
 
-void Compiler::ParseStrings(Tokens& tokens) {
+void Lexer::ParseStrings(Tokens& tokens) {
 
 	while (true) {
 		auto [indexStart, itemStart] = tokens.FindTuple(lang->stringStart, Token::CharCmp);
@@ -431,7 +438,7 @@ uint64 GetNumDigits(String& string, uint8 base, uint64 index) {
 	return count;
 }
 
-void Compiler::ParseEscapeSequences(Token& token) {
+void Lexer::ParseEscapeSequences(Token& token) {
 	String& string = token.string;
 	uint64 index = 0;
 

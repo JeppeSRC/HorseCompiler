@@ -35,6 +35,7 @@ Compiler::Compiler(const String& cwd, Language* language) : lang(language) {
 		currentDir.Append("/");
 }
 
+/*
 String Compiler::GetPrimitiveTypeString(const PrimitiveType& type) {
 	for (uint64 i = 0; i < lang->primitiveTypes.GetSize(); i++) {
 		auto& t = lang->primitiveTypes[i];
@@ -170,144 +171,9 @@ TypeMat* Compiler::MakeTypeMat(PrimitiveType type, uint8 constness) {
 	types.PushBack(tmp);
 
 	return tmp;
-}
+}*/
 
-bool Compiler::CheckName(const Token& token) {
-	String name = token.string;
 
-	if (token.type != TokenType::Identifier) {
-		return false;
-	}
-
-	if (!(name[0] == '_' || (name[0] >= 'a' && name[0] <= 'z') || (name[0] >= 'A' && name[0] <= 'Z'))) {
-		return false;
-	}
-
-	for (uint64 i = 0; i < lang->keywords.GetSize(); i++) {
-		auto& t = lang->keywords[i];
-
-		if (t.def == name) {
-			return false;
-		}
-	}
-
-	for (uint64 i = 0; i < lang->primitiveTypes.GetSize(); i++) {
-		auto& t = lang->primitiveTypes[i];
-
-		if (t.def == name) {
-			return false;
-		}
-	}
-
-	return true;
-}
-
-bool FindOpCMP(const OperatorTypeDef& item, const OperatorType& type) {
-	return item.type == type;
-}
-
-OperatorTypeDef Compiler::GetOperator(OperatorType type, OperandType left, OperandType right, bool ignoreOperands) {
-	for (OperatorTypeDef& def : lang->operators) {
-		if (def.type == type) {
-			if (left == OperandType::None && !ignoreOperands) {
-				if (def.leftOperand != OperandType::None)
-					continue;
-			} /*else if (left == OperandType::Variable) {
-				if (def.leftOperand != OperandType::Variable && def.rightOperand != OperandType::Any) continue;
-			} else if (left == OperandType::Value) {
-				if (def.leftOperand != OperandType::Value && def.leftOperand != OperandType::Any) continue;
-			}*/
-
-			if (right == OperandType::None && !ignoreOperands) {
-				if (def.rightOperand != OperandType::None)
-					continue;
-			} /*else if (right == OperandType::Variable) {
-				if (def.rightOperand != OperandType::Variable && def.rightOperand != OperandType::Any) continue;
-			} else if (right == OperandType::Value) {
-				if (def.rightOperand != OperandType::Value && def.rightOperand != OperandType::Any) continue;
-			}*/
-
-			return def;
-		}
-	}
-
-	OperatorTypeDef tmp;
-
-	tmp.leftOperand  = left;
-	tmp.rightOperand = right;
-
-	return tmp;
-}
-
-OperatorTypeDef Compiler::GetOperator(Tokens& tokens, List<ASTNode*>& nodes, uint64 index) {
-	Token&      token = tokens[index];
-	OperandType left  = OperandType::None;
-	OperandType right = OperandType::None;
-
-	if (nodes.GetSize() > 0) {
-		ASTNode* n = nodes.Back();
-
-		if (n->nodeType == ASTType::Operator && (token.operatorType == OperatorType::OpInc || token.operatorType == OperatorType::OpDec)) {
-			if (n->branches.GetSize() > 0) {
-				left = OperandType::Any;
-			} else {
-				left = OperandType::None;
-			}
-		} else {
-			left = OperandType::Any; //n->nodeType == ASTType::Variable ? OperandType::Variable : OperandType::Value;
-		}
-	}
-
-	Token& r = tokens[index + 1];
-
-	if (r.type == TokenType::Operator) {
-		if (r.operatorType == OperatorType::OpInc || r.operatorType == OperatorType::OpDec) {
-			right = OperandType::Any;
-		} else {
-			right = OperandType::None;
-		}
-	} else if (r.type == TokenType::Identifier || r.type == TokenType::Literal || r.type == TokenType::ParenthesisOpen || r.type == TokenType::PrimitiveType) {
-		right = OperandType::Any;
-	}
-
-	return GetOperator(token.operatorType, left, right, false);
-}
-
-ASTNode* Compiler::CreateOperandNode(Tokens& tokens, uint64* index) {
-	Token&   token = tokens[*index];
-	ASTNode* node  = nullptr;
-
-	if (token.type == TokenType::Literal) {
-		Type* type = MakeTypeScalar(token.primitiveType, 0, 0);
-
-		switch (token.primitiveType) {
-			case PrimitiveType::Int:
-				node = new ConstantNode(type, (uint32)atoi(token.string.str), &token);
-				break;
-			case PrimitiveType::Float:
-				node = new ConstantNode(type, (float)atof(token.string.str), &token);
-				break;
-		}
-	} else if (token.type == TokenType::Identifier || token.type == TokenType::PrimitiveType) {
-		Token& next = tokens[*index + 1];
-
-		if (next.type == TokenType::ParenthesisOpen) {
-			(*index)++;
-
-			node = new ASTNode(ASTType::Function, &token);
-
-			node->AddNode(new StringNode(token.string, &token));
-
-			*index = ParseExpression(tokens, *index + 1, node);
-
-		} else {
-			node = new ASTNode(ASTType::Variable, &token);
-			node->AddNode(new StringNode(token.string, &token));
-		}
-	}
-
-	return node;
-}
 
 void Compiler::Log(const Token& item, uint64 code, ...) {
 	va_list list;

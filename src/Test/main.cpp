@@ -4,7 +4,9 @@
 #include <core/error/error.h>
 #include <core/preprocessor/preprocessor.h>
 #include <core/compiler/compiler.h>
-#include <core/compiler/ast.h>
+#include <core/compiler/lexer.h>
+#include <core/compiler/syntax.h>
+#include <core/compiler/semantic.h>
 
 #include <chrono>
 #include <Windows.h>
@@ -16,7 +18,7 @@ int main(int argc, char** argv) {
 
 	Compiler compiler(String(buf), Language::Default());
 
-	auto res = compiler.LexicalAnalazys("test.c");
+	auto res = Lexer::Analyze("test.c", Language::Default());
 
 	List< String > includes;
 
@@ -28,5 +30,5 @@ int main(int argc, char** argv) {
 
 	ASTNode* rootNode = new ASTNode(ASTType::Root);
 
-	compiler.SyntaxAnalazys(res, 0, rootNode);
+	Syntax::Analyze(res, 0, rootNode, Language::Default());
 }

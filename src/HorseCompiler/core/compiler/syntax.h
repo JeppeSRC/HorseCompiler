@@ -27,22 +27,27 @@ SOFTWARE
 #include "token.h"
 #include "language.h"
 #include "ast.h"
-#include "lexer.h"
-#include "syntax.h"
-#include "semantic.h"
 
+class Syntax {
+public:
+	static uint64 Analyze(Tokens& lexerResult, uint64 start, ASTNode* currentNode, Language* lang);
 
-class Compiler {
 private:
-	String    currentDir;
+	Syntax(Language* lang) : lang(lang) { }
+
 	Language* lang;
 
-public:
-	Compiler(const String& currentDir, Language* lang);
+	uint64 Analyze(Tokens& lexerResult, uint64 start, ASTNode* currentNode);
 
-private: // Internal functions
-
-public: //static stuff
-	static void Log(const Token& item, uint64 code, ...);
-	static void Log(const ASTNode* item, uint64 code, ...);
+	bool            CheckName(const Token& token);
+	OperatorTypeDef GetOperator(OperatorType type, OperandType left, OperandType right, bool ignoreOperands);
+	OperatorTypeDef GetOperator(Tokens& tokens, List<ASTNode*>& nodes, uint64 index);
+	ASTNode*        CreateOperandNode(Tokens& tokens, uint64* index);
+	uint64          ParseTypedef(Tokens& tokens, uint64 start, ASTNode* currentNode);
+	uint64          ParseTypeDeclaration(Tokens& tokens, uint64 start, TypeNode* typeNode);
+	uint64          ParseStruct(Tokens& tokens, uint64 start, ASTNode* currentNode);
+	uint64          ParseFunctionParameters(Tokens& tokens, uint64 start, ASTNode* functionNode);
+	uint64          ParseExpression(Tokens& tokens, uint64 start, ASTNode* currentNode);
+	uint64          ParseLayout(Tokens& tokens, uint64 start, ASTNode* currentNode);
+	void            BacktrackNodes(List<ASTNode*>& nodes);
 };

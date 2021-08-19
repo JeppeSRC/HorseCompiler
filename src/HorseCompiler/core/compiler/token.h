@@ -25,6 +25,7 @@ SOFTWARE
 #pragma once
 
 #include <util/string.h>
+#include <core/log/log.h>
 #include "language.h"
 
 struct Token {
@@ -50,5 +51,30 @@ struct Token {
 
 	static bool StringCmp(const Token& item, const String& other) {
 		return item.string == other;
+	}
+};
+
+class Tokens : public List<Token> {
+private:
+public:
+	Tokens() : List<Token>() {}
+	Tokens(uint64 reserve) : List<Token>(reserve) {}
+
+	Token& operator[](uint64 index) {
+		if (index >= GetSize()) {
+			Log::Error("unexpected end of file");
+			exit(1);
+		}
+
+		return items[index];
+	}
+
+	const Token& operator[](uint64 index) const {
+		if (index >= GetSize()) {
+			Log::Error("unexpected end of file");
+			exit(1);
+		}
+
+		return items[index];
 	}
 };

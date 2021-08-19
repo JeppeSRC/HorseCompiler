@@ -27,22 +27,19 @@ SOFTWARE
 #include "token.h"
 #include "language.h"
 #include "ast.h"
-#include "lexer.h"
-#include "syntax.h"
-#include "semantic.h"
 
+class Lexer {
+public:
+	static Tokens Analyze(const String& filename, Language* lang);
 
-class Compiler {
 private:
-	String    currentDir;
+	Lexer(Language* lang) : lang(lang) {}
+
 	Language* lang;
 
-public:
-	Compiler(const String& currentDir, Language* lang);
+	Tokens Analyze(const String& filename);
 
-private: // Internal functions
-
-public: //static stuff
-	static void Log(const Token& item, uint64 code, ...);
-	static void Log(const ASTNode* item, uint64 code, ...);
+	void ParseLiteral(Tokens& tokens, uint64 i);
+	void ParseStrings(Tokens& lexerResult);
+	void ParseEscapeSequences(Token& token);
 };

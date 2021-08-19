@@ -22,27 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 */
 
-#pragma once
-
-#include "token.h"
-#include "language.h"
-#include "ast.h"
-#include "lexer.h"
-#include "syntax.h"
 #include "semantic.h"
 
+uint64 Semantic::Analyze(ASTNode* node) {
+    Semantic sem;
 
-class Compiler {
-private:
-	String    currentDir;
-	Language* lang;
+    return sem.AnalyzeInternal(node);
+}
 
-public:
-	Compiler(const String& currentDir, Language* lang);
+uint64 Semantic::AnalyzeInternal(ASTNode* root) {
+    List<ASTNode*>& branches = root->branches;
 
-private: // Internal functions
+    for (uint64 i = 0; i < branches.GetSize(); i++) {
+        ASTNode* node = branches[i];
 
-public: //static stuff
-	static void Log(const Token& item, uint64 code, ...);
-	static void Log(const ASTNode* item, uint64 code, ...);
-};
+        if (node->nodeType == ASTType::Operator) {
+
+        }
+    }
+
+    return 0;
+}

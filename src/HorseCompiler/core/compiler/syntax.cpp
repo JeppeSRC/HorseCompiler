@@ -22,9 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 */
 
+#include "syntax.h"
 #include "compiler.h"
 
-uint64 Compiler::SyntaxAnalazys(Tokens& tokens, uint64 start, ASTNode* currentNode) {
+uint64 Syntax::Analyze(Tokens& tokens, uint64 start, ASTNode* currentNode, Language* lang) {
+	Syntax syn(lang);
+
+	return syn.Analyze(tokens, start, currentNode);
+}
+
+uint64 Syntax::Analyze(Tokens& tokens, uint64 start, ASTNode* currentNode) {
 	HC_ASSERT(currentNode != nullptr);
 
 	static uint64 currentScope = 0;
@@ -125,7 +132,7 @@ uint64 Compiler::SyntaxAnalazys(Tokens& tokens, uint64 start, ASTNode* currentNo
 
 						currentScope++;
 
-						index = SyntaxAnalazys(tokens, index + 1, func);
+						index = Analyze(tokens, index + 1, func);
 
 						if (index == ~0)
 							return ~0;
@@ -162,7 +169,139 @@ uint64 Compiler::SyntaxAnalazys(Tokens& tokens, uint64 start, ASTNode* currentNo
 	return 0;
 }
 
-uint64 Compiler::ParseTypedef(Tokens& tokens, uint64 start, ASTNode* currentNode) {
+bool Syntax::CheckName(const Token& token) {
+	String name = token.string;
+
+	if (token.type != TokenType::Identifier) {
+		return false;
+	}
+
+	if (!(name[0] == '_' || (name[0] >= 'a' && name[0] <= 'z') || (name[0] >= 'A' && name[0] <= 'Z'))) {
+		return false;
+	}
+
+	for (uint64 i = 0; i < lang->keywords.GetSize(); i++) {
+		auto& t = lang->keywords[i];
+
+		if (t.def == name) {
+			return false;
+		}
+	}
+
+	for (uint64 i = 0; i < lang->primitiveTypes.GetSize(); i++) {
+		auto& t = lang->primitiveTypes[i];
+
+		if (t.def == name) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+OperatorTypeDef Syntax::GetOperator(OperatorType type, OperandType left, OperandType right, bool ignoreOperands) {
+	for (OperatorTypeDef& def : lang->operators) {
+		if (def.type == type) {
+			if (left == OperandType::None && !ignoreOperands) {
+				if (def.leftOperand != OperandType::None)
+					continue;
+			} /*else if (left == OperandType::Variable) {
+				if (def.leftOperand != OperandType::Variable && def.rightOperand != OperandType::Any) continue;
+			} else if (left == OperandType::Value) {
+				if (def.leftOperand != OperandType::Value && def.leftOperand != OperandType::Any) continue;
+			}*/
+
+			if (right == OperandType::None && !ignoreOperands) {
+				if (def.rightOperand != OperandType::None)
+					continue;
+			} /*else if (right == OperandType::Variable) {
+				if (def.rightOperand != OperandType::Variable && def.rightOperand != OperandType::Any) continue;
+			} else if (right == OperandType::Value) {
+				if (def.rightOperand != OperandType::Value && def.rightOperand != OperandType::Any) continue;
+			}*/
+
+			return def;
+		}
+	}
+
+	OperatorTypeDef tmp;
+
+	tmp.leftOperand = left;
+	tmp.rightOperand = right;
+
+	return tmp;
+}
+
+OperatorTypeDef Syntax::GetOperator(Tokens& tokens, List<ASTNode*>& nodes, uint64 index) {
+	Token& token = tokens[index];
+	OperandType left = OperandType::None;
+	OperandType right = OperandType::None;
+
+	if (nodes.GetSize() > 0) {
+		ASTNode* n = nodes.Back();
+
+		if (n->nodeType == ASTType::Operator && (token.operatorType == OperatorType::OpInc || token.operatorType == OperatorType::OpDec)) {
+			if (n->branches.GetSize() > 0) {
+				left = OperandType::Any;
+			} else {
+				left = OperandType::None;
+			}
+		} else {
+			left = OperandType::Any; //n->nodeType == ASTType::Variable ? OperandType::Variable : OperandType::Value;
+		}
+	}
+
+	Token& r = tokens[index + 1];
+
+	if (r.type == TokenType::Operator) {
+		if (r.operatorType == OperatorType::OpInc || r.operatorType == OperatorType::OpDec) {
+			right = OperandType::Any;
+		} else {
+			right = OperandType::None;
+		}
+	} else if (r.type == TokenType::Identifier || r.type == TokenType::Literal || r.type == TokenType::ParenthesisOpen || r.type == TokenType::PrimitiveType) {
+		right = OperandType::Any;
+	}
+
+	return GetOperator(token.operatorType, left, right, false);
+}
+
+ASTNode* Syntax::CreateOperandNode(Tokens& tokens, uint64* index) {
+	Token& token = tokens[*index];
+	ASTNode* node = nullptr;
+
+	if (token.type == TokenType::Literal) {
+
+		switch (token.primitiveType) {
+			case PrimitiveType::Int:
+				node = new ConstantNode(token.primitiveType, (uint32)atoi(token.string.str), &token);
+				break;
+			case PrimitiveType::Float:
+				node = new ConstantNode(token.primitiveType, (float)atof(token.string.str), &token);
+				break;
+		}
+	} else if (token.type == TokenType::Identifier || token.type == TokenType::PrimitiveType) {
+		Token& next = tokens[*index + 1];
+
+		if (next.type == TokenType::ParenthesisOpen) {
+			(*index)++;
+
+			node = new ASTNode(ASTType::Function, &token);
+
+			node->AddNode(new StringNode(token.string, &token));
+
+			*index = ParseExpression(tokens, *index + 1, node);
+
+		} else {
+			node = new ASTNode(ASTType::Variable, &token);
+			node->AddNode(new StringNode(token.string, &token));
+		}
+	}
+
+	return node;
+}
+
+uint64 Syntax::ParseTypedef(Tokens& tokens, uint64 start, ASTNode* currentNode) {
 	TypeNode* type  = new TypeNode(&tokens[start]);
 	uint64    index = ParseTypeDeclaration(tokens, start, type);
 
@@ -187,7 +326,7 @@ uint64 Compiler::ParseTypedef(Tokens& tokens, uint64 start, ASTNode* currentNode
 	return index;
 }
 
-uint64 Compiler::ParseTypeDeclaration(Tokens& tokens, uint64 start, TypeNode* typeNode) {
+uint64 Syntax::ParseTypeDeclaration(Tokens& tokens, uint64 start, TypeNode* typeNode) {
 	bool identifierAdded = false;
 
 	while (true) {
@@ -217,7 +356,7 @@ uint64 Compiler::ParseTypeDeclaration(Tokens& tokens, uint64 start, TypeNode* ty
 	return start;
 }
 
-uint64 Compiler::ParseStruct(Tokens& tokens, uint64 start, ASTNode* currentNode) {
+uint64 Syntax::ParseStruct(Tokens& tokens, uint64 start, ASTNode* currentNode) {
 	ASTNode* strct  = new ASTNode(ASTType::Struct, &tokens[start - 1]);
 	Token&   stName = tokens[start++];
 
@@ -280,7 +419,7 @@ uint64 Compiler::ParseStruct(Tokens& tokens, uint64 start, ASTNode* currentNode)
 	return start;
 }
 
-uint64 Compiler::ParseFunctionParameters(Tokens& tokens, uint64 start, ASTNode* functionNode) {
+uint64 Syntax::ParseFunctionParameters(Tokens& tokens, uint64 start, ASTNode* functionNode) {
 	for (uint64 i = start + 1; i < tokens.GetSize(); i++) {
 		Token& token = tokens[i];
 
@@ -335,7 +474,7 @@ uint64 Compiler::ParseFunctionParameters(Tokens& tokens, uint64 start, ASTNode* 
 	return ~0;
 }
 
-uint64 Compiler::ParseExpression(Tokens& tokens, uint64 start, ASTNode* currentNode) {
+uint64 Syntax::ParseExpression(Tokens& tokens, uint64 start, ASTNode* currentNode) {
 	List<ASTNode*> nodes;
 
 	static uint32 parenthesesCount = 0;
@@ -608,7 +747,7 @@ uint64 Compiler::ParseExpression(Tokens& tokens, uint64 start, ASTNode* currentN
 	return ~0;
 }
 
-uint64 Compiler::ParseLayout(Tokens& tokens, uint64 start, ASTNode* currentNode) {
+uint64 Syntax::ParseLayout(Tokens& tokens, uint64 start, ASTNode* currentNode) {
 	Token& parenthesisOpen = tokens[start];
 
 	if (parenthesisOpen.type != TokenType::ParenthesisOpen) {
@@ -719,7 +858,7 @@ uint64 Compiler::ParseLayout(Tokens& tokens, uint64 start, ASTNode* currentNode)
 	return start;
 }
 
-void Compiler::BacktrackNodes(List<ASTNode*>& nodes) {
+void Syntax::BacktrackNodes(List<ASTNode*>& nodes) {
 	for (int64 i = nodes.GetSize() - 1; i >= 0; i--) {
 		ASTNode* node = nodes[i];
 
@@ -739,6 +878,8 @@ void Compiler::BacktrackNodes(List<ASTNode*>& nodes) {
 		}
 	}
 }
+
+
 
 /*	Token signToken;
 	Token constToken;

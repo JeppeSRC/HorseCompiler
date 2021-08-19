@@ -22,8 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 */
 
-#include "compiler.h"
+#pragma once
 
-void Compiler::SemanticAnalazys(ASTNode* root) {
+#include "token.h"
+#include "language.h"
+#include "ast.h"
 
-}
+class Semantic {
+public:
+    static uint64 Analyze(ASTNode* node);
+
+private:
+    uint64 AnalyzeInternal(ASTNode* root);
+
+
+};
