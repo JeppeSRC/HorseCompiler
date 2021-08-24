@@ -225,21 +225,6 @@ void Compiler::Log(const Token& item, uint64 code, ...) {
 		case HC_ERROR_SYNTAX_CHAR_LITERAL_TO_MANY_CHARS:
 			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: char literal has to many chars");
 			break;
-		case HC_WARN_SYNTAX_SAME_TYPE_QUALIFIER:
-			Log::Warning(item.line, item.column, item.filename.str, code, "syntax error: same type qualifier used more than once");
-			break;
-		case HC_ERROR_SYNTAX_SIGNED_UNSIGNED_EXCLUSIVE:
-			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: signed/unsigned keywords are mutually exclusive");
-			break;
-		case HC_ERROR_SYNTAX_TYPE_FOLLOWED_BY_TYPE:
-			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: type '%s' followed by '%s' is illegal", va_arg(list, char*), va_arg(list, char*));
-			break;
-		case HC_ERROR_SYNTAX_SIGNED_UNSIGNED_NOT_ALLOWED_ON_TYPE:
-			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: '%s' not allowed on type '%s'", va_arg(list, char*), va_arg(list, char*));
-			break;
-		case HC_ERROR_SYNTAX_TYPENAME_ALREADY_EXIST:
-			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: type-name '%s' already exist", va_arg(list, char*));
-			break;
 		case HC_ERROR_SYNTAX_EXPECTED:
 			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: '%s' expected '%s'", item.string.str, va_arg(list, char*));
 			break;
@@ -260,6 +245,24 @@ void Compiler::Log(const Token& item, uint64 code, ...) {
 			break;
 		case HC_ERROR_SYNTAX_ILLEGAL_TYPENAME:
 			Log::Error(item.line, item.column, item.filename.str, code, "syntax error: illegal name '%s', must start with '_', 'a-z' or 'A-Z'. And must not be a keyword or type", item.string.str);
+			break;
+		case HC_WARN_SEMANTIC_SAME_TYPE_QUALIFIER:
+			Log::Warning(item.line, item.column, item.filename.str, code, "semantic error: same type qualifier used more than once");
+			break;
+		case HC_ERROR_SEMANTIC_SIGNED_UNSIGNED_EXCLUSIVE:
+			Log::Error(item.line, item.column, item.filename.str, code, "semantic error: signed/unsigned keywords are mutually exclusive");
+			break;
+		case HC_ERROR_SEMANTIC_TYPE_FOLLOWED_BY_TYPE:
+			Log::Error(item.line, item.column, item.filename.str, code, "semantic error: type '%s' followed by '%s' is illegal", va_arg(list, char*), va_arg(list, char*));
+			break;
+		case HC_ERROR_SEMANTIC_SIGNED_UNSIGNED_NOT_ALLOWED_ON_TYPE:
+			Log::Error(item.line, item.column, item.filename.str, code, "semantic error: '%s' not allowed on type '%s'", va_arg(list, char*), va_arg(list, char*));
+			break;
+		case HC_WARN_SEMANTIC_PARENT_SCOPE_SYMBOL_REDEFINITION:
+			Log::Warning(item.line, item.column, item.filename.str, code, "semantic error: symbol in parent scope overridden");
+			break;
+		case HC_WARN_SEMANTIC_SYMBOL_REDEFINITION:
+			Log::Error(item.line, item.column, item.filename.str, code, "semantic error: symbol '%s' already exist: redefinition", va_arg(list, char*));
 			break;
 	}
 }

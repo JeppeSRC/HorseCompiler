@@ -28,7 +28,11 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
+	SymbolTable symbols;
+	TypeTable types;
 	ASTNode* rootNode = new ASTNode(ASTType::Root);
 
+
 	Syntax::Analyze(res, 0, rootNode, Language::Default());
+	Semantic::Analyze(rootNode, &types, &symbols);
 }

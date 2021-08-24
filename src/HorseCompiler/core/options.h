@@ -22,12 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 */
 
-#include "ast.h"
+#pragma once
 
-ConstantNode::ConstantNode(PrimitiveType type, uint32 value, Token* token) : ASTNode(ASTType::Constant, token), type(type) {
-    data = new uint32(value);
-}
+enum class ShaderStage {
+    Vertex,
+    Fragment
+};
 
-ConstantNode::ConstantNode(PrimitiveType type, float value, Token* token) : ASTNode(ASTType::Constant, token), type(type) {
-    data = new float(value);
-}
+class Options {
+public:
+    static ShaderStage stage;
+
+};

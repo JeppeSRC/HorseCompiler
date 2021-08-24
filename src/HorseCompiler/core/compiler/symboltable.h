@@ -22,12 +22,57 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 */
 
-#include "ast.h"
+#pragma once
 
-ConstantNode::ConstantNode(PrimitiveType type, uint32 value, Token* token) : ASTNode(ASTType::Constant, token), type(type) {
-    data = new uint32(value);
-}
+#include <util/string.h>
+#include <util/list.h>
+#include "type.h"
+#include "token.h"
 
-ConstantNode::ConstantNode(PrimitiveType type, float value, Token* token) : ASTNode(ASTType::Constant, token), type(type) {
-    data = new float(value);
-}
+enum class SymbolType {
+	Root,
+	Variable,
+	Function,
+	Struct
+};
+
+class Symbol {
+public:
+	Token* token;
+	Symbol*    parent;
+	SymbolType type;
+
+	String name;
+
+	Symbol(SymbolType type, const String& name, Token* token) : token(token), parent(nullptr), type(type), name(name) { }
+
+	List<Symbol*> symbols;
+
+	void AddSymbol(Symbol* symbol) {
+		symbol->parent = this;
+		symbols.PushBack(symbol);
+	}
+};
+
+class SymbolVariable : public Symbol {
+public:
+	Type* type;
+
+	bool modified;
+	bool constness;
+
+	ConstantNode* initialValue;
+
+	SymbolVariable(const String& name, Type* type, bool constness, Token* token) : Symbol(SymbolType::Variable, name, token), type(type), constness(constness), modified(false), initialValue(nullptr) { }
+};
+
+class SymbolTable {
+private:
+public:
+	List<Symbol*> symbols;
+
+	Symbol* currentScope = nullptr;
+
+	void    AddSymbol(Symbol* symbol);
+	Symbol* GetSymbol(const String& name, bool* isSameScope = nullptr);
+};

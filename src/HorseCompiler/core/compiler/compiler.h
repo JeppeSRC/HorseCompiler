@@ -30,12 +30,14 @@ SOFTWARE
 #include "lexer.h"
 #include "syntax.h"
 #include "semantic.h"
+#include "type.h"
 
 
 class Compiler {
 private:
 	String    currentDir;
 	Language* lang;
+	TypeTable typeTable;
 
 public:
 	Compiler(const String& currentDir, Language* lang);

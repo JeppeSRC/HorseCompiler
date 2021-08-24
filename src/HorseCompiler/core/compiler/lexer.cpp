@@ -302,7 +302,13 @@ Tokens Lexer::Analyze(const String& filename) {
 					prevType = OperatorType::Unknown;
 				}
 
-				continue;
+				if (def.type == OperatorType::OpSub && i > 0) {
+					if (result[i-1].type == TokenType::Operator) {
+						token.operatorType = OperatorType::OpNegate;
+					}
+				}
+
+				break;
 			}
 		}
 	}

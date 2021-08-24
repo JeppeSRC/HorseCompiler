@@ -135,16 +135,20 @@ enum class ASTType {
 *
 */
 
-struct Token;
+class ASTAnnotation {
+public:
+	ASTType annotationType;
+};
+
 class ASTNode {
 public:
 	ASTNode(ASTType type) : parent(nullptr), nodeType(type), token(nullptr) { }
-	ASTNode(ASTType type, const Token* token) : parent(nullptr), nodeType(type), token(token) { }
+	ASTNode(ASTType type, Token* token) : parent(nullptr), nodeType(type), token(token) { }
 
 	ASTNode* parent;
 	ASTType  nodeType;
 
-	const Token* token;
+	Token* token;
 
 	List<ASTNode*> branches;
 
@@ -158,14 +162,14 @@ class StringNode : public ASTNode {
 public:
 	String string;
 
-	StringNode(const String& string, const Token* token) : ASTNode(ASTType::String, token), string(string) { }
+	StringNode(const String& string, Token* token) : ASTNode(ASTType::String, token), string(string) { }
 };
 
 class TypeNode : public ASTNode {
 public:
 	List<Token*> tokens;
 
-	TypeNode(const Token* token) : ASTNode(ASTType::Type, token) { }
+	TypeNode(Token* token) : ASTNode(ASTType::Type, token) { }
 
 	void AddToken(Token* token) { tokens.PushBack(token); }
 };
@@ -174,20 +178,17 @@ class ConstantNode : public ASTNode {
 public:
 	PrimitiveType type;
 
-	union {
-		uint32 iValue;
-		float  fValue;
-	};
+	void* data;
 
-	ConstantNode(PrimitiveType type, uint32 value, const Token* token) : ASTNode(ASTType::Constant, token), type(type), iValue(value) { }
-	ConstantNode(PrimitiveType type, float value, const Token* token) : ASTNode(ASTType::Constant, token), type(type), fValue(value) { }
+	ConstantNode(PrimitiveType type, uint32 value, Token* token);
+	ConstantNode(PrimitiveType type, float value, Token* token);
 };
 
 class OperatorNode : public ASTNode {
 public:
 	OperatorType type;
 
-	OperatorNode(OperatorType type, const Token* token) : ASTNode(ASTType::Operator, token), type(type) { }
+	OperatorNode(OperatorType type, Token* token) : ASTNode(ASTType::Operator, token), type(type) { }
 };
 
 enum class LayoutType {
@@ -204,7 +205,7 @@ class LayoutNode : public ASTNode {
 public:
 	LayoutType type;
 
-	LayoutNode(const Token* token) : ASTNode(ASTType::Layout, token), type(LayoutType::Unknown) { }
+	LayoutNode(Token* token) : ASTNode(ASTType::Layout, token), type(LayoutType::Unknown) { }
 };
 
 /*

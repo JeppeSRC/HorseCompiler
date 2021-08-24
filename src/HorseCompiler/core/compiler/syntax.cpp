@@ -37,7 +37,7 @@ uint64 Syntax::Analyze(Tokens& tokens, uint64 start, ASTNode* currentNode) {
 	static uint64 currentScope = 0;
 
 	for (uint64 i = start; i < tokens.GetSize(); i++) {
-		const Token& t = tokens[i];
+		Token& t = tokens[i];
 
 		if (t.type == TokenType::Keyword) {
 			if (t.keyword == KeywordType::Typedef) {
@@ -91,7 +91,7 @@ uint64 Syntax::Analyze(Tokens& tokens, uint64 start, ASTNode* currentNode) {
 			if (index == ~0)
 				return ~0;
 
-			const Token& nameToken = tokens[index];
+			Token& nameToken = tokens[index];
 
 			if (nameToken.type == TokenType::Operator) {
 				index = ParseExpression(tokens, i, currentNode);
@@ -240,7 +240,7 @@ OperatorTypeDef Syntax::GetOperator(Tokens& tokens, List<ASTNode*>& nodes, uint6
 	if (nodes.GetSize() > 0) {
 		ASTNode* n = nodes.Back();
 
-		if (n->nodeType == ASTType::Operator && (token.operatorType == OperatorType::OpInc || token.operatorType == OperatorType::OpDec)) {
+		if (n->nodeType == ASTType::Operator && (token.operatorType == OperatorType::OpInc || token.operatorType == OperatorType::OpDec || token.operatorType == OperatorType::OpNegate || token.operatorType == OperatorType::OpBitNot || token.operatorType == OperatorType::OpNot)) {
 			if (n->branches.GetSize() > 0) {
 				left = OperandType::Any;
 			} else {
@@ -254,7 +254,7 @@ OperatorTypeDef Syntax::GetOperator(Tokens& tokens, List<ASTNode*>& nodes, uint6
 	Token& r = tokens[index + 1];
 
 	if (r.type == TokenType::Operator) {
-		if (r.operatorType == OperatorType::OpInc || r.operatorType == OperatorType::OpDec) {
+		if (r.operatorType == OperatorType::OpInc || r.operatorType == OperatorType::OpDec || r.operatorType == OperatorType::OpNegate || r.operatorType == OperatorType::OpBitNot || r.operatorType == OperatorType::OpNot) {
 			right = OperandType::Any;
 		} else {
 			right = OperandType::None;
@@ -346,8 +346,7 @@ uint64 Syntax::ParseTypeDeclaration(Tokens& tokens, uint64 start, TypeNode* type
 
 			break;
 		} else {
-			Compiler::Log(token, HC_ERROR_SYNTAX_ERROR);
-			return ~0;
+			break;
 		}
 
 		start += 1;
@@ -580,7 +579,7 @@ uint64 Syntax::ParseExpression(Tokens& tokens, uint64 start, ASTNode* currentNod
 
 			i++;
 
-			ASTNode* opNode = new OperatorNode(token.operatorType, &token);
+			OperatorNode* opNode = new OperatorNode(token.operatorType, &token);
 
 			if (op.leftOperand != OperandType::None) {
 				opNode->AddNode(nodes.Back());
@@ -604,67 +603,71 @@ uint64 Syntax::ParseExpression(Tokens& tokens, uint64 start, ASTNode* currentNod
 						return ~0;
 					}
 
-					OperatorTypeDef nextOp = GetOperator(tokens, nodes, i);
-					OperatorTypeDef op2    = GetOperator(nextOpToken.operatorType, OperandType::Any, OperandType::Any, true);
+					opNode->type = op.type == OperatorType::OpInc ? OperatorType::OpPostInc : OperatorType::OpPostDec;
 
-					if (op2.rightOperand != nextOp.rightOperand) {
-						Token& err = tokens[i + 1];
-						Compiler::Log(err, HC_ERROR_SYNTAX_ERROR);
-						return ~0;
-					} else if (op2.leftOperand != nextOp.leftOperand) {
-						Token& err = tokens[i - 1];
-						Compiler::Log(err, HC_ERROR_SYNTAX_ERROR);
-						return ~0;
-					}
+					if (nodes.GetSize() > 0) {
+						OperatorTypeDef nextOp = GetOperator(tokens, nodes, i);
+						OperatorTypeDef op2    = GetOperator(nextOpToken.operatorType, OperandType::Any, OperandType::Any, true);
 
-					ASTNode*        leftOpNode  = nodes.Back();
-					ASTNode*        leftOpNode2 = nullptr;
-					OperatorTypeDef opLeft      = GetOperator(((OperatorNode*)leftOpNode)->type, OperandType::Any, OperandType::Any, true);
-
-					nodes.PopBack();
-
-					if (opLeft.type == OperatorType::OpInc || opLeft.type == OperatorType::OpDec) {
-						opLeft.leftOperand  = OperandType::None;
-						opLeft.rightOperand = OperandType::Any;
-
-						if (nodes.GetSize() > 1) {
-							leftOpNode2 = nodes.Back();
-						}
-					}
-
-					op.type = op.type == OperatorType::OpInc ? OperatorType::OpPostInc : OperatorType::OpPostDec;
-
-					if (opLeft.precedence < nextOp.precedence || (opLeft.precedence == nextOp.precedence && nextOp.associativty == OperatorAssociativity::LTR)) {
-						ASTNode* tmp = opNode;
-
-						if (opLeft.leftOperand != OperandType::None) {
-							leftOpNode->AddNode(nodes.Back());
-							nodes.PopBack();
+						if (op2.rightOperand != nextOp.rightOperand) {
+							Token& err = tokens[i + 1];
+							Compiler::Log(err, HC_ERROR_SYNTAX_ERROR);
+							return ~0;
+						} else if (op2.leftOperand != nextOp.leftOperand) {
+							Token& err = tokens[i - 1];
+							Compiler::Log(err, HC_ERROR_SYNTAX_ERROR);
+							return ~0;
 						}
 
-						leftOpNode->AddNode(opNode);
+						ASTNode*        leftOpNode  = nodes.Back();
+						ASTNode*        leftOpNode2 = nullptr;
+						OperatorTypeDef opLeft      = GetOperator(((OperatorNode*)leftOpNode)->type, OperandType::Any, OperandType::Any, true);
 
-						if (leftOpNode2) {
-							opLeft = GetOperator(((OperatorNode*)leftOpNode2)->type, OperandType::Any, OperandType::Any, true);
+						nodes.PopBack();
 
-							if (opLeft.precedence < nextOp.precedence || (opLeft.precedence == nextOp.precedence && nextOp.associativty == OperatorAssociativity::LTR)) {
-								nodes.PopBack();
-								leftOpNode2->AddNode(nodes.Back());
-								leftOpNode2->AddNode(leftOpNode);
-								nodes.PopBack();
+						if (opLeft.type == OperatorType::OpInc || opLeft.type == OperatorType::OpDec) {
+							opLeft.leftOperand  = OperandType::None;
+							opLeft.rightOperand = OperandType::Any;
 
-								leftOpNode = leftOpNode2;
+							if (nodes.GetSize() > 1) {
+								leftOpNode2 = nodes.Back();
 							}
 						}
 
-						opNode = leftOpNode;
+						if (opLeft.precedence < nextOp.precedence || (opLeft.precedence == nextOp.precedence && nextOp.associativty == OperatorAssociativity::LTR)) {
+							ASTNode* tmp = opNode;
 
-						i--;
+							if (opLeft.leftOperand != OperandType::None) {
+								leftOpNode->AddNode(nodes.Back());
+								nodes.PopBack();
+							}
+
+							leftOpNode->AddNode(opNode);
+
+							if (leftOpNode2) {
+								opLeft = GetOperator(((OperatorNode*)leftOpNode2)->type, OperandType::Any, OperandType::Any, true);
+
+								if (opLeft.precedence < nextOp.precedence || (opLeft.precedence == nextOp.precedence && nextOp.associativty == OperatorAssociativity::LTR)) {
+									nodes.PopBack();
+									leftOpNode2->AddNode(nodes.Back());
+									leftOpNode2->AddNode(leftOpNode);
+									nodes.PopBack();
+
+									leftOpNode = leftOpNode2;
+								}
+							}
+
+							opNode = (OperatorNode*)leftOpNode;
+
+							i--;
+						} else {
+							i--;
+							nodes.PushBack(leftOpNode);
+							nodes.PushBack(opNode);
+							continue;
+						}
 					} else {
 						i--;
-						nodes.PushBack(leftOpNode);
-						nodes.PushBack(opNode);
-						continue;
 					}
 				}
 			}
@@ -678,7 +681,7 @@ uint64 Syntax::ParseExpression(Tokens& tokens, uint64 start, ASTNode* currentNod
 
 				opNode->AddNode(rightNode);
 
-				if (op.type == OperatorType::OpInc || op.type == OperatorType::OpDec) {
+				if (op.type == OperatorType::OpInc || op.type == OperatorType::OpDec || op.type == OperatorType::OpNegate || op.type == OperatorType::OpNot || op.type == OperatorType::OpBitNot) {
 					//Pre inc/dec
 
 					Token& nextOpToken = tokens[i + 1];
@@ -696,46 +699,48 @@ uint64 Syntax::ParseExpression(Tokens& tokens, uint64 start, ASTNode* currentNod
 						return ~0;
 					}
 
-					OperatorTypeDef nextOp = GetOperator(tokens, nodes, i + 1);
-					OperatorTypeDef op2    = GetOperator(nextOpToken.operatorType, OperandType::Any, OperandType::Any, true);
+					opNode->type = op.type == OperatorType::OpInc ? OperatorType::OpPreInc : op.type == OperatorType::OpDec ?  OperatorType::OpPreDec : op.type;
 
-					if (op2.rightOperand != nextOp.rightOperand) {
-						Token& err = tokens[i + 2];
-						Compiler::Log(err, HC_ERROR_SYNTAX_ERROR);
-						return ~0;
-					} else if (op2.leftOperand != nextOp.leftOperand) {
-						Token& err = tokens[i + 1];
-						Compiler::Log(err, HC_ERROR_SYNTAX_ERROR);
-						return ~0;
-					}
+					if (nodes.GetSize() > 0) {
+						OperatorTypeDef nextOp = GetOperator(tokens, nodes, i + 1);
+						OperatorTypeDef op2    = GetOperator(nextOpToken.operatorType, OperandType::Any, OperandType::Any, true);
 
-					op.type = op.type == OperatorType::OpInc ? OperatorType::OpPreInc : OperatorType::OpPreDec;
+						if (op2.rightOperand != nextOp.rightOperand) {
+							Token& err = tokens[i + 2];
+							Compiler::Log(err, HC_ERROR_SYNTAX_ERROR);
+							return ~0;
+						} else if (op2.leftOperand != nextOp.leftOperand) {
+							Token& err = tokens[i + 1];
+							Compiler::Log(err, HC_ERROR_SYNTAX_ERROR);
+							return ~0;
+						}
 
-					ASTNode*        leftOpNode = nodes.Back();
-					OperatorTypeDef opLeft     = GetOperator(((OperatorNode*)leftOpNode)->type, OperandType::Any, OperandType::Any, true);
+						ASTNode*        leftOpNode = nodes.Back();
+						OperatorTypeDef opLeft     = GetOperator(((OperatorNode*)leftOpNode)->type, OperandType::Any, OperandType::Any, true);
 
-					if (opLeft.precedence < nextOp.precedence || (nextOp.precedence == op.precedence && op.associativty == OperatorAssociativity::LTR)) {
-						ASTNode* tmp = opNode;
+						if (opLeft.precedence < nextOp.precedence || (nextOp.precedence == op.precedence && op.associativty == OperatorAssociativity::LTR)) {
+							ASTNode* tmp = opNode;
 
-						nodes.PopBack();
-						leftOpNode->AddNode(nodes.Back());
-						leftOpNode->AddNode(opNode);
-						nodes.PopBack();
+							nodes.PopBack();
 
-						opNode = leftOpNode;
-					} else {
-						nodes.PushBack(opNode);
-						continue;
+							if (opLeft.leftOperand == OperandType::Any) {
+								leftOpNode->AddNode(nodes.Back());
+								nodes.PopBack();
+							}
+
+							leftOpNode->AddNode(opNode);
+
+							opNode = (OperatorNode*)leftOpNode;
+						}
 					}
 				}
 			}
 
 			nodes.PushBack(opNode);
-
-			BacktrackNodes(nodes);
-
 		} else if (token.type == TokenType::Semicolon || token.type == TokenType::Comma) {
+			BacktrackNodes(nodes);
 			currentNode->AddNode(nodes.Back());
+
 
 			if (token.type == TokenType::Semicolon)
 				return i;
@@ -878,137 +883,3 @@ void Syntax::BacktrackNodes(List<ASTNode*>& nodes) {
 		}
 	}
 }
-
-
-
-/*	Token signToken;
-	Token constToken;
-	uint8 sign      = 2;
-	uint8 constness = 0;
-
-	Type*         tmp  = nullptr;
-	PrimitiveType type = PrimitiveType::Unknown;
-
-	uint64 i = 0;
-
-	for (i = start; i < tokens.GetSize(); i++) {
-		const Token& token = tokens[i];
-
-		if (token.type != TokenType::PrimitiveType) {
-			if (token.type == TokenType::Identifier) {
-				Type* tmptmp = GetType(token.string);
-
-				if (tmptmp == nullptr) {
-					break;
-				} else if (type != PrimitiveType::Unknown) {
-					Compiler::Log(token, HC_ERROR_SYNTAX_TYPE_FOLLOWED_BY_TYPE, GetPrimitiveTypeString(type).str, tmp->name.str);
-					return ~0;
-				}
-
-				if (tmp != nullptr) {
-					Compiler::Log(token, HC_ERROR_SYNTAX_TYPE_FOLLOWED_BY_TYPE, tmp->name, tmptmp->name);
-					return ~0;
-				}
-
-				tmp = tmptmp;
-			} else {
-				break;
-			}
-		} else {
-			switch (token.primitiveType) {
-				case PrimitiveType::Const:
-					if (constness) {
-						Compiler::Log(token, HC_WARN_SYNTAX_SAME_TYPE_QUALIFIER);
-					}
-
-					constness  = 1;
-					constToken = token;
-					break;
-				case PrimitiveType::Unsigned:
-					if (sign == 0) {
-						Compiler::Log(token, HC_WARN_SYNTAX_SAME_TYPE_QUALIFIER);
-						return ~0;
-					} else if (sign == 1) {
-						Compiler::Log(token, HC_ERROR_SYNTAX_SIGNED_UNSIGNED_EXCLUSIVE);
-						return ~0;
-					}
-
-					sign      = 0;
-					signToken = token;
-					break;
-				case PrimitiveType::Signed:
-					if (sign == 1) {
-						Compiler::Log(token, HC_WARN_SYNTAX_SAME_TYPE_QUALIFIER);
-						return ~0;
-					} else if (sign == 0) {
-						Compiler::Log(token, HC_ERROR_SYNTAX_SIGNED_UNSIGNED_EXCLUSIVE);
-						return ~0;
-					}
-
-					sign      = 1;
-					signToken = token;
-					break;
-				case PrimitiveType::Byte:
-				case PrimitiveType::Short:
-				case PrimitiveType::Int:
-				case PrimitiveType::Float:
-				case PrimitiveType::Vec2:
-				case PrimitiveType::Vec3:
-				case PrimitiveType::Vec4:
-				case PrimitiveType::Mat4:
-					if (type != PrimitiveType::Unknown && tmp != nullptr) {
-						Compiler::Log(token, HC_ERROR_SYNTAX_TYPE_FOLLOWED_BY_TYPE, GetPrimitiveTypeString(type).str, GetPrimitiveTypeString(token.primitiveType).str);
-						return ~0;
-					}
-
-					type = token.primitiveType;
-			}
-		}
-	}
-
-	if (type != PrimitiveType::Unknown) {
-		if (type != PrimitiveType::Byte && type != PrimitiveType::Short && type != PrimitiveType::Int) {
-			if (sign != 2) {
-				Compiler::Log(signToken, HC_ERROR_SYNTAX_SIGNED_UNSIGNED_NOT_ALLOWED_ON_TYPE, sign == 0 ? "unsigned" : "signed", GetPrimitiveTypeString(type).str);
-				return ~0;
-			}
-		}
-
-		switch (type) {
-			case PrimitiveType::Byte:
-			case PrimitiveType::Short:
-			case PrimitiveType::Int:
-			case PrimitiveType::Float:
-				*retType = MakeTypeScalar(type, sign, constness);
-				break;
-			case PrimitiveType::Vec2:
-			case PrimitiveType::Vec4:
-			case PrimitiveType::Vec3:
-				*retType = MakeTypeVec(type, constness);
-				break;
-			case PrimitiveType::Mat4:
-				*retType = MakeTypeMat(type, constness);
-		}
-	} else if (tmp) {
-		TypeTypeDef* def = (TypeTypeDef*)tmp;
-
-		if (constness == 1) {
-			if (def->actualType->constness == 1) {
-				Compiler::Log(constToken, HC_WARN_SYNTAX_SAME_TYPE_QUALIFIER);
-			}
-		}
-
-		if (sign != 2) {
-			Compiler::Log(signToken, HC_ERROR_SYNTAX_SIGNED_UNSIGNED_NOT_ALLOWED_ON_TYPE, def->name.str, sign == 0 ? "unsigned" : "signed");
-			return ~0;
-		}
-
-		*retType = def;
-
-		return i;
-	} else {
-		Compiler::Log(tokens[i], HC_ERROR_SYNTAX_ERROR);
-		return ~0;
-	}
-
-	return i;*/

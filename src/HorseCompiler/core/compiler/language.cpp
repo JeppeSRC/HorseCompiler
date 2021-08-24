@@ -51,8 +51,9 @@ Language* Language::Default() {
 
 	operators.PushBack({ OperatorType::OpInc, "++", OperatorAssociativity::RTL, 2, OperandType::None, OperandType::Any });
 	operators.PushBack({ OperatorType::OpDec, "--", OperatorAssociativity::RTL, 2, OperandType::None, OperandType::Any });
-	operators.PushBack({ OperatorType::OpBitNot, "~", OperatorAssociativity::RTL, 2 });
-	operators.PushBack({ OperatorType::OpNot, "!", OperatorAssociativity::RTL, 2 });
+	operators.PushBack({ OperatorType::OpNegate, "-", OperatorAssociativity::RTL, 2, OperandType::None, OperandType::Any });
+	operators.PushBack({ OperatorType::OpBitNot, "~", OperatorAssociativity::RTL, 2, OperandType::None, OperandType::Any });
+	operators.PushBack({ OperatorType::OpNot, "!", OperatorAssociativity::RTL, 2, OperandType::None, OperandType::Any });
 
 	operators.PushBack({ OperatorType::OpMul, "*", OperatorAssociativity::LTR, 3 });
 	operators.PushBack({ OperatorType::OpDiv, "/", OperatorAssociativity::LTR, 3 });

@@ -22,12 +22,53 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 */
 
-#include "ast.h"
+#include "symboltable.h"
 
-ConstantNode::ConstantNode(PrimitiveType type, uint32 value, Token* token) : ASTNode(ASTType::Constant, token), type(type) {
-    data = new uint32(value);
+void SymbolTable::AddSymbol(Symbol* symbol) {
+	if (currentScope == nullptr) {
+		symbols.PushBack(symbol);
+	} else {
+		currentScope->AddSymbol(symbol);
+	}
 }
 
-ConstantNode::ConstantNode(PrimitiveType type, float value, Token* token) : ASTNode(ASTType::Constant, token), type(type) {
-    data = new float(value);
+Symbol* SymbolTable::GetSymbol(const String& name, bool* isSameScope) {
+	if (isSameScope) {
+		*isSameScope = false;
+	}
+
+	if (currentScope) {
+		Symbol* curr = currentScope;
+
+		while (curr) {
+			List<Symbol*>& list = currentScope->symbols;
+
+			for (Symbol* symbol : list) {
+				if (symbol->name == name) {
+					if (symbol->parent == currentScope) {
+						if (isSameScope) {
+							*isSameScope = true;
+						}
+					}
+
+					return symbol;
+				}
+			}
+
+			curr = currentScope->parent;
+		}
+	}
+
+	for (Symbol* symbol : symbols) {
+		if (symbol->name == name) {
+			if (symbol->parent == currentScope) {
+				if (isSameScope) {
+					*isSameScope = true;
+				}
+			}
+			return symbol;
+		}
+	}
+
+	return nullptr;
 }

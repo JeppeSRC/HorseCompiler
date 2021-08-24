@@ -22,12 +22,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 */
 
-#include "ast.h"
+#pragma once
 
-ConstantNode::ConstantNode(PrimitiveType type, uint32 value, Token* token) : ASTNode(ASTType::Constant, token), type(type) {
-    data = new uint32(value);
-}
+class vec2 {
+public:
+    float x;
+    float y;
 
-ConstantNode::ConstantNode(PrimitiveType type, float value, Token* token) : ASTNode(ASTType::Constant, token), type(type) {
-    data = new float(value);
-}
+    vec2(float x, float y) : x(x), y(y) {}
+
+
+};
+
+class vec3 {
+public:
+    float x;
+    float y;
+    float z;
+
+    vec3(float x, float y, float z) : x(x), y(y), z(z) {}
+
+
+};
+
+class vec4 {
+public:
+    float x;
+    float y;
+    float z;
+    float w;
+
+    vec4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
+
+
+};

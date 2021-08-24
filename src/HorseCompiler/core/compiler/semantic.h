@@ -27,13 +27,25 @@ SOFTWARE
 #include "token.h"
 #include "language.h"
 #include "ast.h"
+#include "type.h"
+#include "symboltable.h"
 
 class Semantic {
 public:
-    static uint64 Analyze(ASTNode* node);
+    static uint64 Analyze(ASTNode* node, TypeTable* typeTable, SymbolTable* symbolTable);
 
 private:
-    uint64 AnalyzeInternal(ASTNode* root);
+    TypeTable* typeTable;
+    SymbolTable* symbolTable;
 
+    Semantic(TypeTable* typeTable, SymbolTable* symbolTable) : typeTable(typeTable), symbolTable(symbolTable) {}
 
+    uint64 Analyze(ASTNode* root);
+
+    uint64 VariableDefinition(ASTNode* node);
+
+    uint64 ConstantEvaluation(ASTNode* node, ASTNode** result);
+    uint64 ProcessOperator(OperatorNode* node, ASTNode** result);
+    ASTNode* ExecuteOperator(OperatorType op, ASTNode* left, ASTNode* right); //Handles 2 operand operators
+    ASTNode* ExecuteOperator(OperatorType op, ASTNode* operand); //Handles single operand operators
 };

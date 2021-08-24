@@ -22,12 +22,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 */
 
-#include "ast.h"
-
-ConstantNode::ConstantNode(PrimitiveType type, uint32 value, Token* token) : ASTNode(ASTType::Constant, token), type(type) {
-    data = new uint32(value);
-}
-
-ConstantNode::ConstantNode(PrimitiveType type, float value, Token* token) : ASTNode(ASTType::Constant, token), type(type) {
-    data = new float(value);
-}
+#include "options.h"
