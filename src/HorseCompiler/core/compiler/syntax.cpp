@@ -232,38 +232,38 @@ OperatorTypeDef Syntax::GetOperator(OperatorType type, OperandType left, Operand
 	return tmp;
 }
 
-OperatorTypeDef Syntax::GetOperator(Tokens& tokens, List<ASTNode*>& nodes, uint64 index) {
-	Token& token = tokens[index];
+OperatorTypeDef Syntax::GetOperator(List<ASTNode*>& nodes, uint64 index) {
+	HC_ASSERT(nodes[index]->nodeType == ASTType::Operator);
+
+	OperatorNode* node = (OperatorNode*)nodes[index];
 	OperandType left = OperandType::None;
 	OperandType right = OperandType::None;
 
-	if (nodes.GetSize() > 0) {
-		ASTNode* n = nodes.Back();
+	ASTNode* operand = nullptr;
 
-		if (n->nodeType == ASTType::Operator && (token.operatorType == OperatorType::OpInc || token.operatorType == OperatorType::OpDec || token.operatorType == OperatorType::OpNegate || token.operatorType == OperatorType::OpBitNot || token.operatorType == OperatorType::OpNot)) {
-			if (n->branches.GetSize() > 0) {
+	if (index > 0) {
+		operand = nodes[index - 1];
+
+		if (operand->nodeType == ASTType::Variable || operand->nodeType == ASTType::Constant || operand->nodeType == ASTType::Function) {
+			left = OperandType::Any;
+		} else if (operand->nodeType == ASTType::Operator) {
+			if (operand->branches.GetSize() > 0) {
 				left = OperandType::Any;
-			} else {
-				left = OperandType::None;
 			}
-		} else {
-			left = OperandType::Any; //n->nodeType == ASTType::Variable ? OperandType::Variable : OperandType::Value;
 		}
 	}
 
-	Token& r = tokens[index + 1];
+	if (index < nodes.GetSize() - 1) {
+		operand = nodes[index + 1];
 
-	if (r.type == TokenType::Operator) {
-		if (r.operatorType == OperatorType::OpInc || r.operatorType == OperatorType::OpDec || r.operatorType == OperatorType::OpNegate || r.operatorType == OperatorType::OpBitNot || r.operatorType == OperatorType::OpNot) {
+		if (operand->nodeType == ASTType::Variable || operand->nodeType == ASTType::Constant || operand->nodeType == ASTType::Function) {
 			right = OperandType::Any;
-		} else {
-			right = OperandType::None;
+		} else if (operand->nodeType == ASTType::Operator) {
+			right = OperandType::Any;
 		}
-	} else if (r.type == TokenType::Identifier || r.type == TokenType::Literal || r.type == TokenType::ParenthesisOpen || r.type == TokenType::PrimitiveType) {
-		right = OperandType::Any;
 	}
 
-	return GetOperator(token.operatorType, left, right, false);
+	return GetOperator(node->type, left, right, false);
 }
 
 ASTNode* Syntax::CreateOperandNode(Tokens& tokens, uint64* index) {
@@ -475,6 +475,7 @@ uint64 Syntax::ParseFunctionParameters(Tokens& tokens, uint64 start, ASTNode* fu
 
 uint64 Syntax::ParseExpression(Tokens& tokens, uint64 start, ASTNode* currentNode) {
 	List<ASTNode*> nodes;
+	List<ASTNode*> addAfter;
 
 	static uint32 parenthesesCount = 0;
 
@@ -496,10 +497,9 @@ uint64 Syntax::ParseExpression(Tokens& tokens, uint64 start, ASTNode* currentNod
 
 			parenthesesCount--;
 
-			if (nodes.GetSize())
-				currentNode->AddNode(nodes[0]);
+			start = i;
 
-			return i;
+			break;
 		} else if (token.type == TokenType::Literal || token.type == TokenType::Identifier || token.type == TokenType::PrimitiveType) {
 			if (nodes.GetSize() > 0) {
 				ASTNode* node = nodes.Back();
@@ -512,244 +512,102 @@ uint64 Syntax::ParseExpression(Tokens& tokens, uint64 start, ASTNode* currentNod
 
 			nodes.PushBack(CreateOperandNode(tokens, &i));
 		} else if (token.type == TokenType::Operator) {
-			OperatorTypeDef op = GetOperator(tokens, nodes, i);
+			nodes.PushBack(new OperatorNode(token.operatorType, &token));
+		} else if (token.type == TokenType::Semicolon) {
+			start = i;
+			break;
+		} else if (token.type == TokenType::Comma) {
+			ASTNode tmp(currentNode->nodeType);
 
-			if (op.type == OperatorType::Unknown) {
-				OperatorTypeDef op2 = GetOperator(token.operatorType, OperandType::Any, OperandType::Any, true);
+			i = ParseExpression(tokens, i + 1, &tmp);
 
-				if (op2.rightOperand != op.rightOperand) {
-					Token& err = tokens[i + 1];
-					Compiler::Log(err, HC_ERROR_SYNTAX_ERROR);
-					return ~0;
-				} else if (op2.leftOperand != op.leftOperand) {
-					Token& err = tokens[i - 1];
-					Compiler::Log(err, HC_ERROR_SYNTAX_ERROR);
-					return ~0;
-				}
+			if (i == ~0) {
+				//TODO: error
+				HC_ASSERT(false);
 			}
 
-			ASTNode* rightNode = nullptr;
-
-			if (tokens[i + 1].type == TokenType::ParenthesisOpen) {
-				parenthesesCount++;
-				ASTNode tmp(ASTType::Root);
-
-				i = ParseExpression(tokens, i + 2, &tmp) - 1;
-
-				rightNode = tmp.branches[0];
+			for (ASTNode* node : tmp.branches) {
+				addAfter.PushBack(node);
 			}
 
-			Token& next = tokens[i + 2];
+			start = i;
+			break;
+		}
+	}
 
-			if (next.type == TokenType::Operator) {
-				OperatorTypeDef nextOp = GetOperator(next.operatorType, OperandType::Any, OperandType::Any, true);
+	for (uint64 i = 0; i < nodes.GetSize(); i++) {
+		ASTNode* node = nodes[i];
 
-				if ((nextOp.precedence < op.precedence) || (nextOp.precedence == op.precedence && op.associativty == OperatorAssociativity::RTL)) {
-					// Next operator has priority
+		if (node->nodeType == ASTType::Operator && node->branches.GetSize() == 0) {
+			OperatorTypeDef op = GetOperator(nodes, i);
 
-					nodes.PushBack(new OperatorNode(op.type, &token));
+			bool cont = false;
+			uint64 nextOpEnd = 2;
 
-					if (rightNode) {
-						nodes.PushBack(rightNode);
-						i++;
+			for (uint64 j = 1; j <= nextOpEnd; j++) {
+				uint64 index = i + j;
+
+				if (index >= nodes.GetSize()) break;
+
+				ASTNode* next = nodes[index];
+
+				if (next->nodeType == ASTType::Operator) {
+					if (next->branches.GetSize() > 0) {
+						nextOpEnd += 2;
+						continue;
 					}
 
-					continue;
-				}
-			} else {
-				Token& next2 = tokens[i + 1];
-
-				if (next2.type == TokenType::Operator) {
-					OperatorTypeDef nextOp = GetOperator(next2.operatorType, OperandType::Any, OperandType::Any, true);
+					OperatorTypeDef nextOp = GetOperator(((OperatorNode*)next)->type, OperandType::Any, OperandType::Any, true);
 
 					if ((nextOp.precedence < op.precedence) || (nextOp.precedence == op.precedence && op.associativty == OperatorAssociativity::RTL)) {
 						// Next operator has priority
 
-						nodes.PushBack(new OperatorNode(op.type, &token));
+						i += j - 1;
 
-						if (rightNode) {
-							nodes.PushBack(rightNode);
-							i++;
-						}
+						cont = true;
 
-						continue;
+						break;
 					}
 				}
 			}
 
-			i++;
-
-			OperatorNode* opNode = new OperatorNode(token.operatorType, &token);
+			if (cont) continue;
 
 			if (op.leftOperand != OperandType::None) {
-				opNode->AddNode(nodes.Back());
-				nodes.PopBack();
+				ASTNode* operand = nodes[--i];
 
-				if (op.type == OperatorType::OpInc || op.type == OperatorType::OpDec) {
-					//Post inc/dec
-
-					Token& nextOpToken = tokens[i];
-
-					if (nextOpToken.type != TokenType::Operator) {
-						if (nextOpToken.type == TokenType::ParenthesisClose || nextOpToken.type == TokenType::Semicolon) {
-							nodes.PushBack(opNode);
-							BacktrackNodes(nodes);
-							currentNode->AddNode(nodes.Back());
-
-							return i;
-						}
-
-						Compiler::Log(nextOpToken, HC_ERROR_SYNTAX_ERROR);
-						return ~0;
-					}
-
-					opNode->type = op.type == OperatorType::OpInc ? OperatorType::OpPostInc : OperatorType::OpPostDec;
-
-					if (nodes.GetSize() > 0) {
-						OperatorTypeDef nextOp = GetOperator(tokens, nodes, i);
-						OperatorTypeDef op2    = GetOperator(nextOpToken.operatorType, OperandType::Any, OperandType::Any, true);
-
-						if (op2.rightOperand != nextOp.rightOperand) {
-							Token& err = tokens[i + 1];
-							Compiler::Log(err, HC_ERROR_SYNTAX_ERROR);
-							return ~0;
-						} else if (op2.leftOperand != nextOp.leftOperand) {
-							Token& err = tokens[i - 1];
-							Compiler::Log(err, HC_ERROR_SYNTAX_ERROR);
-							return ~0;
-						}
-
-						ASTNode*        leftOpNode  = nodes.Back();
-						ASTNode*        leftOpNode2 = nullptr;
-						OperatorTypeDef opLeft      = GetOperator(((OperatorNode*)leftOpNode)->type, OperandType::Any, OperandType::Any, true);
-
-						nodes.PopBack();
-
-						if (opLeft.type == OperatorType::OpInc || opLeft.type == OperatorType::OpDec) {
-							opLeft.leftOperand  = OperandType::None;
-							opLeft.rightOperand = OperandType::Any;
-
-							if (nodes.GetSize() > 1) {
-								leftOpNode2 = nodes.Back();
-							}
-						}
-
-						if (opLeft.precedence < nextOp.precedence || (opLeft.precedence == nextOp.precedence && nextOp.associativty == OperatorAssociativity::LTR)) {
-							ASTNode* tmp = opNode;
-
-							if (opLeft.leftOperand != OperandType::None) {
-								leftOpNode->AddNode(nodes.Back());
-								nodes.PopBack();
-							}
-
-							leftOpNode->AddNode(opNode);
-
-							if (leftOpNode2) {
-								opLeft = GetOperator(((OperatorNode*)leftOpNode2)->type, OperandType::Any, OperandType::Any, true);
-
-								if (opLeft.precedence < nextOp.precedence || (opLeft.precedence == nextOp.precedence && nextOp.associativty == OperatorAssociativity::LTR)) {
-									nodes.PopBack();
-									leftOpNode2->AddNode(nodes.Back());
-									leftOpNode2->AddNode(leftOpNode);
-									nodes.PopBack();
-
-									leftOpNode = leftOpNode2;
-								}
-							}
-
-							opNode = (OperatorNode*)leftOpNode;
-
-							i--;
-						} else {
-							i--;
-							nodes.PushBack(leftOpNode);
-							nodes.PushBack(opNode);
-							continue;
-						}
-					} else {
-						i--;
-					}
+				if (operand->nodeType == ASTType::Operator && operand->branches.GetSize() == 0) {
+					//TODO: error
+					HC_ASSERT(false);
 				}
+
+				node->AddNode(operand);
+				nodes.Remove(i);
 			}
 
 			if (op.rightOperand != OperandType::None) {
-				Token& right = tokens[i];
+				ASTNode* operand = nodes[i + 1];
 
-				if (rightNode == nullptr) {
-					rightNode = CreateOperandNode(tokens, &i);
+				if (operand->nodeType == ASTType::Operator && operand->branches.GetSize() == 0) {
+					//TODO: error
+					HC_ASSERT(false);
 				}
 
-				opNode->AddNode(rightNode);
-
-				if (op.type == OperatorType::OpInc || op.type == OperatorType::OpDec || op.type == OperatorType::OpNegate || op.type == OperatorType::OpNot || op.type == OperatorType::OpBitNot) {
-					//Pre inc/dec
-
-					Token& nextOpToken = tokens[i + 1];
-
-					if (nextOpToken.type != TokenType::Operator) {
-						if (nextOpToken.type == TokenType::ParenthesisClose || nextOpToken.type == TokenType::Semicolon) {
-							nodes.PushBack(opNode);
-							BacktrackNodes(nodes);
-							currentNode->AddNode(nodes.Back());
-
-							return i;
-						}
-
-						Compiler::Log(nextOpToken, HC_ERROR_SYNTAX_ERROR);
-						return ~0;
-					}
-
-					opNode->type = op.type == OperatorType::OpInc ? OperatorType::OpPreInc : op.type == OperatorType::OpDec ?  OperatorType::OpPreDec : op.type;
-
-					if (nodes.GetSize() > 0) {
-						OperatorTypeDef nextOp = GetOperator(tokens, nodes, i + 1);
-						OperatorTypeDef op2    = GetOperator(nextOpToken.operatorType, OperandType::Any, OperandType::Any, true);
-
-						if (op2.rightOperand != nextOp.rightOperand) {
-							Token& err = tokens[i + 2];
-							Compiler::Log(err, HC_ERROR_SYNTAX_ERROR);
-							return ~0;
-						} else if (op2.leftOperand != nextOp.leftOperand) {
-							Token& err = tokens[i + 1];
-							Compiler::Log(err, HC_ERROR_SYNTAX_ERROR);
-							return ~0;
-						}
-
-						ASTNode*        leftOpNode = nodes.Back();
-						OperatorTypeDef opLeft     = GetOperator(((OperatorNode*)leftOpNode)->type, OperandType::Any, OperandType::Any, true);
-
-						if (opLeft.precedence < nextOp.precedence || (nextOp.precedence == op.precedence && op.associativty == OperatorAssociativity::LTR)) {
-							ASTNode* tmp = opNode;
-
-							nodes.PopBack();
-
-							if (opLeft.leftOperand == OperandType::Any) {
-								leftOpNode->AddNode(nodes.Back());
-								nodes.PopBack();
-							}
-
-							leftOpNode->AddNode(opNode);
-
-							opNode = (OperatorNode*)leftOpNode;
-						}
-					}
-				}
+				node->AddNode(operand);
+				nodes.Remove(i + 1);
 			}
 
-			nodes.PushBack(opNode);
-		} else if (token.type == TokenType::Semicolon || token.type == TokenType::Comma) {
-			BacktrackNodes(nodes);
-			currentNode->AddNode(nodes.Back());
-
-
-			if (token.type == TokenType::Semicolon)
-				return i;
-
-			nodes.Clear();
+			i = -1;
 		}
 	}
 
-	return ~0;
+	currentNode->AddNode(nodes[0]);
+
+	for (ASTNode* node : addAfter) {
+		currentNode->AddNode(node);
+	}
+
+	return start;
 }
 
 uint64 Syntax::ParseLayout(Tokens& tokens, uint64 start, ASTNode* currentNode) {
@@ -863,23 +721,3 @@ uint64 Syntax::ParseLayout(Tokens& tokens, uint64 start, ASTNode* currentNode) {
 	return start;
 }
 
-void Syntax::BacktrackNodes(List<ASTNode*>& nodes) {
-	for (int64 i = nodes.GetSize() - 1; i >= 0; i--) {
-		ASTNode* node = nodes[i];
-
-		if (node->nodeType == ASTType::Operator && node->branches.GetSize() == 0) {
-			OperatorNode*   op  = (OperatorNode*)node;
-			OperatorTypeDef def = GetOperator(op->type, OperandType::Any, OperandType::Any, true);
-
-			if (def.leftOperand != OperandType::None) {
-				node->AddNode(nodes[i - 1]);
-				nodes.Remove(i - 1);
-			}
-
-			if (def.rightOperand != OperandType::None) {
-				node->AddNode(nodes.Back());
-				nodes.PopBack();
-			}
-		}
-	}
-}

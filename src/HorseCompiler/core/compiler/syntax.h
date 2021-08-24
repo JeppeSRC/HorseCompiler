@@ -41,7 +41,7 @@ private:
 
 	bool            CheckName(const Token& token);
 	OperatorTypeDef GetOperator(OperatorType type, OperandType left, OperandType right, bool ignoreOperands);
-	OperatorTypeDef GetOperator(Tokens& tokens, List<ASTNode*>& nodes, uint64 index);
+	OperatorTypeDef GetOperator(List<ASTNode*>& nodes, uint64 index);
 	ASTNode*        CreateOperandNode(Tokens& tokens, uint64* index);
 	uint64          ParseTypedef(Tokens& tokens, uint64 start, ASTNode* currentNode);
 	uint64          ParseTypeDeclaration(Tokens& tokens, uint64 start, TypeNode* typeNode);
@@ -49,5 +49,4 @@ private:
 	uint64          ParseFunctionParameters(Tokens& tokens, uint64 start, ASTNode* functionNode);
 	uint64          ParseExpression(Tokens& tokens, uint64 start, ASTNode* currentNode);
 	uint64          ParseLayout(Tokens& tokens, uint64 start, ASTNode* currentNode);
-	void            BacktrackNodes(List<ASTNode*>& nodes);
 };
