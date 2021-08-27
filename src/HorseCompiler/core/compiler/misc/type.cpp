@@ -23,7 +23,7 @@ SOFTWARE
 */
 
 #include "type.h"
-#include "compiler.h"
+#include <core/compiler/compiler.h>
 
 Type* TypeTable::CreateType(ASTNode* node, bool* isConst) {
 	if (node->nodeType != ASTType::Type) {

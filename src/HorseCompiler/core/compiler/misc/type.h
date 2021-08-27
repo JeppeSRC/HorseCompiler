@@ -27,7 +27,7 @@ SOFTWARE
 #include <core/def.h>
 #include <util/string.h>
 #include <util/list.h>
-#include "ast.h"
+#include <core/compiler/parsing/ast.h>
 
 class Type {
 private:

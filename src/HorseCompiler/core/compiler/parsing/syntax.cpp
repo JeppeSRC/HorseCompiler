@@ -23,7 +23,7 @@ SOFTWARE
 */
 
 #include "syntax.h"
-#include "compiler.h"
+#include <core/compiler/compiler.h>
 
 uint64 Syntax::Analyze(Tokens& tokens, uint64 start, ASTNode* currentNode, Language* lang) {
 	Syntax syn(lang);

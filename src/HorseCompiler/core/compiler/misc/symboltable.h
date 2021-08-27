@@ -24,24 +24,55 @@ SOFTWARE
 
 #pragma once
 
-#include "language.h"
-#include <core/compiler/parsing/ast.h>
-#include <core/compiler/lexer/lexer.h>
-#include <core/compiler/parsing/syntax.h>
-#include <core/compiler/semantic/semantic.h>
+#include <util/string.h>
+#include <util/list.h>
+#include "type.h"
+#include <core/compiler/lexer/token.h>
 
+enum class SymbolType {
+	Root,
+	Variable,
+	Function,
+	Struct
+};
 
-class Compiler {
-private:
-	String    currentDir;
-	Language* lang;
-	TypeTable typeTable;
-
+class Symbol {
 public:
-	Compiler(const String& currentDir, Language* lang);
+	Token* token;
+	Symbol*    parent;
+	SymbolType type;
 
-private: // Internal functions
+	String name;
 
-public: //static stuff
-	static void Log(const Token& item, uint64 code, ...);
+	Symbol(SymbolType type, const String& name, Token* token) : token(token), parent(nullptr), type(type), name(name) { }
+
+	List<Symbol*> symbols;
+
+	void AddSymbol(Symbol* symbol) {
+		symbol->parent = this;
+		symbols.PushBack(symbol);
+	}
+};
+
+class SymbolVariable : public Symbol {
+public:
+	Type* type;
+
+	bool modified;
+	bool constness;
+
+	ConstantNode* initialValue;
+
+	SymbolVariable(const String& name, Type* type, bool constness, Token* token) : Symbol(SymbolType::Variable, name, token), type(type), constness(constness), modified(false), initialValue(nullptr) { }
+};
+
+class SymbolTable {
+private:
+public:
+	List<Symbol*> symbols;
+
+	Symbol* currentScope = nullptr;
+
+	void    AddSymbol(Symbol* symbol);
+	Symbol* GetSymbol(const String& name, bool* isSameScope = nullptr);
 };

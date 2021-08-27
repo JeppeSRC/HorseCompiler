@@ -25,27 +25,22 @@ SOFTWARE
 #pragma once
 
 #include "token.h"
-#include "language.h"
-#include "ast.h"
-#include "type.h"
-#include "symboltable.h"
 
-class Semantic {
+#include <core/compiler/language.h>
+#include <core/compiler/semantic/semantic.h>
+
+class Lexer {
 public:
-    static uint64 Analyze(ASTNode* node, TypeTable* typeTable, SymbolTable* symbolTable);
+	static Tokens Analyze(const String& filename, Language* lang);
 
 private:
-    TypeTable* typeTable;
-    SymbolTable* symbolTable;
+	Lexer(Language* lang) : lang(lang) {}
 
-    Semantic(TypeTable* typeTable, SymbolTable* symbolTable) : typeTable(typeTable), symbolTable(symbolTable) {}
+	Language* lang;
 
-    uint64 Analyze(ASTNode* root);
+	Tokens Analyze(const String& filename);
 
-    uint64 VariableDefinition(ASTNode* node);
-
-    uint64 ConstantEvaluation(ASTNode* node, ASTNode** result);
-    uint64 ProcessOperator(OperatorNode* node, ASTNode** result);
-    ASTNode* ExecuteOperator(OperatorType op, ASTNode* left, ASTNode* right); //Handles 2 operand operators
-    ASTNode* ExecuteOperator(OperatorType op, ASTNode* operand); //Handles single operand operators
+	void ParseLiteral(Tokens& tokens, uint64 i);
+	void ParseStrings(Tokens& lexerResult);
+	void ParseEscapeSequences(Token& token);
 };

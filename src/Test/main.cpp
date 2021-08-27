@@ -4,9 +4,9 @@
 #include <core/error/error.h>
 #include <core/preprocessor/preprocessor.h>
 #include <core/compiler/compiler.h>
-#include <core/compiler/lexer.h>
-#include <core/compiler/syntax.h>
-#include <core/compiler/semantic.h>
+#include <core/compiler/lexer/lexer.h>
+#include <core/compiler/parsing/syntax.h>
+#include <core/compiler/semantic/semantic.h>
 
 #include <chrono>
 #include <Windows.h>

@@ -24,55 +24,28 @@ SOFTWARE
 
 #pragma once
 
-#include <util/string.h>
-#include <util/list.h>
-#include "type.h"
-#include "token.h"
+#include <core/compiler/lexer/token.h>
+#include <core/compiler/language.h>
+#include <core/compiler/parsing/ast.h>
+#include <core/compiler/misc/symboltable.h>
+#include <core/compiler/misc/type.h>
 
-enum class SymbolType {
-	Root,
-	Variable,
-	Function,
-	Struct
-};
-
-class Symbol {
+class Semantic {
 public:
-	Token* token;
-	Symbol*    parent;
-	SymbolType type;
+    static uint64 Analyze(ASTNode* node, TypeTable* typeTable, SymbolTable* symbolTable);
 
-	String name;
-
-	Symbol(SymbolType type, const String& name, Token* token) : token(token), parent(nullptr), type(type), name(name) { }
-
-	List<Symbol*> symbols;
-
-	void AddSymbol(Symbol* symbol) {
-		symbol->parent = this;
-		symbols.PushBack(symbol);
-	}
-};
-
-class SymbolVariable : public Symbol {
-public:
-	Type* type;
-
-	bool modified;
-	bool constness;
-
-	ConstantNode* initialValue;
-
-	SymbolVariable(const String& name, Type* type, bool constness, Token* token) : Symbol(SymbolType::Variable, name, token), type(type), constness(constness), modified(false), initialValue(nullptr) { }
-};
-
-class SymbolTable {
 private:
-public:
-	List<Symbol*> symbols;
+    TypeTable* typeTable;
+    SymbolTable* symbolTable;
 
-	Symbol* currentScope = nullptr;
+    Semantic(TypeTable* typeTable, SymbolTable* symbolTable) : typeTable(typeTable), symbolTable(symbolTable) {}
 
-	void    AddSymbol(Symbol* symbol);
-	Symbol* GetSymbol(const String& name, bool* isSameScope = nullptr);
+    uint64 Analyze(ASTNode* root);
+
+    uint64 VariableDefinition(ASTNode* node);
+
+    uint64 ConstantEvaluation(ASTNode* node, ASTNode** result);
+    uint64 ProcessOperator(OperatorNode* node, ASTNode** result);
+    ASTNode* ExecuteOperator(OperatorType op, ASTNode* left, ASTNode* right); //Handles 2 operand operators
+    ASTNode* ExecuteOperator(OperatorType op, ASTNode* operand); //Handles single operand operators
 };

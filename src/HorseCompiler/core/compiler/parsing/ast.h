@@ -26,8 +26,8 @@ SOFTWARE
 
 #include <util/string.h>
 #include <util/list.h>
-#include "language.h"
-#include "token.h"
+#include <core/compiler/language.h>
+#include <core/compiler/lexer/token.h>
 
 enum class ASTType {
 	Unknown,

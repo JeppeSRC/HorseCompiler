@@ -24,7 +24,7 @@ SOFTWARE
 
 
 #include "lexer.h"
-#include "compiler.h"
+#include <core/compiler/compiler.h>
 
 #include <util/file.h>
 #include <util/util.h>

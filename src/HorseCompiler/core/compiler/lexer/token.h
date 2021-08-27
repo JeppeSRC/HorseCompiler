@@ -26,8 +26,8 @@ SOFTWARE
 
 #include <util/string.h>
 #include <core/log/log.h>
-#include <core/file/sourcelocation.h>
-#include "language.h"
+#include <core/compiler/sourcelocation.h>
+#include <core/compiler/language.h>
 
 
 struct Token {

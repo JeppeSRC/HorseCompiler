@@ -23,8 +23,8 @@ SOFTWARE
 */
 
 #include "semantic.h"
-#include "compiler.h"
-#include "vec.h"
+#include <core/compiler/compiler.h>
+#include <core/compiler/misc/type.h>
 
 uint64 Semantic::Analyze(ASTNode* node, TypeTable* typeTable, SymbolTable* symbolTable) {
 	Semantic sem(typeTable, symbolTable);

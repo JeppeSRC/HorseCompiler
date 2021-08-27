@@ -24,22 +24,29 @@ SOFTWARE
 
 #pragma once
 
-#include "token.h"
-#include "language.h"
+#include <core/compiler/lexer/token.h>
+#include <core/compiler/language.h>
 #include "ast.h"
 
-class Lexer {
+class Syntax {
 public:
-	static Tokens Analyze(const String& filename, Language* lang);
+	static uint64 Analyze(Tokens& lexerResult, uint64 start, ASTNode* currentNode, Language* lang);
 
 private:
-	Lexer(Language* lang) : lang(lang) {}
+	Syntax(Language* lang) : lang(lang) { }
 
 	Language* lang;
 
-	Tokens Analyze(const String& filename);
+	uint64 Analyze(Tokens& lexerResult, uint64 start, ASTNode* currentNode);
 
-	void ParseLiteral(Tokens& tokens, uint64 i);
-	void ParseStrings(Tokens& lexerResult);
-	void ParseEscapeSequences(Token& token);
+	bool            CheckName(const Token& token);
+	OperatorTypeDef GetOperator(OperatorType type, OperandType left, OperandType right, bool ignoreOperands);
+	OperatorTypeDef GetOperator(List<ASTNode*>& nodes, uint64 index);
+	ASTNode*        CreateOperandNode(Tokens& tokens, uint64* index);
+	uint64          ParseTypedef(Tokens& tokens, uint64 start, ASTNode* currentNode);
+	uint64          ParseTypeDeclaration(Tokens& tokens, uint64 start, TypeNode* typeNode);
+	uint64          ParseStruct(Tokens& tokens, uint64 start, ASTNode* currentNode);
+	uint64          ParseFunctionParameters(Tokens& tokens, uint64 start, ASTNode* functionNode);
+	uint64          ParseExpression(Tokens& tokens, uint64 start, ASTNode* currentNode);
+	uint64          ParseLayout(Tokens& tokens, uint64 start, ASTNode* currentNode);
 };
