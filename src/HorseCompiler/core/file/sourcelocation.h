@@ -22,5 +22,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 */
 
-#include "token.h"
+#pragma once
 
+#include <core/def.h>
+#include <util/string.h>
+#include "sourcefile.h"
+
+class SourceLocation {
+public:
+    int64 line;
+    int64 column;
+    uint64 index;
+
+    SourceFile* file;
+
+    SourceLocation() : line(-1), column(-1), index(-1), file(nullptr) {}
+    SourceLocation(SourceFile* file, uint64 index, int64 line, int64 column) : line(line), column(column), index(index), file(file) {}
+
+
+};

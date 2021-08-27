@@ -22,5 +22,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 */
 
-#include "token.h"
+#include "sourcefile.h"
 
+SourceFile::SourceFile() : size(0), filename() {}
+
+SourceFile::SourceFile(const String& filename) : size(0), filename(filename) {
+    byte* data = FileUtils::LoadFile(filename, &size);
+
+    if (data == nullptr) {
+        Log::Error("failed to open file \"%s\"", filename.str);
+        exit(1);
+    }
+
+    text = String((char* const)data, size);
+
+
+}

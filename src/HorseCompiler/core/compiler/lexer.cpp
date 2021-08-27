@@ -46,7 +46,8 @@ Tokens Lexer::Analyze(const String& filename) {
 	List<uint64> indices;
 	List<uint64> newLines;
 
-	String file = FileUtils::LoadTextFile(filename);
+	SourceFile* sourceFile = new SourceFile(filename);
+	String& file = sourceFile->text;
 
 	result.Reserve(4096);
 	indices.Reserve(4096);
@@ -89,10 +90,8 @@ Tokens Lexer::Analyze(const String& filename) {
 				Token t;
 
 				if ((int64)lastIndex <= (int64)i - 1) {
-					t.filename = filename;
+					t.loc = SourceLocation(sourceFile, lastIndex, currLine + 1, lastIndex - ((newLines[currLine - 1 * (currLine > 0)] + 1) * (currLine > 0)) + 1);
 					t.string = file.SubString(lastIndex, i - 1);
-					t.line = currLine + 1;
-					t.column = lastIndex - ((newLines[currLine - 1 * (currLine > 0)] + 1) * (currLine > 0)) + 1;
 					t.isString = includeSpaces;
 
 					uint64 tmp = 0;
@@ -115,10 +114,7 @@ Tokens Lexer::Analyze(const String& filename) {
 					currLine++;
 					break;
 				} else {
-
-					t.filename = filename;
-					t.column = i - ((newLines[currLine - 1 * (currLine > 0)] + 1) * (currLine > 0)) + 1;
-					t.line = currLine + 1;
+					t.loc = SourceLocation(sourceFile, i, currLine + 1, i - ((newLines[currLine - 1 * (currLine > 0)] + 1) * (currLine > 0)) + 1);
 					t.string = c;
 					t.isString = (bool)includeSpaces;
 

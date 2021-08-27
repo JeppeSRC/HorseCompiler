@@ -38,13 +38,13 @@ void CorrectIncludeDir(List<String>& includeDir) {
 }
 
 uint64 FindNextNewline(const Tokens& tokens, uint64 index) {
-	uint64        line = tokens[index].line;
-	const String& file = tokens[index].filename;
+	uint64        line = tokens[index].loc.line;
+	const String& file = tokens[index].loc.file->filename;
 
 	for (uint64 i = index; i < tokens.GetSize(); i++) {
-		const Token& t = tokens[i];
+		const SourceLocation& t = tokens[i].loc;
 
-		if (t.line != line || t.filename != file)
+		if (t.line != line || t.file->filename != file)
 			return i - 1;
 	}
 
@@ -166,15 +166,15 @@ void RemoveComments(Tokens& tokens) {
 String MergeList(const Tokens& tokens, uint64 start, uint64 end) {
 	String res("");
 
-	int64  currentLine = tokens[start].line;
-	String currentFile = tokens[start].filename;
+	int64  currentLine = tokens[start].loc.line;
+	String currentFile = tokens[start].loc.file->filename;
 
 	for (uint64 i = start; i <= end; i++) {
 		const Token& t = tokens[i];
 
-		if (currentLine < t.line || currentFile != t.filename) {
-			currentLine = t.line;
-			currentFile = t.filename;
+		if (currentLine < t.loc.line || currentFile != t.loc.file->filename) {
+			currentLine = t.loc.line;
+			currentFile = t.loc.file->filename;
 			res.Append("\n");
 		}
 
@@ -225,7 +225,7 @@ bool PreProcessor::Run(Tokens& tokens) {
 	CorrectIncludeDir(*includeDir);
 	RemoveComments(tokens);
 
-	FileNode root = { tokens[0].filename, nullptr };
+	FileNode root = { tokens[0].loc.file->filename, nullptr };
 
 	for (uint64 i = 0; i < tokens.GetSize(); i++) {
 		Token& t = tokens[i];
@@ -303,7 +303,7 @@ bool PreProcessor::ProcessInclude(Tokens& tokens, uint64 index, const List<Strin
 		MergeList(tokens, index + 1, end - 1);
 	}
 
-	String localPath = StringUtils::GetPathFromFilename(t.filename);
+	String localPath = StringUtils::GetPathFromFilename(t.loc.file->filename);
 	String finalFile;
 
 	if (local) {
@@ -328,7 +328,7 @@ bool PreProcessor::ProcessInclude(Tokens& tokens, uint64 index, const List<Strin
 		return false;
 	}
 
-	FileNode* current = FindCurrentNode(nodes, t.filename);
+	FileNode* current = FindCurrentNode(nodes, t.loc.file->filename);
 	FileNode* rec     = CheckRecursion(current, finalFile);
 
 	if (rec) {
@@ -362,7 +362,7 @@ bool PreProcessor::ProcessPragma(Tokens& tokens, uint64 index) {
 	uint64 end = FindNextNewline(tokens, index);
 
 	if (pragmaDirective.string == "once") {
-		includedFiles.PushBack(pragmaDirective.filename);
+		includedFiles.PushBack(pragmaDirective.loc.file->filename);
 	} else {
 		Compiler::Log(pragmaDirective, HC_WARN_PREPROCESSOR_PRAGMA_UNKNOWN_DIRECTIVE, pragmaDirective.string.str);
 	}

@@ -26,13 +26,14 @@ SOFTWARE
 
 #include <util/string.h>
 #include <core/log/log.h>
+#include <core/file/sourcelocation.h>
 #include "language.h"
 
+
 struct Token {
+	SourceLocation loc;
+
 	String string;
-	String filename;
-	int64  line;
-	int64  column;
 
 	bool trailingSpace = false; //Set to true if there's a space after this token
 	bool isString      = false;
@@ -41,8 +42,6 @@ struct Token {
 	KeywordType   keyword       = KeywordType::Unknown;
 	PrimitiveType primitiveType = PrimitiveType::Unknown;
 	OperatorType  operatorType  = OperatorType::Unknown;
-
-	bool operator==(const Token& other) const;
 
 	// List comp functions
 	static bool CharCmp(const Token& item, const char& other) {

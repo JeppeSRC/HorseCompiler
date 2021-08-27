@@ -22,5 +22,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 */
 
-#include "token.h"
+#pragma once
 
+#include <util/file.h>
+#include <util/string.h>
+#include <util/list.h>
+
+class SourceFile {
+private:
+    uint64 size;
+
+public:
+    String text;
+    String filename;
+
+    SourceFile();
+    SourceFile(const String& filename);
+
+    uint64 GetSize() const { return size; }
+    uint64 GetLength() const { return text.length; }
+    bool IsValid() const { return size != 0; }
+
+    char& operator[](uint64 index) {
+        return text[index];
+    }
+
+    char operator[](uint64 index) const {
+        return text[index];
+    }
+};
