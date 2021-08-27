@@ -49,24 +49,19 @@ void LogInternal(const char* const message, va_list args) {
 	if constexpr (level == Level::Info) {
 		SetConsoleTextAttribute(handle, HC_LOG_COLOR_INFO);
 		printf("Info: ");
-		vprintf(message, args);
-		printf("\n");
 	} else if constexpr (level == Level::Debug) {
 		SetConsoleTextAttribute(handle, HC_LOG_COLOR_DEBUG);
 		printf("Debug: ");
-		vprintf(message, args);
-		printf("\n");
 	} else if constexpr (level == Level::Warning) {
 		SetConsoleTextAttribute(handle, HC_LOG_COLOR_WARNING);
 		printf("Warning: ");
-		vprintf(message, args);
-		printf("\n");
 	} else if constexpr (level == Level::Error) {
 		SetConsoleTextAttribute(handle, HC_LOG_COLOR_ERROR);
 		printf("Error: ");
-		vprintf(message, args);
-		printf("\n");
 	}
+
+	vprintf(message, args);
+	printf("\n");
 
 	SetConsoleTextAttribute(handle, info.wAttributes);
 }
@@ -81,30 +76,30 @@ void LogInternal(const char* const filename, int64 line, int64 column, int64 cod
 	if constexpr (level == Level::Info) {
 		SetConsoleTextAttribute(handle, HC_LOG_COLOR_INFO);
 		printf("%s -> %llu:%llu Info (0x%llx): ", filename, line, column, code);
-		vprintf(message, args);
-		printf("\n");
 	} else if constexpr (level == Level::Debug) {
 		SetConsoleTextAttribute(handle, HC_LOG_COLOR_DEBUG);
 		printf("%s -> %llu:%llu Debug (0x%llx): ", filename, line, column, code);
-		vprintf(message, args);
-		printf("\n");
 	} else if constexpr (level == Level::Warning) {
 		SetConsoleTextAttribute(handle, HC_LOG_COLOR_WARNING);
 		printf("%s -> %llu:%llu Warning (0x%llx): ", filename, line, column, code);
-		vprintf(message, args);
-		printf("\n");
 	} else if constexpr (level == Level::Error) {
 		SetConsoleTextAttribute(handle, HC_LOG_COLOR_ERROR);
 		printf("%s -> %llu:%llu Error (0x%llx): ", filename, line, column, code);
-		vprintf(message, args);
-		printf("\n");
 	}
+
+	vprintf(message, args);
+	printf("\n");
 
 	SetConsoleTextAttribute(handle, info.wAttributes);
+}
 
-	if constexpr (level == Level::Error) {
-		//TODO: handle errors
-	}
+CompilerCode Log::codes[CompilerCode::COUNT];
+
+#define CODE(code, level, message) codes[code] = { code, level, message }
+
+void Log::Init() {
+	CODE(CompilerCode::PP_NoDirective, CompilerCode::Error, "no directive");
+	CODE(CompilerCode::PP_UnkownDirective, CompilerCode::Error, "unknown preprocessor directive '%s'");
 }
 
 void Log::Info(const char* const message, ...) {
@@ -154,3 +149,4 @@ void Log::Error(int64 line, int64 column, const char* const filename, int64 code
 	va_start(args, message);
 	LogInternal<Level::Error>(filename, line, column, code, message, args);
 }
+
